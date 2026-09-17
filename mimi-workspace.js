@@ -10,6 +10,7 @@
     const mobileMedia=options.mobileMedia||'(max-width:760px)';
     const labels={left:'左侧栏',right:'右侧栏',...options.labels};
     let ui=read()||{};
+    const revealCleanups={left:null,right:null};
     const el=id=>document.getElementById(id);
     function persist(){write(ui)}
     function apply(){
@@ -23,7 +24,27 @@
         el(side+'Resizer')?.setAttribute('aria-valuenow',side==='left'?left:right);
       }
     }
-    function setPanel(side,hidden){ui=read()||ui;ui[side+'Hidden']=hidden;apply();persist();notify(hidden?`${labels[side]}已收起`:'面板已展开')}
+    function setPanel(side,hidden){
+      ui=read()||ui;
+      revealCleanups[side]?.();
+      const revealClass='revealing-'+side;
+      if(hidden)root.classList.remove(revealClass);
+      else root.classList.add(revealClass);
+      ui[side+'Hidden']=hidden;apply();persist();notify(hidden?`${labels[side]}已收起`:'面板已展开');
+      if(!hidden){
+        let timer=0;
+        const finishReveal=event=>{
+          if(event&&event.target!==root)return;
+          root.removeEventListener('transitionend',finishReveal);
+          clearTimeout(timer);
+          root.classList.remove(revealClass);
+          revealCleanups[side]=null;
+        };
+        revealCleanups[side]=finishReveal;
+        root.addEventListener('transitionend',finishReveal);
+        timer=setTimeout(()=>finishReveal(),360);
+      }
+    }
     function setMobilePanel(panel,{scroll=true}={}){
       if(!root.querySelector(`[data-mobile-panel-name="${panel}"]`))return;
       root.dataset.mobilePanel=panel;

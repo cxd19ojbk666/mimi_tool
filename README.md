@@ -5,6 +5,7 @@
 ## 文件
 
 - `mimi-ui.css`：设计变量、通用控件、三栏工作台和响应式规则。
+- `mimi-common.js`：品牌文案、通用操作名称、消息提示及备份下载。
 - `mimi-workspace.js`：侧栏折叠、栏宽调整、移动端导航及状态持久化。
 
 ## HTML 契约
@@ -47,3 +48,18 @@ const controller = MimiWorkspace.mount({
 2. 通用工作台交互只修改 `mimi-workspace.js`。
 3. 业务页样式应以画布或业务组件为作用域，避免重新定义 `.btn`、`.panel`、`.field` 等公共类。
 4. 新工具使用相同 DOM 契约，仅通过变量和 `mount` 选项定制。
+
+## 通用内容约定
+
+两个页面均加载 `mimi-common.js`，在页面脚本开始时调用
+`MimiCommon.init({action:'做板贴',subject:'板贴'})`（排座位使用 `排座位`）。
+标题统一为“咪咪大王 + 动作”，副标题统一为“咪的汪给咪做的 + 工具名称 + 工具”。
+
+公共按钮使用 `data-mimi-action="backup|restore|clear|export"`，统一显示“备份 / 恢复 / 清空 / 导出”。
+清空按钮使用 `.btn.danger`，通过 `title` 和 `aria-label` 说明作用范围。
+单格式导出保留“导出 PNG”等格式名称，多格式导出使用“导出”菜单。
+业务状态和清空后的恢复方式由各页面负责。
+
+`MimiCommon.toast(message)` 统一显示 4 秒提示；`MimiCommon.backup(data)`
+统一生成“页面标题-备份-日期.json”并提示“备份已下载”。旧备份的数据结构及本地存储键保持兼容。
+`MimiCommon.download(blob,name)` 共用下载和临时 URL 释放逻辑。
