@@ -10,8 +10,8 @@
 ## HTML 契约
 
 ```html
-<link rel="stylesheet" href="../共享组件/mimi-ui.css">
-<script src="../共享组件/mimi-workspace.js"></script>
+<link rel="stylesheet" href="./mimi-ui.css">
+<script src="./mimi-workspace.js"></script>
 
 <main class="workspace" id="workspace">
   <aside class="panel left left-panel" id="leftPanel"
