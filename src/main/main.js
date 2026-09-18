@@ -2,9 +2,10 @@ const { app, BrowserWindow, Menu, shell } = require('electron');
 const path = require('path');
 
 const pages = {
-  launcher: 'launcher.html',
-  seats: '咪咪大王排座位.html',
-  boards: '咪咪大王做板贴.html'
+  launcher: path.join('..', 'renderer', 'index.html'),
+  seats: path.join('..', 'renderer', 'pages', 'seating-chart.html'),
+  boards: path.join('..', 'renderer', 'pages', 'board-labels.html'),
+  rollcall: path.join('..', 'renderer', 'pages', 'roll-call.html')
 };
 
 let mainWindow;
@@ -38,6 +39,7 @@ function buildMenu() {
         { type: 'separator' },
         { label: '咪咪大王排座位', accelerator: 'CmdOrCtrl+1', click: () => openPage('seats') },
         { label: '咪咪大王做板贴', accelerator: 'CmdOrCtrl+2', click: () => openPage('boards') },
+        { label: '咪咪大王点名器', accelerator: 'CmdOrCtrl+3', click: () => openPage('rollcall') },
         ...(process.platform === 'darwin' ? [] : [{ type: 'separator' }, { role: 'quit' }])
       ]
     },
@@ -73,7 +75,7 @@ function createWindow() {
     minHeight: 620,
     title: '咪咪大王工具箱',
     backgroundColor: '#fff9df',
-    icon: path.join(__dirname, 'assets', process.platform === 'win32' ? 'mimi-toolbox.ico' : 'mimi-toolbox-icon-1024.png'),
+    icon: path.join(__dirname, '..', '..', 'assets', process.platform === 'win32' ? 'mimi-toolbox.ico' : 'mimi-toolbox-icon-1024.png'),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,

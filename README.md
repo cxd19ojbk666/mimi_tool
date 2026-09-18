@@ -1,18 +1,66 @@
-# 咪咪工具共享组件
+# 咪咪大王工具箱
 
-这个目录是所有“咪咪大王”工具的公共 UI 层。业务页只保留自己的画布、表单和业务逻辑。
+## Electron 桌面版
+
+项目已封装为 Electron 桌面应用。首次构建前先安装依赖：
+
+```bash
+npm install
+```
+
+本地运行：
+
+```bash
+npm start
+```
+
+构建 macOS ARM64 版（`.app` 会在 `dist/mac-arm64` 中，同时生成 DMG 和 ZIP）：
+
+```bash
+npm run build:mac
+```
+
+构建 Windows x64 版（同时生成 NSIS 安装版和便携版 EXE）：
+
+```bash
+npm run build:win
+```
+
+构建结果统一位于 `dist` 目录。正式对外发布前，建议分别配置 Apple Developer ID 和 Windows 代码签名证书。
+
+项目源码统一放在 `src`，根目录只保留项目说明、依赖清单和构建配置。
+
+## 目录结构
+
+```text
+.
+├── assets/                  # 应用图标等品牌资源
+├── src/
+│   ├── main/                # Electron 主进程
+│   │   └── main.js
+│   └── renderer/            # 渲染进程与页面资源
+│       ├── index.html       # 工具箱首页
+│       ├── pages/           # 各业务工具页面
+│       ├── scripts/         # 共享前端脚本
+│       └── styles/          # 共享样式
+├── dist/                    # 构建产物（不提交）
+├── package.json
+└── README.md
+```
+
+`src/renderer` 是所有“咪咪大王”工具的公共 UI 层。业务页只保留自己的画布、表单和业务逻辑。
 
 ## 文件
 
-- `mimi-ui.css`：设计变量、通用控件、三栏工作台和响应式规则。
-- `mimi-common.js`：品牌文案、通用操作名称、消息提示及备份下载。
-- `mimi-workspace.js`：侧栏折叠、栏宽调整、移动端导航及状态持久化。
+- `src/renderer/styles/mimi-ui.css`：设计变量、通用控件、三栏工作台和响应式规则。
+- `src/renderer/scripts/mimi-common.js`：品牌文案、通用操作名称、消息提示及备份下载。
+- `src/renderer/scripts/mimi-workspace.js`：侧栏折叠、栏宽调整、移动端导航及状态持久化。
 
 ## HTML 契约
 
 ```html
-<link rel="stylesheet" href="./mimi-ui.css">
-<script src="./mimi-workspace.js"></script>
+<link rel="stylesheet" href="../styles/mimi-ui.css">
+<script src="../scripts/mimi-workspace.js"></script>
 
 <main class="workspace" id="workspace">
   <aside class="panel left left-panel" id="leftPanel"
@@ -44,14 +92,14 @@ const controller = MimiWorkspace.mount({
 
 ## 维护规则
 
-1. 通用外观只修改 `mimi-ui.css`，不得复制回业务 HTML。
-2. 通用工作台交互只修改 `mimi-workspace.js`。
+1. 通用外观只修改 `src/renderer/styles/mimi-ui.css`，不得复制回业务 HTML。
+2. 通用工作台交互只修改 `src/renderer/scripts/mimi-workspace.js`。
 3. 业务页样式应以画布或业务组件为作用域，避免重新定义 `.btn`、`.panel`、`.field` 等公共类。
 4. 新工具使用相同 DOM 契约，仅通过变量和 `mount` 选项定制。
 
 ## 通用内容约定
 
-两个页面均加载 `mimi-common.js`，在页面脚本开始时调用
+两个页面均加载 `src/renderer/scripts/mimi-common.js`，在页面脚本开始时调用
 `MimiCommon.init({action:'做板贴',subject:'板贴'})`（排座位使用 `排座位`）。
 标题统一为“咪咪大王 + 动作”，副标题统一为“咪的汪给咪做的 + 工具名称 + 工具”。
 

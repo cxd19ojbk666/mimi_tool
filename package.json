@@ -2,7 +2,7 @@
   "name": "mimi-toolbox",
   "version": "1.0.0",
   "description": "咪咪大王工具箱：排座位与做板贴",
-  "main": "main.js",
+  "main": "src/main/main.js",
   "author": "咪的汪",
   "license": "UNLICENSED",
   "private": true,
@@ -24,13 +24,11 @@
       "output": "dist"
     },
     "files": [
-      "main.js",
-      "launcher.html",
-      "咪咪大王排座位.html",
-      "咪咪大王做板贴.html",
-      "mimi-ui.css",
-      "mimi-common.js",
-      "mimi-workspace.js",
+      "src/main/main.js",
+      "src/renderer/index.html",
+      "src/renderer/pages/*.html",
+      "src/renderer/styles/*.css",
+      "src/renderer/scripts/*.js",
       "assets/mimi-toolbox-icon-1024.png",
       "assets/mimi-toolbox-transparent.ico"
     ],
@@ -51,15 +49,18 @@
       "target": [
         "nsis",
         "portable"
-      ],
-      "artifactName": "咪咪大王工具箱-${version}-${arch}.${ext}"
+      ]
     },
     "nsis": {
+      "artifactName": "咪咪大王工具箱-${version}-${arch}-setup.${ext}",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "咪咪大王工具箱"
+    },
+    "portable": {
+      "artifactName": "咪咪大王工具箱-${version}-${arch}-portable.${ext}"
     }
   }
 }

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>咪咪大王排座位</title>
-  <link rel="icon" type="image/x-icon" href="./assets/mimi-toolbox-transparent.ico">
+  <link rel="icon" type="image/x-icon" href="../../../assets/mimi-toolbox-transparent.ico">
   <style>
     :root{--ink:#18332f;--muted:#6f7c77;--paper:#f7f3e8;--panel:#fffdf7;--line:#d9d5c8;--green:#166c5c;--mint:#dcece5;--orange:#e66b3d;--gold:#d8a73c;--red:#b84432;--shadow:0 18px 55px rgba(34,47,42,.12)}
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:var(--paper);font-family:"Avenir Next","PingFang SC","Noto Sans CJK SC",sans-serif;min-height:100vh}
@@ -148,7 +148,7 @@
     @media(max-width:760px),(max-width:960px) and (max-height:540px){.mobile-nav{display:grid}}
     @media(hover:none) and (pointer:coarse){.btn:hover,.candidate:hover,.seat:hover,.panel-collapse:hover{transform:none}.seat{cursor:pointer}}
   </style>
-  <link rel="stylesheet" href="./mimi-ui.css">
+  <link rel="stylesheet" href="../styles/mimi-ui.css">
   <style>
     /* 字号设置必须放在公共样式之后，确保整页组件都按同一比例缩放 */
     :root{
@@ -192,13 +192,13 @@
       .status{font-size:calc(12px * var(--ui-scale))}
     }
   </style>
-  <script src="./mimi-common.js"></script><script src="./mimi-workspace.js"></script>
+  <script src="../scripts/mimi-common.js"></script><script src="../scripts/mimi-workspace.js"></script>
 </head>
 <body>
 <div class="shell">
   <header>
     <div class="brand"><div><h1>咪咪大王排座位</h1><p>咪的汪给咪做的排座位工具</p></div></div>
-    <div class="top-actions actions"><a class="btn" href="./launcher.html" aria-label="返回咪咪大王工具箱">首页</a><button class="btn settings-trigger" id="openSettings" type="button">设置</button><button class="btn" id="saveBackup" data-mimi-action="backup">备份</button><button class="btn" id="restoreBackup" data-mimi-action="restore" type="button">恢复</button><input hidden id="restoreFile" type="file" accept=".json"><button class="btn accent" id="exportPng" title="导出完整座位平面图">导出 PNG</button></div>
+    <div class="top-actions actions"><a class="btn" href="../index.html" aria-label="返回咪咪大王工具箱">首页</a><button class="btn settings-trigger" id="openSettings" type="button">设置</button><button class="btn" id="saveBackup" data-mimi-action="backup">备份</button><button class="btn" id="restoreBackup" data-mimi-action="restore" type="button">恢复</button><input hidden id="restoreFile" type="file" accept=".json"><button class="btn accent" id="exportPng" title="导出完整座位平面图">导出 PNG</button></div>
   </header>
   <main class="workspace" id="workspace" data-mobile-panel="setup">
     <section class="panel left-panel left is-mobile-active" id="leftPanel" data-workspace-panel="left" data-mobile-panel-name="setup">
