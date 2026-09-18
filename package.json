@@ -1,0 +1,65 @@
+{
+  "name": "mimi-toolbox",
+  "version": "1.0.0",
+  "description": "咪咪大王工具箱：排座位与做板贴",
+  "main": "main.js",
+  "author": "咪的汪",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-builder --mac dmg zip --arm64",
+    "build:win": "electron-builder --win nsis portable --x64",
+    "build": "npm run build:mac && npm run build:win"
+  },
+  "devDependencies": {
+    "electron": "^38.1.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.mimi.toolbox",
+    "productName": "咪咪大王工具箱",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "launcher.html",
+      "咪咪大王排座位.html",
+      "咪咪大王做板贴.html",
+      "mimi-ui.css",
+      "mimi-common.js",
+      "mimi-workspace.js",
+      "assets/mimi-toolbox-icon-1024.png",
+      "assets/mimi-toolbox-transparent.ico"
+    ],
+    "mac": {
+      "icon": "assets/mimi-toolbox.icns",
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "dmg": {
+      "title": "咪咪大王工具箱 ${version}",
+      "artifactName": "咪咪大王工具箱-${version}-${arch}.${ext}"
+    },
+    "win": {
+      "icon": "assets/mimi-toolbox.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "artifactName": "咪咪大王工具箱-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "咪咪大王工具箱"
+    }
+  }
+}
