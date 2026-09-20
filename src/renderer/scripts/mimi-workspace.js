@@ -73,6 +73,7 @@
     }
     document.querySelectorAll('.mobile-nav [data-mobile-panel]').forEach(button=>button.addEventListener('click',()=>setMobilePanel(button.dataset.mobilePanel)));
     apply();
+    requestAnimationFrame(()=>root.classList.add('mimi-workspace-mounted'));
     return {apply,setPanel,setMobilePanel,state:()=>ui};
   }
   global.MimiWorkspace=Object.freeze({mount});
