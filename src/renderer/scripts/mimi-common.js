@@ -39,13 +39,13 @@
   function parseText(text){
     text=text.replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n').trim();
     if(!text)return [];
-    const delimiter=text.includes('\t')?'\t':text.includes(',')?',':text.includes('，')?'，':null;
+    const delimiter=text.includes('\t')?'\t':/[,，]/.test(text)?',':null;
     if(!delimiter)return text.split(/\n/).flatMap(line=>line.includes('、')?line.split('、').map(name=>[name]):[line.trim().split(/\s+/)]);
     const rows=[];let row=[],value='',quoted=false;
     for(let i=0;i<text.length;i++){
       const c=text[i];
       if(c==='"'){if(quoted&&text[i+1]==='"'){value+='"';i++}else quoted=!quoted}
-      else if(!quoted&&(c===delimiter||c==='\n')){row.push(value);value='';if(c==='\n'){rows.push(row);row=[]}}
+      else if(!quoted&&((delimiter===','?/[,，]/.test(c):c===delimiter)||c==='\n')){row.push(value);value='';if(c==='\n'){rows.push(row);row=[]}}
       else value+=c;
     }
     if(quoted)throw Error('引号未闭合，请检查名单格式');

@@ -97,19 +97,15 @@
   }catch{toast('数据读取失败，请重新导入')}
   function save(){try{localStorage.setItem(KEY,JSON.stringify(state));$('saveStatus').textContent='已自动保存'}catch{$('saveStatus').textContent='自动保存失败';if(!storageWarning){toast('自动保存失败，请及时导出');storageWarning=true}}}
   function ask(title,message,action,hint=''){$('confirmTitle').textContent=title;$('confirmText').textContent=message;$('confirmHint').textContent=hint;$('confirmHint').hidden=!hint;pending=action;$('confirmDialog').showModal()}
+  function selectRosterTab(name){
+    document.querySelectorAll('[data-roster-tab]').forEach(button=>{const active=button.dataset.rosterTab===name;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active))});
+    document.querySelectorAll('.roster-tabpage').forEach(page=>{const active=page.id===`roster-tab-${name}`;page.classList.toggle('active',active);page.hidden=!active});
+  }
   $('cancel').onclick=()=>$('confirmDialog').close();$('confirm').onclick=()=>{const action=pending;$('confirmDialog').close();action?.()};$('confirmDialog').addEventListener('close',()=>pending=null);
   function downloadExcel(rows,name,sheetName){MimiCommon.download(D.xlsx(rows,sheetName),name)}
   function pool(){return D.candidates(state.students,state.history,state.options)}
   function element(tag,className,text){const node=document.createElement(tag);node.className=className;node.textContent=text;return node}
-  function renderStudents(){
-    const called=D.calledIds(state.history),query=$('studentSearch').value.trim().toLowerCase();$('studentList').replaceChildren();
-    const visible=state.students.filter(s=>(s.name+' '+s.group).toLowerCase().includes(query));
-    if(!visible.length)$('studentList').append(element('div','empty',state.students.length?'无结果':'暂无名单'));
-    const fragment=document.createDocumentFragment();visible.forEach((s,index)=>{
-      const row=element('div','student'+(called.has(s.id)?' called':''),'');const details=element('div','','');details.append(element('b','',s.name),element('small','student-meta',[s.gender||'未填性别',s.group||'未分组'].join(' · ')));row.append(details,element('small','',called.has(s.id)?'已点到':String(index+1).padStart(2,'0')));fragment.append(row);
-    });$('studentList').append(fragment);
-    $('rosterCount').textContent=state.students.length+' 人';$('roundTotal').textContent=called.size;
-  }
+  function renderRoundTotal(){$('roundTotal').textContent=D.calledIds(state.history).size}
   function renderHistory(){
     $('historyCount').textContent=state.history.length+' 次';$('historyList').replaceChildren();
     if(!state.history.length)$('historyList').append(element('div','empty','暂无记录'));
@@ -123,7 +119,7 @@
     $('drawHint').textContent=grouped?'整组抽取；性别筛选仅限单人模式':'按空格键抽取';
     $('status').textContent=!state.students.length?'请导入名单':!available.length?'暂无可抽对象':grouped?(state.options.noRepeat?'本轮不重复':'允许重复'):`${available.length} 人可抽 · ${state.options.noRepeat?'本轮不重复':'允许重复'}`;
   }
-  function render(){renderStudents();renderHistory();renderPool();$('exportRoster').disabled=busy||!state.students.length;$('clearRoster').disabled=busy||!state.students.length;$('newRound').disabled=busy||!state.history.length}
+  function render(){renderRoundTotal();renderHistory();renderPool();$('clearRoster').disabled=busy||!state.students.length;$('newRound').disabled=busy||!state.history.length}
   function syncOptions(){
     const hasGender=state.students.some(s=>s.gender),hasGroup=state.students.some(s=>s.group);
     $('genderControl').hidden=!hasGender;$('groupControl').hidden=!hasGroup;$('modeControl').hidden=!hasGroup;
@@ -139,13 +135,14 @@
     $('resultName').textContent=item?item.name:'待抽取';
     $('resultMeta').textContent=item?(item.mode==='group'?item.names.join('、'):item.meta):'';
   }
+  function formatRoster(students){return students.map(student=>{const fields=[student.name,student.gender,student.group];while(fields.at(-1)==='')fields.pop();return fields.join('，')}).join('\n')}
   function preview(rows){
-    const parsed=D.normalize(rows);$('rosterText').value=D.csv([['姓名','性别','小组'],...parsed.students.map(s=>[s.name,s.gender,s.group])]).replace(/^\uFEFF/,'');
+    const parsed=D.normalize(rows);$('rosterText').value=formatRoster(parsed.students);
     $('importStatus').textContent=`${parsed.students.length} 人待应用`;return parsed;
   }
   function apply(){
     let parsed;try{parsed=D.normalize(D.parseText($('rosterText').value))}catch(e){toast(e.message);return}
-    const action=()=>{state.students=parsed.students;state.history=[];state.options.group='all';syncOptions();result(null);render();save();$('importStatus').textContent=`已导入 ${parsed.students.length} 人`;
+    const action=()=>{state.students=parsed.students;state.history=[];state.options.group='all';syncOptions();result(null);render();save();selectRosterTab('filter');$('importStatus').textContent=`已导入 ${parsed.students.length} 人`;
       const messages=[`已导入 ${parsed.students.length} 人`];if(parsed.duplicates.length)messages.push(`重名 ${parsed.duplicates.length} 处，按不同同学保留`);if(parsed.unknown)messages.push(`${parsed.unknown} 人的性别未识别`);if(parsed.skipped)messages.push(`跳过 ${parsed.skipped} 行空姓名`);toast(messages.join('；'));$('importStatus').textContent=messages.join('；');
     };
     if(state.students.length)ask('替换名单？','现有名单和记录将被清空。',action);else action();
@@ -159,13 +156,13 @@
     const item={mode,name:choice.name,names:choice.members.map(s=>s.name),ids:choice.members.map(s=>s.id),time:new Date().toISOString(),meta:mode==='group'?'':`${choice.members[0].gender||'未填性别'} · ${choice.members[0].group||'未分组'}`};
     state.history.push(item);result(item);setBusy(false);save();
   }
-  $('draw').onclick=draw;$('applyRoster').onclick=apply;$('studentSearch').oninput=renderStudents;
+  document.querySelectorAll('[data-roster-tab]').forEach(button=>button.onclick=()=>selectRosterTab(button.dataset.rosterTab));
+  $('draw').onclick=draw;$('applyRoster').onclick=apply;
   ['mode','gender','group','noRepeat'].forEach(id=>$(id).onchange=()=>{state.options[id]=id==='noRepeat'?$(id).checked:$(id).value;renderPool();save()});
   $('newRound').onclick=()=>ask('重置本轮？','本轮记录将清空。',()=>{state.history=[];result(null);render();save();toast('已重置')});
   $('undo').onclick=()=>{state.history.pop();result(state.history.at(-1));render();save();toast('已撤回')};
   $('clearRoster').onclick=()=>ask('清空名单？','名单和记录将被清空，且无法撤销。',()=>{state.students=[];state.history=[];sheets=[];$('sheetControl').hidden=true;$('rosterText').value='';$('importStatus').textContent='';syncOptions();result(null);render();save()},'清空后无法撤销，请确认不再需要当前内容。');
   $('template').onclick=()=>downloadExcel([['姓名','性别','小组'],['张小雨','女','第一组'],['王一鸣','男','第二组']],'点名器-名单模板.xlsx','名单');
-  $('exportRoster').onclick=()=>downloadExcel([['姓名','性别','小组'],...state.students.map(s=>[s.name,s.gender,s.group])],'点名器-学生名单.xlsx','名单');
   $('exportHistory').onclick=()=>downloadExcel([['次数','时间','抽取方式','结果','成员'],...state.history.map((h,i)=>[i+1,h.time,h.mode==='group'?'小组':'单人',h.name,h.names.join('、')])],'点名器-点名记录.xlsx','点名记录');
   $('upload').onclick=()=>$('rosterFile').click();
   $('rosterFile').onchange=async event=>{
@@ -188,7 +185,7 @@
   $('sheetSelect').onchange=()=>{try{preview(sheets[+$('sheetSelect').value].rows())}catch(e){$('rosterText').value='';$('importStatus').textContent=e.message;toast(e.message)}};
   document.addEventListener('keydown',event=>{if(event.code!=='Space'||event.repeat||event.altKey||event.ctrlKey||event.metaKey||event.target.closest('input,textarea,select,button,a,[contenteditable="true"]')||$('confirmDialog').open)return;event.preventDefault();draw()});
   MimiWorkspace.mount({read:()=>state.ui,write:save,toast,labels:{left:'学生名单',right:'点名记录'}});
-  if(state.students.length)$('rosterText').value=D.csv([['姓名','性别','小组'],...state.students.map(s=>[s.name,s.gender,s.group])]).replace(/^\uFEFF/,'');
+  if(state.students.length)$('rosterText').value=formatRoster(state.students);
   syncOptions();result(state.history.at(-1));render();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountRollCall,{once:true});
