@@ -33,7 +33,7 @@
     element.className='mimi-toast';element.hidden=true;
     element.setAttribute('role','status');element.setAttribute('aria-live','polite');
   }
-  // 公共名单工具：文本与 Excel 解析、随机抽取及 CSV 导出。
+  // 公共名单工具：文本与 Excel 解析、随机抽取及表格导出。
   const roster=(()=>{
   const clean=value=>String(value??'').trim();
   function parseText(text){
@@ -135,7 +135,30 @@
     }}));
   }
   function csv(rows){return '\uFEFF'+rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n')}
-    return Object.freeze({parseText,normalize,calledIds,candidates,randomIndex,readWorkbook,csv});
+  function xlsx(rows,sheetName='工作表'){
+    const encoder=new TextEncoder(),bytes=value=>encoder.encode(value),join=parts=>{const size=parts.reduce((n,p)=>n+p.length,0),out=new Uint8Array(size);let offset=0;for(const part of parts){out.set(part,offset);offset+=part.length}return out};
+    const escape=value=>String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+    const column=index=>{let value=index+1,name='';while(value){name=String.fromCharCode(65+(value-1)%26)+name;value=Math.floor((value-1)/26)}return name};
+    const safeSheet=(String(sheetName||'工作表').replace(/[\\/*?:\[\]]/g,' ').trim()||'工作表').slice(0,31);
+    const cells=rows.map((row,rowIndex)=>`<row r="${rowIndex+1}">${Array.from(row,(value,columnIndex)=>{const ref=column(columnIndex)+(rowIndex+1),style=rowIndex===0?' s="1"':'';return typeof value==='number'&&Number.isFinite(value)?`<c r="${ref}"${style}><v>${value}</v></c>`:`<c r="${ref}" t="inlineStr"${style}><is><t xml:space="preserve">${escape(value)}</t></is></c>`}).join('')}</row>`).join('');
+    const widths=Array.from({length:Math.max(1,...rows.map(row=>row.length))},(_,index)=>{const width=Math.min(42,Math.max(10,...rows.map(row=>String(row[index]??'').length+2)));return `<col min="${index+1}" max="${index+1}" width="${width}" customWidth="1"/>`}).join('');
+    const xml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+    const files=[
+      ['[Content_Types].xml',xml+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
+      ['_rels/.rels',xml+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+      ['xl/workbook.xml',xml+`<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${escape(safeSheet)}" sheetId="1" r:id="rId1"/></sheets></workbook>`],
+      ['xl/_rels/workbook.xml.rels',xml+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
+      ['xl/styles.xml',xml+'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="0"/><fonts count="2"><font><sz val="11"/><name val="Aptos"/></font><font><b/><sz val="11"/><name val="Aptos"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles><dxfs count="0"/><tableStyles count="0" defaultTableStyle="TableStyleMedium2" defaultPivotStyle="PivotStyleLight16"/></styleSheet>'],
+      ['xl/worksheets/sheet1.xml',xml+`<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols>${widths}</cols><sheetData>${cells}</sheetData></worksheet>`]
+    ];
+    const table=new Uint32Array(256);for(let i=0;i<256;i++){let value=i;for(let bit=0;bit<8;bit++)value=value&1?0xedb88320^(value>>>1):value>>>1;table[i]=value}
+    const crc32=data=>{let value=0xffffffff;for(const byte of data)value=table[(value^byte)&255]^(value>>>8);return (value^0xffffffff)>>>0};
+    const locals=[],centrals=[];let offset=0;
+    for(const [name,content] of files){const nameBytes=bytes(name),data=bytes(content),crc=crc32(data),local=new Uint8Array(30),lv=new DataView(local.buffer);lv.setUint32(0,0x04034b50,true);lv.setUint16(4,20,true);lv.setUint32(14,crc,true);lv.setUint32(18,data.length,true);lv.setUint32(22,data.length,true);lv.setUint16(26,nameBytes.length,true);locals.push(local,nameBytes,data);const central=new Uint8Array(46),cv=new DataView(central.buffer);cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint32(16,crc,true);cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);cv.setUint16(28,nameBytes.length,true);cv.setUint32(42,offset,true);centrals.push(central,nameBytes);offset+=local.length+nameBytes.length+data.length}
+    const directory=join(centrals),end=new Uint8Array(22),view=new DataView(end.buffer);view.setUint32(0,0x06054b50,true);view.setUint16(8,files.length,true);view.setUint16(10,files.length,true);view.setUint32(12,directory.length,true);view.setUint32(16,offset,true);
+    return new Blob([...locals,directory,end],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  }
+    return Object.freeze({parseText,normalize,calledIds,candidates,randomIndex,readWorkbook,csv,xlsx});
   })();
   global.MimiCommon=Object.freeze({text,init,toast,download,backup,roster});
 })(window);
