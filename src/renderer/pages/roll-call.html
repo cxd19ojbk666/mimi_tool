@@ -23,8 +23,31 @@ body[data-mimi-tool="roll-call"] .stage{isolation:isolate;min-height:300px;backg
 body[data-mimi-tool="roll-call"] .stage:before{content:"";position:absolute;z-index:-1;width:min(52vw,430px);aspect-ratio:1;border:3px dashed rgba(104,189,232,.45);border-radius:50%;background:radial-gradient(circle,#fff8d9 0 42%,#ffefaa 43% 58%,rgba(255,201,79,.18) 59% 68%,transparent 69%);transform:rotate(-4deg)}
 body[data-mimi-tool="roll-call"] .stage:after{content:"·  随 机 点 名  ·";position:absolute;top:38px;left:50%;color:#65808f;font-size:12px;font-weight:900;letter-spacing:.18em;transform:translateX(-50%);white-space:nowrap}
 body[data-mimi-tool="roll-call"] .result{position:relative;z-index:1;width:min(78%,680px);margin:auto;padding:70px 18px 44px}
-body[data-mimi-tool="roll-call"] .result #resultName{color:#2e5368;text-shadow:3px 4px 0 #cceaf6;letter-spacing:.1em}
+body[data-mimi-tool="roll-call"] .result #resultName{position:relative;color:#2e5368;text-shadow:3px 4px 0 #cceaf6;letter-spacing:.1em;transform-origin:center;will-change:transform,filter,opacity}
 body[data-mimi-tool="roll-call"] .result #resultMeta{color:#607987;font-size:14px;font-weight:800}
+body[data-mimi-tool="roll-call"] .draw-progress{position:absolute;z-index:2;left:50%;bottom:30px;width:min(180px,42%);height:6px;overflow:hidden;border:1.5px solid rgba(48,67,84,.28);border-radius:999px;background:rgba(255,255,255,.65);opacity:0;transform:translateX(-50%);transition:opacity .18s ease}
+body[data-mimi-tool="roll-call"] .draw-progress:before{content:"";display:block;width:100%;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--blue),var(--gold),#ff785d);transform:translateX(-105%)}
+body[data-mimi-tool="roll-call"] .drawing .draw-progress{opacity:1}
+body[data-mimi-tool="roll-call"] .drawing .draw-progress:before{animation:draw-progress 1.45s cubic-bezier(.18,.76,.2,1) forwards}
+body[data-mimi-tool="roll-call"] .drawing #resultName{animation:name-shuffle .14s ease-in-out infinite alternate;color:#39778f;filter:blur(.35px);text-shadow:2px 3px 0 rgba(104,189,232,.22)}
+body[data-mimi-tool="roll-call"] .drawing .stage:before{animation:ring-spin 1.45s cubic-bezier(.22,.65,.24,1) both;border-style:solid dashed}
+body[data-mimi-tool="roll-call"] .reveal #resultName{animation:name-reveal .72s cubic-bezier(.16,1.3,.3,1) both}
+body[data-mimi-tool="roll-call"] .reveal .stage:before{animation:ring-reveal .72s ease-out both}
+body[data-mimi-tool="roll-call"] .spark{position:absolute;z-index:3;left:50%;top:50%;width:9px;height:18px;border:1px solid rgba(48,67,84,.22);border-radius:3px;background:var(--spark-color,var(--gold));opacity:0;pointer-events:none;transform:translate(-50%,-50%) rotate(var(--spark-rotate,0deg))}
+body[data-mimi-tool="roll-call"] .spark:nth-of-type(1){--spark-x:-150px;--spark-y:-98px;--spark-rotate:-28deg;--spark-color:#ff785d}
+body[data-mimi-tool="roll-call"] .spark:nth-of-type(2){--spark-x:-190px;--spark-y:8px;--spark-rotate:62deg;--spark-color:#68bde8}
+body[data-mimi-tool="roll-call"] .spark:nth-of-type(3){--spark-x:-118px;--spark-y:105px;--spark-rotate:18deg;--spark-color:#32a889}
+body[data-mimi-tool="roll-call"] .spark:nth-of-type(4){--spark-x:146px;--spark-y:-102px;--spark-rotate:34deg;--spark-color:#ffc94f}
+body[data-mimi-tool="roll-call"] .spark:nth-of-type(5){--spark-x:190px;--spark-y:4px;--spark-rotate:-54deg;--spark-color:#32a889}
+body[data-mimi-tool="roll-call"] .spark:nth-of-type(6){--spark-x:112px;--spark-y:108px;--spark-rotate:-18deg;--spark-color:#ff785d}
+body[data-mimi-tool="roll-call"] .reveal .spark{animation:spark-pop .78s cubic-bezier(.15,.72,.2,1) both}
+body[data-mimi-tool="roll-call"] .reveal .spark:nth-of-type(even){animation-delay:.04s}
+@keyframes name-shuffle{from{transform:translateY(-4px) scale(.985);opacity:.58}to{transform:translateY(4px) scale(1.02);opacity:.92}}
+@keyframes name-reveal{0%{transform:scale(.72) rotate(-2deg);filter:blur(5px);opacity:.2}52%{transform:scale(1.14) rotate(1deg);filter:blur(0);opacity:1}76%{transform:scale(.97) rotate(-.4deg)}100%{transform:scale(1) rotate(0);filter:blur(0);opacity:1}}
+@keyframes ring-spin{0%{transform:rotate(-4deg) scale(.92);opacity:.62}75%{transform:rotate(188deg) scale(1.03);opacity:1}100%{transform:rotate(212deg) scale(.96);opacity:.72}}
+@keyframes ring-reveal{0%{transform:rotate(-4deg) scale(.88);filter:brightness(1)}45%{transform:rotate(2deg) scale(1.08);filter:brightness(1.08)}100%{transform:rotate(-4deg) scale(1);filter:brightness(1)}}
+@keyframes draw-progress{0%{transform:translateX(-105%)}70%{transform:translateX(-20%)}100%{transform:translateX(0)}}
+@keyframes spark-pop{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(var(--spark-rotate))}24%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--spark-x)),calc(-50% + var(--spark-y))) scale(.82) rotate(calc(var(--spark-rotate) + 90deg))}}
 body[data-mimi-tool="roll-call"] .draw-actions{position:relative;z-index:2;padding:0 clamp(42px,11vw,138px) 20px}
 body[data-mimi-tool="roll-call"] .draw-actions .draw{position:relative;border-radius:18px 14px 20px 15px;box-shadow:5px 6px 0 rgba(48,67,84,.24);letter-spacing:.1em}
 body[data-mimi-tool="roll-call"] .draw-actions .draw:after{content:"空格键";position:absolute;right:14px;top:50%;padding:3px 7px;border:1.5px solid currentColor;border-radius:6px;font-size:10px;letter-spacing:0;opacity:.8;transform:translateY(-50%)}
@@ -114,6 +137,15 @@ body[data-mimi-tool="roll-call"] .dialog-actions{display:flex;justify-content:fl
  body[data-mimi-tool="roll-call"] .draw-actions{padding:0 16px 16px}
  body[data-mimi-tool="roll-call"] .draw-actions .draw:after{display:none}
  body[data-mimi-tool="roll-call"] .history-list{max-height:none}
+ body[data-mimi-tool="roll-call"] .draw-progress{bottom:25px;width:38%}
+ body[data-mimi-tool="roll-call"] .spark:nth-of-type(1),body[data-mimi-tool="roll-call"] .spark:nth-of-type(3){--spark-x:-112px}
+ body[data-mimi-tool="roll-call"] .spark:nth-of-type(2){--spark-x:-136px}
+ body[data-mimi-tool="roll-call"] .spark:nth-of-type(4),body[data-mimi-tool="roll-call"] .spark:nth-of-type(6){--spark-x:112px}
+ body[data-mimi-tool="roll-call"] .spark:nth-of-type(5){--spark-x:136px}
+}
+@media(prefers-reduced-motion:reduce){
+ body[data-mimi-tool="roll-call"] .drawing .draw-progress:before,body[data-mimi-tool="roll-call"] .drawing #resultName,body[data-mimi-tool="roll-call"] .drawing .stage:before,body[data-mimi-tool="roll-call"] .reveal #resultName,body[data-mimi-tool="roll-call"] .reveal .stage:before,body[data-mimi-tool="roll-call"] .reveal .spark{animation:none!important}
+ body[data-mimi-tool="roll-call"] .drawing .draw-progress{opacity:0}
 }
 </style>
 <script defer src="../scripts/mimi-common.js?v=2"></script><script defer src="../scripts/mimi-workspace.js?v=2"></script>
@@ -130,7 +162,7 @@ body[data-mimi-tool="roll-call"] .dialog-actions{display:flex;justify-content:fl
 </div></section><p class="sr-only" id="saveStatus" role="status">已自动保存</p>
 <section class="panel center is-mobile-active" data-workspace-panel="center" data-mobile-panel-name="draw">
 <div class="panel-head"><h2>点名</h2><span class="pill" id="poolCount">待抽 0 人</span></div>
-<div class="stage"><div class="result" aria-live="polite" aria-atomic="true"><p id="resultCaption" class="sr-only">待抽取</p><div id="resultName">待抽取</div><p id="resultMeta"></p></div></div>
+<div class="stage"><i class="spark" aria-hidden="true"></i><i class="spark" aria-hidden="true"></i><i class="spark" aria-hidden="true"></i><i class="spark" aria-hidden="true"></i><i class="spark" aria-hidden="true"></i><i class="spark" aria-hidden="true"></i><div class="result" aria-live="polite" aria-atomic="true"><p id="resultCaption" class="sr-only">待抽取</p><div id="resultName">待抽取</div><p id="resultMeta"></p></div><div class="draw-progress" aria-hidden="true"></div></div>
 <div class="draw-actions"><button class="btn accent draw" id="draw" aria-describedby="drawHint" title="空格键抽取">抽取</button><p class="sr-only" id="drawHint">按空格键抽取</p></div><div class="status" id="status" role="status">请导入名单</div>
 </section>
 <aside class="panel right-panel" data-workspace-panel="right" data-mobile-panel-name="history"><div class="panel-head"><h2>记录</h2><div class="panel-head-actions"><span class="pill" id="historyCount">0 次</span><button class="panel-collapse" id="hideRight" title="隐藏记录" aria-label="隐藏记录">−</button></div></div><div class="panel-body"><div class="label"><span>本轮 <strong id="roundTotal">0</strong> 人</span><button class="text-btn" id="newRound">重置</button></div><div class="row history-actions"><button class="btn small" id="undo">撤回</button><button class="btn small" id="exportHistory">导出 Excel</button></div><div class="history-list" id="historyList"></div></div></aside>

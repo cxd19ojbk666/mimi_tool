@@ -87,7 +87,7 @@
   MimiCommon.init({action:'点名器',subject:'点名'});
   const $=id=>document.getElementById(id),D=MimiCommon.roster,toast=MimiCommon.toast,KEY='mimi-roll-call-v2';
   const defaults=()=>({students:[],history:[],options:{mode:'student',gender:'all',group:'all',noRepeat:true},ui:{}});
-  let state=defaults(),busy=false,sheets=[],pending=null,storageWarning=false;
+  let state=defaults(),busy=false,sheets=[],pending=null,storageWarning=false,revealTimer=0;
   try{
     const saved=JSON.parse(localStorage.getItem(KEY)||'null');
     if(saved){
@@ -135,6 +135,25 @@
     $('resultName').textContent=item?item.name:'待抽取';
     $('resultMeta').textContent=item?(item.mode==='group'?item.names.join('、'):item.meta):'';
   }
+  const wait=milliseconds=>new Promise(resolve=>setTimeout(resolve,milliseconds));
+  async function animateDraw(available,choice){
+    const resultBox=document.querySelector('.result'),name=$('resultName'),meta=$('resultMeta');
+    resultBox.setAttribute('aria-live','off');$('resultCaption').textContent='抽取中';meta.textContent='';
+    let previous=-1;
+    // 频率先快后慢，模拟纸签轮盘惯性；仅改变展示，不改变预先确定的结果。
+    for(let step=0;step<15;step++){
+      let index;
+      do{index=D.randomIndex(available.length)}while(available.length>1&&index===previous);
+      previous=index;name.textContent=available[index].name;
+      await wait(42+Math.round(.72*step*step));
+    }
+    name.textContent=choice.name;await wait(90);resultBox.setAttribute('aria-live','polite');
+  }
+  function reveal(){
+    const center=document.querySelector('.center');clearTimeout(revealTimer);center.classList.remove('reveal');
+    void center.offsetWidth;center.classList.add('reveal');
+    revealTimer=setTimeout(()=>center.classList.remove('reveal'),850);
+  }
   function formatRoster(students){return students.map(student=>{const fields=[student.name,student.gender,student.group];while(fields.at(-1)==='')fields.pop();return fields.join('，')}).join('\n')}
   function preview(rows){
     const parsed=D.normalize(rows);$('rosterText').value=formatRoster(parsed.students);
@@ -152,9 +171,9 @@
     if(busy)return;const available=pool();if(!available.length)return;
     const choice=available[D.randomIndex(available.length)],mode=state.options.mode;setBusy(true);
     // 抽取结果在动画前固定，动画不会改变概率。
-    if(!matchMedia('(prefers-reduced-motion:reduce)').matches){$('resultCaption').textContent='抽取中';await new Promise(resolve=>setTimeout(resolve,650))}
+    if(!matchMedia('(prefers-reduced-motion:reduce)').matches)await animateDraw(available,choice);
     const item={mode,name:choice.name,names:choice.members.map(s=>s.name),ids:choice.members.map(s=>s.id),time:new Date().toISOString(),meta:mode==='group'?'':`${choice.members[0].gender||'未填性别'} · ${choice.members[0].group||'未分组'}`};
-    state.history.push(item);result(item);setBusy(false);save();
+    state.history.push(item);result(item);setBusy(false);reveal();save();
   }
   document.querySelectorAll('[data-roster-tab]').forEach(button=>button.onclick=()=>selectRosterTab(button.dataset.rosterTab));
   $('draw').onclick=draw;$('applyRoster').onclick=apply;
