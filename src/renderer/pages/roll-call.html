@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="../styles/mimi-ui.css?v=4">
 <style>
 /* 点名页：左侧准备与筛选，中间专心抽取，右侧回看记录。 */
-body[data-mimi-tool="roll-call"]{--left-w:318px;--right-w:286px}
+body[data-mimi-tool="roll-call"]{--left-w:290px;--right-w:286px}
 body[data-mimi-tool="roll-call"],body[data-mimi-tool="roll-call"] *{scrollbar-width:none;scrollbar-gutter:auto}
 body[data-mimi-tool="roll-call"]::-webkit-scrollbar,body[data-mimi-tool="roll-call"] *::-webkit-scrollbar{display:none;width:0;height:0}
 body[data-mimi-tool="roll-call"] .brand h1{font-weight:900}
@@ -29,14 +29,43 @@ body[data-mimi-tool="roll-call"] .draw-actions{position:relative;z-index:2;paddi
 body[data-mimi-tool="roll-call"] .draw-actions .draw{position:relative;border-radius:18px 14px 20px 15px;box-shadow:5px 6px 0 rgba(48,67,84,.24);letter-spacing:.1em}
 body[data-mimi-tool="roll-call"] .draw-actions .draw:after{content:"空格键";position:absolute;right:14px;top:50%;padding:3px 7px;border:1.5px solid currentColor;border-radius:6px;font-size:10px;letter-spacing:0;opacity:.8;transform:translateY(-50%)}
 body[data-mimi-tool="roll-call"] .status{text-align:center;font-weight:800}
-body[data-mimi-tool="roll-call"] .left-panel .panel-body,body[data-mimi-tool="roll-call"] .right-panel .panel-body{background:linear-gradient(180deg,#fffdf3,#fffaf0)}
+body[data-mimi-tool="roll-call"] .right-panel .panel-body{background:linear-gradient(180deg,#fffdf3,#fffaf0)}
+body[data-mimi-tool="roll-call"] .left-panel{min-width:auto;min-height:0}
+body[data-mimi-tool="roll-call"] .left-panel .panel-head{gap:normal}
+body[data-mimi-tool="roll-call"] .left-panel .panel-head h2{color:#344e60;font-family:"YouYuan","Yuanti SC","STKaiti",sans-serif;letter-spacing:.06em}
+body[data-mimi-tool="roll-call"] .left-panel .panel-head .btn.small{min-height:34px;border-width:1.5px}
+body[data-mimi-tool="roll-call"] .roster-tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;position:sticky;top:0;z-index:10;width:100%;max-width:100%;min-height:48px;margin:0 0 22px;padding:5px;overflow:hidden;border:2px solid #9cb4c1;border-radius:15px;background:#dfeef3;box-shadow:0 5px 0 #fffdf3;isolation:isolate}
+body[data-mimi-tool="roll-call"] .roster-tab{min-width:0;min-height:39px;border:0;border-radius:10px;background:transparent;color:#6d7b84;font-weight:800}
+body[data-mimi-tool="roll-call"] .roster-tab.active{background:var(--gold);color:var(--ink);box-shadow:2px 3px 0 rgba(48,67,84,.15);font-weight:700;transform:rotate(-1deg)}
+body[data-mimi-tool="roll-call"] .roster-tab:before{content:"";display:inline-block;width:7px;height:7px;margin-right:6px;border:1px solid var(--ink);border-radius:50%;background:var(--blue);vertical-align:1px}
+body[data-mimi-tool="roll-call"] .roster-tab[data-roster-tab="filter"]:before{background:#ff785d}
+body[data-mimi-tool="roll-call"] .roster-tabpage{display:none}
+body[data-mimi-tool="roll-call"] .roster-tabpage.active{display:block}
+body[data-mimi-tool="roll-call"] .roster-tabpage>.section:first-child{margin-top:0;padding-top:0;border-top:0}
+body[data-mimi-tool="roll-call"] .roster-label{justify-content:space-between;align-items:center;gap:10px;color:#344f60;font-weight:700}
+body[data-mimi-tool="roll-call"] .roster-title{display:flex;align-items:center;gap:.25em}
+body[data-mimi-tool="roll-call"] .roster-template-btn{flex:none;border:0;background:transparent;color:#39768f;padding:2px 0;font-family:inherit;font-size:12px;font-weight:800;line-height:1.4;text-decoration:underline;text-underline-offset:3px}
+body[data-mimi-tool="roll-call"] .roster-template-btn:hover{color:#24556b}
+body[data-mimi-tool="roll-call"] .roster-template-btn:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:4px}
+body[data-mimi-tool="roll-call"] .filelabel{min-height:42px;padding:9px 12px;display:grid;place-items:center;border:2px dashed var(--blue);border-radius:13px;background:#eefaff;color:var(--green);cursor:pointer;font-size:13px;font-weight:800;text-align:center}
+body[data-mimi-tool="roll-call"] .filelabel:hover{background:#dff5ff}
+body[data-mimi-tool="roll-call"] .filelabel.is-disabled{pointer-events:none;opacity:.45}
+body[data-mimi-tool="roll-call"] #importStatus:empty{display:none}
+body[data-mimi-tool="roll-call"] .left-panel .panel-body{display:flex;flex:1 1 0%;min-height:0;flex-direction:column}
+body[data-mimi-tool="roll-call"] .roster-tabs{flex:0 0 auto}
+body[data-mimi-tool="roll-call"] #roster-tab-import.active{display:flex;flex:1 1 auto;min-height:0;flex-direction:column}
+body[data-mimi-tool="roll-call"] #roster-tab-import .label{flex:0 0 auto}
+body[data-mimi-tool="roll-call"] #rosterText{flex:1 1 auto;min-width:auto;min-height:220px;line-height:27px;background-size:100% 27px;box-shadow:inset 0 -2px 0 rgba(105,133,147,.08);resize:vertical}
+body[data-mimi-tool="roll-call"] #roster-tab-import>.hint{flex:0 0 auto;margin-top:12px;margin-bottom:14px}
+body[data-mimi-tool="roll-call"] #roster-tab-import>.row{flex:0 0 auto;margin-top:16px}
+body[data-mimi-tool="roll-call"] #roster-tab-import>.row>*{min-width:auto}
+body[data-mimi-tool="roll-call"] #roster-tab-import #applyRoster{min-height:40px}
+body[data-mimi-tool="roll-call"] #sheetControl{flex:0 0 auto;margin-top:17px}
+body[data-mimi-tool="roll-call"] #importStatus{color:#78838c}
 body[data-mimi-tool="roll-call"] .left-panel details.section>summary{padding:10px 12px;border:2px dashed #9fb4bd;border-radius:12px;background:#fff8d7;cursor:pointer;list-style:none}
 body[data-mimi-tool="roll-call"] .left-panel details.section>summary:after{content:"＋";color:#49806f}
 body[data-mimi-tool="roll-call"] .left-panel details.section[open]>summary:after{content:"−"}
 body[data-mimi-tool="roll-call"] .left-panel details.section[open]>summary{margin-bottom:12px}
-body[data-mimi-tool="roll-call"] .student-list{max-height:calc(100dvh - 600px);overflow:auto;padding-right:3px}
-body[data-mimi-tool="roll-call"] .student{border:1.5px solid #cad5d1;background:#fffefa}
-body[data-mimi-tool="roll-call"] .student.called{background:#eef0e9;text-decoration:none}
 body[data-mimi-tool="roll-call"] .right-panel .panel-body>.label{padding:14px 13px;border:2px dashed #9fc4b6;border-radius:14px;background:#e7f5ed;align-items:center}
 body[data-mimi-tool="roll-call"] .right-panel .panel-body>.label strong{font-size:24px;color:#267460}
 body[data-mimi-tool="roll-call"] .history-list{max-height:calc(100dvh - 330px);overflow:auto;padding-right:3px}
@@ -47,22 +76,58 @@ body[data-mimi-tool="roll-call"] .dialog-body{padding:20px 24px;line-height:1.8}
 body[data-mimi-tool="roll-call"] .dialog-body p{margin:0}
 body[data-mimi-tool="roll-call"] .dialog-body .hint{margin-top:7px}
 body[data-mimi-tool="roll-call"] .dialog-actions{display:flex;justify-content:flex-end;gap:10px;padding:16px 24px;border-top:2px dashed #b9c8cd;background:#fffdf6}
-@media(min-width:1101px){body[data-mimi-tool="roll-call"] .top-actions{margin-right:112px!important}body[data-mimi-tool="roll-call"] .stage{min-height:240px!important;padding:18px!important}body[data-mimi-tool="roll-call"] .result{padding:70px 20px 40px!important;overflow:visible!important}body[data-mimi-tool="roll-call"] .result #resultName{font-size:clamp(48px,5vw,78px)!important}}
-@media(min-width:761px) and (max-width:1100px){body[data-mimi-tool="roll-call"] .stage{min-height:430px}body[data-mimi-tool="roll-call"] .stage:before{width:min(56vw,420px)}}
-@media(max-width:760px){body[data-mimi-tool="roll-call"] .brand p{font-size:12px}body[data-mimi-tool="roll-call"] .filters{grid-template-columns:1fr 1fr}body[data-mimi-tool="roll-call"] .stage{min-height:330px;padding:12px 8px}body[data-mimi-tool="roll-call"] .stage:before{width:82vw;max-width:350px}body[data-mimi-tool="roll-call"] .stage:after{top:30px}body[data-mimi-tool="roll-call"] .result{width:92%;padding:66px 8px 38px}body[data-mimi-tool="roll-call"] .result #resultName{font-size:clamp(40px,15vw,60px)}body[data-mimi-tool="roll-call"] .draw-actions{padding:0 16px 16px}body[data-mimi-tool="roll-call"] .draw-actions .draw:after{display:none}body[data-mimi-tool="roll-call"] .student-list,body[data-mimi-tool="roll-call"] .history-list{max-height:none}}
+@media(min-width:1101px){
+ body[data-mimi-tool="roll-call"] .top-actions{margin-right:112px!important}
+ body[data-mimi-tool="roll-call"] .stage{min-height:240px!important;padding:18px!important}
+ body[data-mimi-tool="roll-call"] .result{padding:70px 20px 40px!important;overflow:visible!important}
+ body[data-mimi-tool="roll-call"] .result #resultName{font-size:clamp(48px,5vw,78px)!important}
+ /* 与做板贴右侧检查器一致：分类标签固定，仅当前内容面板滚动。 */
+ body[data-mimi-tool="roll-call"] .left-panel .panel-body{overflow:hidden}
+ body[data-mimi-tool="roll-call"] .roster-tabs{position:static;flex:0 0 auto;isolation:isolate;opacity:1;background-color:#dfeef3}
+ body[data-mimi-tool="roll-call"] .roster-tabpage.active{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:auto}
+}
+@media(min-width:761px) and (max-width:1100px){
+ body[data-mimi-tool="roll-call"] .workspace{grid-template-columns:300px minmax(0,1fr)}
+ body[data-mimi-tool="roll-call"] .left-panel{display:block;min-height:auto;max-height:none;flex-direction:row}
+ body[data-mimi-tool="roll-call"] .left-panel .panel-head{flex:0 1 auto;min-width:0}
+ body[data-mimi-tool="roll-call"] .left-panel .panel-body{flex:0 1 auto;min-width:0;max-height:690px}
+ body[data-mimi-tool="roll-call"] #rosterText{flex:0 0 250px;min-height:250px}
+ body[data-mimi-tool="roll-call"] .center{height:720px;min-height:620px}
+ body[data-mimi-tool="roll-call"] .stage{min-height:430px}
+ body[data-mimi-tool="roll-call"] .stage:before{width:min(56vw,420px)}
+}
+@media(max-width:760px){
+ body[data-mimi-tool="roll-call"] .brand p{font-size:12px}
+ body[data-mimi-tool="roll-call"] .left-panel{border-radius:17px 13px 18px 14px}
+ body[data-mimi-tool="roll-call"] .left-panel .panel-head{flex:0 1 auto}
+ body[data-mimi-tool="roll-call"] .left-panel .panel-head .btn.small{min-height:34px}
+ body[data-mimi-tool="roll-call"] .left-panel .panel-body{flex:0 1 auto;min-height:auto;overflow:auto}
+ body[data-mimi-tool="roll-call"] .roster-tab{min-height:42px}
+ body[data-mimi-tool="roll-call"] #rosterText{flex:0 0 210px;min-height:210px}
+ body[data-mimi-tool="roll-call"] .filelabel,body[data-mimi-tool="roll-call"] #roster-tab-import #applyRoster{min-height:44px}
+ body[data-mimi-tool="roll-call"] .filters{grid-template-columns:1fr 1fr}
+ body[data-mimi-tool="roll-call"] .stage{min-height:330px;padding:12px 8px}
+ body[data-mimi-tool="roll-call"] .stage:before{width:82vw;max-width:350px}
+ body[data-mimi-tool="roll-call"] .stage:after{top:30px}
+ body[data-mimi-tool="roll-call"] .result{width:92%;padding:66px 8px 38px}
+ body[data-mimi-tool="roll-call"] .result #resultName{font-size:clamp(40px,15vw,60px)}
+ body[data-mimi-tool="roll-call"] .draw-actions{padding:0 16px 16px}
+ body[data-mimi-tool="roll-call"] .draw-actions .draw:after{display:none}
+ body[data-mimi-tool="roll-call"] .history-list{max-height:none}
+}
 </style>
 <script defer src="../scripts/mimi-common.js?v=2"></script><script defer src="../scripts/mimi-workspace.js?v=2"></script>
 </head>
 <body data-mimi-tool="roll-call"><div class="shell">
 <header><div class="brand"><div><h1>咪咪大王点名器</h1><p>公平随机，让每个名字都被看见</p></div></div><div class="top-actions"><a class="btn" href="../index.html">首页</a></div></header>
 <main class="workspace" id="workspace" data-mobile-panel="draw">
-<aside class="panel left-panel" data-workspace-panel="left" data-mobile-panel-name="setup">
-<div class="panel-head"><h2>学生名单</h2><div class="panel-head-actions"><button class="panel-collapse" id="hideLeft" title="隐藏学生名单" aria-label="隐藏学生名单">−</button></div></div>
+<section class="panel left-panel left" id="leftPanel" data-workspace-panel="left" data-mobile-panel-name="setup">
+<div class="panel-head"><h2>学生名单</h2><div class="panel-head-actions"><button class="btn small danger" id="clearRoster" type="button" title="清空学生名单和点名记录" aria-label="清空学生名单和点名记录">清空</button><button class="panel-collapse" id="hideLeft" title="隐藏学生名单" aria-label="隐藏学生名单">−</button></div></div>
 <div class="panel-body">
-<details class="section"><summary class="label">导入</summary><div class="stack"><label class="sr-only" for="rosterText">名单</label><textarea class="field" id="rosterText" rows="4" placeholder="也可粘贴：姓名、性别、小组"></textarea><div class="row"><button class="btn" id="upload" title="优先使用 XLSX；也支持 TXT、CSV、TSV，最大 5 MB">导入 Excel</button><button class="btn primary" id="applyRoster">应用</button></div><input hidden type="file" id="rosterFile" accept=".xlsx,.txt,.csv,.tsv"><button class="text-btn" id="template">Excel 模板</button><div id="sheetControl" hidden><label class="label" for="sheetSelect">工作表</label><select class="field" id="sheetSelect"></select></div><p class="hint" id="importStatus" role="status"></p></div></details>
-<section class="section"><div class="label"><span>筛选</span></div><div class="filters"><label class="control" id="modeControl">模式<select class="field" id="mode"><option value="student">学生</option><option value="group">小组</option></select></label><label class="control" id="genderControl">性别<select class="field" id="gender"><option value="all">全部</option><option value="男">男生</option><option value="女">女生</option><option value="">未填</option></select></label><label class="control" id="groupControl">小组<select class="field" id="group"><option value="all">全部</option></select></label><label class="switchline"><input type="checkbox" id="noRepeat" checked>本轮不重复</label></div></section>
-<section class="section"><div class="label"><span>名单</span><span id="rosterCount" class="pill">0 人</span></div><label class="sr-only" for="studentSearch">搜索姓名或小组</label><input type="search" class="field" id="studentSearch" placeholder="搜索"><div class="student-list" id="studentList"></div><div class="row history-actions"><button class="btn small" id="exportRoster">导出 Excel</button><button class="btn small danger" id="clearRoster">清空</button></div><p class="sr-only" id="saveStatus" role="status">已自动保存</p></section>
-</div></aside>
+<div class="tabs roster-tabs" role="tablist" aria-label="学生名单设置"><button class="tab roster-tab active" type="button" role="tab" aria-selected="true" aria-controls="roster-tab-import" data-roster-tab="import">导入</button><button class="tab roster-tab" type="button" role="tab" aria-selected="false" aria-controls="roster-tab-filter" data-roster-tab="filter">筛选</button></div>
+<div class="roster-tabpage active" id="roster-tab-import" role="tabpanel"><div class="label roster-label"><span class="roster-title">输入名单<span id="rosterCount">（0 人）</span></span><button class="roster-template-btn" id="template" type="button">Excel模板</button></div><textarea class="field" id="rosterText" placeholder="张三，男&#10;李四，男&#10;&#10;姓名和性别用中英文逗号分隔。"></textarea><div class="row"><label class="filelabel" id="upload" for="rosterFile">导入 Excel</label><input hidden type="file" id="rosterFile" accept=".xlsx,.txt,.csv,.tsv"><button class="btn primary" id="applyRoster">使用名单</button></div><div id="sheetControl" hidden><label class="label" for="sheetSelect">工作表</label><select class="field" id="sheetSelect"></select></div><div class="hint" id="importStatus" role="status"></div></div>
+<div class="roster-tabpage" id="roster-tab-filter" role="tabpanel" hidden><section class="section"><div class="label"><span>点名筛选</span></div><div class="filters"><label class="control" id="modeControl">模式<select class="field" id="mode"><option value="student">学生</option><option value="group">小组</option></select></label><label class="control" id="genderControl">性别<select class="field" id="gender"><option value="all">全部</option><option value="男">男生</option><option value="女">女生</option><option value="">未填</option></select></label><label class="control" id="groupControl">小组<select class="field" id="group"><option value="all">全部</option></select></label><label class="switchline"><input type="checkbox" id="noRepeat" checked>本轮不重复</label></div></section></div>
+</div></section><p class="sr-only" id="saveStatus" role="status">已自动保存</p>
 <section class="panel center is-mobile-active" data-workspace-panel="center" data-mobile-panel-name="draw">
 <div class="panel-head"><h2>点名</h2><span class="pill" id="poolCount">待抽 0 人</span></div>
 <div class="stage"><div class="result" aria-live="polite" aria-atomic="true"><p id="resultCaption" class="sr-only">待抽取</p><div id="resultName">待抽取</div><p id="resultMeta"></p></div></div>

@@ -119,7 +119,7 @@
     $('drawHint').textContent=grouped?'整组抽取；性别筛选仅限单人模式':'按空格键抽取';
     $('status').textContent=!state.students.length?'请导入名单':!available.length?'暂无可抽对象':grouped?(state.options.noRepeat?'本轮不重复':'允许重复'):`${available.length} 人可抽 · ${state.options.noRepeat?'本轮不重复':'允许重复'}`;
   }
-  function render(){renderRoundTotal();renderHistory();renderPool();$('clearRoster').disabled=busy||!state.students.length;$('newRound').disabled=busy||!state.history.length}
+  function render(){renderRoundTotal();renderHistory();renderPool();$('rosterCount').textContent=`（${state.students.length} 人）`;$('clearRoster').disabled=busy;$('newRound').disabled=busy||!state.history.length}
   function syncOptions(){
     const hasGender=state.students.some(s=>s.gender),hasGroup=state.students.some(s=>s.group);
     $('genderControl').hidden=!hasGender;$('groupControl').hidden=!hasGroup;$('modeControl').hidden=!hasGroup;
@@ -147,7 +147,7 @@
     };
     if(state.students.length)ask('替换名单？','现有名单和记录将被清空。',action);else action();
   }
-  function setBusy(value){busy=value;['mode','group','noRepeat','upload','applyRoster','rosterText','sheetSelect','template'].forEach(id=>$(id).disabled=value);render();document.querySelector('.center').classList.toggle('drawing',value)}
+  function setBusy(value){busy=value;['mode','group','noRepeat','rosterFile','applyRoster','rosterText','sheetSelect','template'].forEach(id=>$(id).disabled=value);$('upload').classList.toggle('is-disabled',value);$('upload').setAttribute('aria-disabled',String(value));render();document.querySelector('.center').classList.toggle('drawing',value)}
   async function draw(){
     if(busy)return;const available=pool();if(!available.length)return;
     const choice=available[D.randomIndex(available.length)],mode=state.options.mode;setBusy(true);
@@ -164,7 +164,6 @@
   $('clearRoster').onclick=()=>ask('清空名单？','名单和记录将被清空，且无法撤销。',()=>{state.students=[];state.history=[];sheets=[];$('sheetControl').hidden=true;$('rosterText').value='';$('importStatus').textContent='';syncOptions();result(null);render();save()},'清空后无法撤销，请确认不再需要当前内容。');
   $('template').onclick=()=>downloadExcel([['姓名','性别','小组'],['张小雨','女','第一组'],['王一鸣','男','第二组']],'点名器-名单模板.xlsx','名单');
   $('exportHistory').onclick=()=>downloadExcel([['次数','时间','抽取方式','结果','成员'],...state.history.map((h,i)=>[i+1,h.time,h.mode==='group'?'小组':'单人',h.name,h.names.join('、')])],'点名器-点名记录.xlsx','点名记录');
-  $('upload').onclick=()=>$('rosterFile').click();
   $('rosterFile').onchange=async event=>{
     const file=event.target.files[0];if(!file)return;setBusy(true);
     try{

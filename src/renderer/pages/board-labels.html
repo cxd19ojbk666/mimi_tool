@@ -57,26 +57,26 @@ textarea.field{min-height:96px;max-height:280px}.type-toggles .check{min-height:
 .right .panel-body{padding:0;scrollbar-gutter:auto}
 #editSection{padding:0}#editor{padding:0 16px 16px}
 .inspector-tabs{position:sticky;top:0;z-index:3;width:100%;max-width:100%;margin:16px 0;overflow:hidden}
-.inspector-tab{flex:1 1 0;min-width:0;min-height:38px;padding:7px 4px;text-align:center}
+.inspector-tab{flex:1 1 0;min-width:0;min-height:38px;padding:7px 4px;text-align:center;font-size:var(--mimi-label-size);line-height:1.5}
 .inspector-tab:nth-child(1):before{background:var(--green)}
 .inspector-tab:nth-child(2):before{background:var(--blue)}
 .inspector-tab:nth-child(3):before{background:var(--orange)}
 #editor .editor-group{border:0;margin:0;padding:0}
-#editor .group-title{font-size:12px;margin:0 0 12px}
+#editor .group-title{font-size:var(--mimi-label-size);line-height:1.5;margin:0 0 12px}
 #editor .stack{gap:14px}
 #editor .field{border:1px solid #a8b9bc;border-radius:8px;min-height:38px;padding:7px 10px;background-color:#fff;box-shadow:none}
 #editor textarea.field{height:112px;min-height:88px;padding:9px 11px;line-height:25px;background-size:100% 25px}
 #editor .control>.field{margin-top:6px}
 #editor .type-toggles .check{border-radius:7px;min-height:34px;padding:4px;border-width:1px}
 .inspector-card{display:grid;gap:12px}
-.inspector-card h4{margin:0;font-size:12px;color:#4b655a}
+.inspector-card h4{margin:0;font-size:var(--mimi-label-size);line-height:1.5;color:#344f60;font-weight:900}
 #editor .editor-colors{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 #editor .editor-colors label{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:8px;background:#fff;border:1px solid #dce4dc;border-radius:8px}
 #editor .editor-colors input{width:36px;height:30px;min-height:30px;margin:0;padding:3px}
 #editor .spacing-pair .range-control{row-gap:0;column-gap:5px}
 #editor .spacing-pair .range-control output{min-width:40px;text-align:left}
 #editor .color-presets{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
-#editor .color-preset{min-height:38px;padding:6px 9px;border-radius:8px;box-shadow:none;font-size:11px}
+#editor .color-preset{min-height:38px;padding:6px 9px;border-radius:8px;box-shadow:none;font-size:var(--mimi-label-size)}
 .effect-card{display:grid;gap:12px}
 .effect-card>.check{justify-content:space-between;flex-direction:row-reverse;padding:0;font-weight:800;color:#405e50;min-height:32px;background:transparent}
 .effect-card>.check input{width:16px;height:16px;accent-color:#34735c}
@@ -85,11 +85,11 @@ textarea.field{min-height:96px;max-height:280px}.type-toggles .check{min-height:
 #editor .outline-presets{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-height:none;overflow:visible;padding:2px}
 #editor .outline-preset{padding:5px!important;gap:5px;border-radius:8px;box-shadow:none;border:1px solid #b9c8c6}
 #editor .outline-preset canvas{width:100%;height:auto;max-height:none;border-radius:4px}
-#editor .outline-preset small{font-size:10px}
+#editor .outline-preset small{font-size:var(--mimi-hint-size);line-height:1.5}
 #editor .outline-preset.active{background:#e2f4e8;border-color:#34735c;outline:1px solid #34735c}
-.frame-current{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#698075;margin-bottom:12px}
+.frame-current{display:flex;align-items:center;justify-content:space-between;font-size:var(--mimi-hint-size);line-height:1.5;color:#698075;margin-bottom:12px}
 .frame-current strong{color:#34735c;font-weight:600}
-.inspector-note{font-size:11px;color:#7a8783;margin:0;line-height:1.7}
+.inspector-note{font-size:var(--mimi-hint-size);color:#7a8783;margin:0;line-height:1.7}
 #editor .editor-actions{position:sticky;bottom:-16px;margin:16px -16px -16px;padding:12px 16px;background:#fffdf7;border-top:1px solid #dce4dc;z-index:2}
 #editor .editor-actions .btn{box-shadow:none;border:1px solid #a9bdb1;border-radius:8px;min-height:34px}
 .toolbar>.tabs{flex:0 0 auto;margin-bottom:0}
