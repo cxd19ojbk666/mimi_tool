@@ -12,7 +12,12 @@
   };
   const state={mode:'match',files:{A:null,B:null},result:null,charts:[],ui:loadUi()};
 
-  function loadUi(){try{return JSON.parse(localStorage.getItem('mimi-table-ui')||'{}')||{}}catch{return {}}}
+  function loadUi(){
+    try{
+      const ui=JSON.parse(localStorage.getItem('mimi-table-ui')||'{}')||{};
+      delete ui.rightHidden;delete ui.rightWidth;return ui;
+    }catch{return {}}
+  }
   function saveUi(){try{localStorage.setItem('mimi-table-ui',JSON.stringify(state.ui))}catch{}}
   function cleanText(value){return String(value??'').replace(/[\u200B-\u200D\uFEFF]/g,'').trim()}
   function normalizeKey(value,loose=true){let text=cleanText(value).normalize('NFKC');if(loose)text=text.replace(/\s+/g,'').toLocaleLowerCase('zh-CN');return text}
@@ -87,7 +92,7 @@
     sheet.replaceChildren(...file.sheets.map((item,index)=>option(index,item.name)));wrap.hidden=file.sheets.length<2;
   }
   function renderSource(table,label){
-    state.result=null;$('exportResult').disabled=true;$('report').hidden=true;$('reportEmpty').hidden=false;$('resultCount').textContent=`${table.rows.length} 行`;
+    state.result=null;$('exportResult').disabled=true;
     renderTable(table.headers,table.rows);$('centerStatus').textContent=`${label}：${table.rows.length} 行，${table.headers.length} 列。请选择任务设置后开始处理。`;
   }
   async function handleFile(slot,event){
@@ -116,53 +121,43 @@
     return {a,b};
   }
   function indexRows(table,keyIndex,loose=true){
-    const map=new Map(),blank=[];
-    table.rows.forEach((row,rowIndex)=>{const key=normalizeKey(row[keyIndex],loose);if(!key){blank.push(rowIndex);return}if(!map.has(key))map.set(key,[]);map.get(key).push({row,rowIndex})});
-    return {map,blank,duplicates:[...map].filter(([,items])=>items.length>1)};
+    const map=new Map();
+    table.rows.forEach(row=>{const key=normalizeKey(row[keyIndex],loose);if(!key)return;if(!map.has(key))map.set(key,[]);map.get(key).push({row})});
+    return {map};
   }
   function safeHeader(existing,name,prefix='补充表'){
     let result=name;if(existing.includes(result))result=`${prefix}·${name}`;let n=2,base=result;while(existing.includes(result))result=`${base}_${n++}`;existing.push(result);return result;
   }
   function runMatch(){
-    const {a,b}=requireTables(true),keyA=+$('matchKeyA').value,keyB=+$('matchKeyB').value,loose=$('fuzzyMatch').checked,index=indexRows(b,keyB,loose),primary=indexRows(a,keyA,loose);
+    const {a,b}=requireTables(true),keyA=+$('matchKeyA').value,keyB=+$('matchKeyB').value,loose=$('fuzzyMatch').checked,index=indexRows(b,keyB,loose);
     const selected=$('appendColumn').value==='*'?b.headers.map((_,i)=>i).filter(i=>i!==keyB):[+$('appendColumn').value];
     const headers=[...a.headers];selected.forEach(i=>safeHeader(headers,b.headers[i]));headers.push('匹配状态');
-    let matched=0,missing=0,ambiguous=0;
     const rows=a.rows.map(row=>{const key=normalizeKey(row[keyA],loose),matches=key?index.map.get(key)||[]:[];let status,values;
-      if(!key){status='主表匹配值为空';values=selected.map(()=> '');missing++}
-      else if(!matches.length){status='未匹配';values=selected.map(()=> '');missing++}
-      else if(matches.length>1){status='补充表存在重复';values=selected.map(()=> '');ambiguous++}
-      else{status='已匹配';values=selected.map(i=>matches[0].row[i]);matched++}
+      if(!key){status='主表匹配值为空';values=selected.map(()=> '')}
+      else if(!matches.length){status='未匹配';values=selected.map(()=> '')}
+      else if(matches.length>1){status='补充表存在重复';values=selected.map(()=> '')}
+      else{status='已匹配';values=selected.map(i=>matches[0].row[i])}
       return [...row,...values,status];
     });
-    const issues=[];
-    if(index.duplicates.length)issues.push({type:'bad',text:`补充表有 ${index.duplicates.length} 个重复匹配值，相关记录没有自动填入。`});
-    if(primary.duplicates.length)issues.push({type:'warn',text:`主表有 ${primary.duplicates.length} 个重复匹配值，已逐行保留。`});
-    if(index.blank.length)issues.push({type:'warn',text:`补充表有 ${index.blank.length} 行匹配值为空。`});
-    if(!issues.length)issues.push({type:'good',text:'匹配列没有发现重复或空值。'});
-    return {headers,rows,metrics:[['已匹配',matched],['未匹配',missing],['重复冲突',ambiguous],['主表总行数',a.rows.length]],issues,fileName:'智能匹配结果.xlsx'};
+    return {headers,rows,fileName:'智能匹配结果.xlsx'};
   }
   function rowSummary(headers,row){return headers.map((header,index)=>`${header}：${displayValue(row[index])}`).join('；')}
   function runCompare(){
     const {a,b}=requireTables(true),keyA=+$('compareKeyA').value,keyB=+$('compareKeyB').value,aIndex=indexRows(a,keyA),bIndex=indexRows(b,keyB),keys=new Set([...aIndex.map.keys(),...bIndex.map.keys()]);
     const common=a.headers.map((header,index)=>({header,a:index,b:b.headers.indexOf(header)})).filter(item=>item.a!==keyA&&item.b>=0&&item.b!==keyB);
-    const headers=['对比值','状态','变化字段','主表记录','补充表记录'];let same=0,changed=0,removed=0,added=0,conflicts=0;
+    const headers=['对比值','状态','变化字段','主表记录','补充表记录'];
     const rows=[];
     keys.forEach(key=>{const aa=aIndex.map.get(key)||[],bb=bIndex.map.get(key)||[];let status,changes=[];
-      if(aa.length>1||bb.length>1){status='重复值待检查';conflicts++}
-      else if(!bb.length){status='补充表缺少';removed++}
-      else if(!aa.length){status='补充表新增';added++}
+      if(aa.length>1||bb.length>1)status='重复值待检查';
+      else if(!bb.length)status='补充表缺少';
+      else if(!aa.length)status='补充表新增';
       else{
         if($('compareChanges').checked)changes=common.filter(item=>normalizeKey(aa[0].row[item.a],false)!==normalizeKey(bb[0].row[item.b],false)).map(item=>item.header);
-        if(changes.length){status='内容变化';changed++}else{status='两表一致';same++}
+        status=changes.length?'内容变化':'两表一致';
       }
       rows.push([displayValue(aa[0]?.row[keyA]??bb[0]?.row[keyB]??key),status,changes.join('、'),aa[0]?rowSummary(a.headers,aa[0].row):'',bb[0]?rowSummary(b.headers,bb[0].row):'']);
     });
-    const issues=[];
-    if(conflicts)issues.push({type:'bad',text:`有 ${conflicts} 个对比值在至少一张表中重复，无法判断对应关系。`});
-    if(aIndex.blank.length||bIndex.blank.length)issues.push({type:'warn',text:`两张表共有 ${aIndex.blank.length+bIndex.blank.length} 行对比值为空，未参与对比。`});
-    if(!issues.length)issues.push({type:'good',text:'对比列没有发现重复值或空值。'});
-    return {headers,rows,metrics:[['两表一致',same],['内容变化',changed],['补充表新增',added],['补充表缺少',removed]],issues,fileName:'名单对比结果.xlsx'};
+    return {headers,rows,fileName:'名单对比结果.xlsx'};
   }
   function normalizeCell(value,spaces,punctuation){
     if(typeof value!=='string')return value;
@@ -172,14 +167,12 @@
   }
   function runClean(){
     const {a}=requireTables(false),settings={spaces:$('cleanSpaces').checked,blankRows:$('cleanBlankRows').checked,blankCols:$('cleanBlankCols').checked,duplicates:$('cleanDuplicates').checked,punctuation:$('cleanPunctuation').checked};
-    let rows=a.rows.map(row=>row.slice()),headers=a.headers.slice(),changedCells=0,blankRows=0,blankCols=0,duplicates=0;
-    if(settings.spaces||settings.punctuation)rows=rows.map(row=>row.map(value=>{const next=normalizeCell(value,settings.spaces,settings.punctuation);if(next!==value)changedCells++;return next}));
-    if(settings.blankRows){const before=rows.length;rows=rows.filter(row=>row.some(value=>!isBlank(value)));blankRows=before-rows.length}
-    if(settings.duplicates){const keyValue=$('dedupeKey').value,keyIndex=keyValue==='*'?-1:+keyValue,seen=new Set();rows=rows.filter(row=>{const key=keyIndex<0?row.map(value=>normalizeKey(value)).join('\u001f'):normalizeKey(row[keyIndex]);if(keyIndex>=0&&!key)return true;if(seen.has(key)){duplicates++;return false}seen.add(key);return true})}
-    if(settings.blankCols){const keep=headers.map((_,index)=>rows.some(row=>!isBlank(row[index])));blankCols=keep.filter(value=>!value).length;headers=headers.filter((_,index)=>keep[index]);rows=rows.map(row=>row.filter((_,index)=>keep[index]))}
-    const issues=[];if(!changedCells&&!blankRows&&!blankCols&&!duplicates)issues.push({type:'good',text:'没有发现符合当前规则的脏数据。'});else issues.push({type:'good',text:'原表没有被覆盖，可以先检查结果再导出。'});
-    if(settings.duplicates&&$('dedupeKey').value!=='*')issues.push({type:'warn',text:'重复记录按所选列判断，并保留第一次出现的记录。'});
-    return {headers,rows,metrics:[['整理后行数',rows.length],['修正单元格',changedCells],['删除空行',blankRows],['删除重复',duplicates]],issues:[...issues,...(blankCols?[{type:'warn',text:`已删除 ${blankCols} 个整列为空的列。`}]:[])],fileName:'整理后的表格.xlsx'};
+    let rows=a.rows.map(row=>row.slice()),headers=a.headers.slice();
+    if(settings.spaces||settings.punctuation)rows=rows.map(row=>row.map(value=>normalizeCell(value,settings.spaces,settings.punctuation)));
+    if(settings.blankRows)rows=rows.filter(row=>row.some(value=>!isBlank(value)));
+    if(settings.duplicates){const keyValue=$('dedupeKey').value,keyIndex=keyValue==='*'?-1:+keyValue,seen=new Set();rows=rows.filter(row=>{const key=keyIndex<0?row.map(value=>normalizeKey(value)).join('\u001f'):normalizeKey(row[keyIndex]);if(keyIndex>=0&&!key)return true;if(seen.has(key))return false;seen.add(key);return true})}
+    if(settings.blankCols){const keep=headers.map((_,index)=>rows.some(row=>!isBlank(row[index])));headers=headers.filter((_,index)=>keep[index]);rows=rows.map(row=>row.filter((_,index)=>keep[index]))}
+    return {headers,rows,fileName:'整理后的表格.xlsx'};
   }
   function numeric(value){
     if(typeof value==='number')return Number.isFinite(value)?value:null;
@@ -198,23 +191,17 @@
   function runGrade(){
     const {a}=requireTables(false),nameIndex=+$('studentColumn').value,columns=scoreColumns(a,nameIndex),pass=Number($('passLine').value),excellent=Number($('excellentLine').value);
     if(!columns.length)throw Error('没有识别到成绩列，请手动选择一列');if(!Number.isFinite(pass)||!Number.isFinite(excellent)||excellent<pass)throw Error('优秀线应大于或等于及格线');
-    let invalid=0;const students=a.rows.map((row,rowIndex)=>{const values=columns.map(index=>numeric(row[index]));invalid+=values.filter((value,index)=>value===null&&!isBlank(row[columns[index]])).length;const valid=values.filter(value=>value!==null),total=valid.reduce((sum,value)=>sum+value,0),average=valid.length?total/valid.length:null;return {row,rowIndex,name:cleanText(row[nameIndex])||`第${rowIndex+2}行`,values,total,average}});
+    const students=a.rows.map((row,rowIndex)=>{const values=columns.map(index=>numeric(row[index])),valid=values.filter(value=>value!==null),total=valid.reduce((sum,value)=>sum+value,0),average=valid.length?total/valid.length:null;return {row,name:cleanText(row[nameIndex])||`第${rowIndex+2}行`,values,total,average}});
     const ranked=students.filter(item=>item.average!==null).sort((x,y)=>y.average-x.average);let last=null,rank=0;ranked.forEach((item,index)=>{if(item.average!==last)rank=index+1;item.rank=rank;last=item.average});
     const headers=[...a.headers,...(columns.length>1?['总分']:[]),'平均分','名次'];
     const rows=students.map(item=>[...item.row,...(columns.length>1?[item.average===null?'':round(item.total,2)]:[]),item.average===null?'':round(item.average,2),item.rank||'']);
     const summaries=columns.map((column,index)=>{const values=students.map(item=>item.values[index]).filter(value=>value!==null);return {name:a.headers[column],average:values.length?values.reduce((sum,value)=>sum+value,0)/values.length:0,max:values.length?Math.max(...values):0,min:values.length?Math.min(...values):0,pass:values.filter(value=>value>=pass).length,excellent:values.filter(value=>value>=excellent).length,count:values.length}});
-    const averages=students.map(item=>item.average).filter(value=>value!==null),passed=averages.filter(value=>value>=pass).length,excellentCount=averages.filter(value=>value>=excellent).length;
-    const issues=[];if(invalid)issues.push({type:'bad',text:`发现 ${invalid} 个非空但无法识别为数字的成绩单元格，计算时已跳过。`});if(students.some(item=>item.average===null))issues.push({type:'warn',text:'部分学生没有有效成绩，因此没有参与排名。'});if(!issues.length)issues.push({type:'good',text:'成绩列均可正常计算。'});
-    return {headers,rows,metrics:[['参与统计',averages.length],['班级平均',averages.length?round(averages.reduce((sum,value)=>sum+value,0)/averages.length):'—'],['及格人数',passed],['优秀人数',excellentCount]],issues,fileName:'成绩分析结果.xlsx',chartData:{students:ranked,summaries,pass,excellent}};
+    return {headers,rows,fileName:'成绩分析结果.xlsx',chartData:{students:ranked,summaries,pass,excellent}};
   }
   function renderTable(headers,rows){
     $('tableEmpty').hidden=true;$('dataTable').hidden=false;const table=$('dataTable'),head=table.tHead,body=table.tBodies[0];head.replaceChildren();body.replaceChildren();
     const tr=document.createElement('tr');headers.forEach(header=>{const th=document.createElement('th');th.textContent=header;th.title=header;tr.append(th)});head.append(tr);
     rows.slice(0,500).forEach(row=>{const line=document.createElement('tr');headers.forEach((_,index)=>{const td=document.createElement('td'),value=displayValue(row[index]);td.textContent=value;td.title=value;line.append(td)});body.append(line)});
-  }
-  function renderReport(result){
-    $('reportEmpty').hidden=true;$('report').hidden=false;$('metrics').replaceChildren(...result.metrics.map(([label,value])=>{const div=document.createElement('div');div.className='metric';const strong=document.createElement('strong'),span=document.createElement('span');strong.textContent=value;span.textContent=label;div.append(strong,span);return div}));
-    $('issues').replaceChildren(...result.issues.map(issue=>{const div=document.createElement('div');div.className=`issue ${issue.type==='bad'?'bad':issue.type==='good'?'good':''}`;div.textContent=issue.text;return div}));
   }
   function chart(el,option){const instance=echarts.getInstanceByDom(el)||echarts.init(el,null,{renderer:'canvas'});instance.setOption(option,true);return instance}
   function renderCharts(data){
@@ -229,13 +216,13 @@
   function run(){
     try{
       const result=state.mode==='match'?runMatch():state.mode==='compare'?runCompare():state.mode==='clean'?runClean():runGrade();state.result=result;
-      renderTable(result.headers,result.rows);renderReport(result);$('resultCount').textContent=`${result.rows.length} 行`;$('exportResult').disabled=false;
+      renderTable(result.headers,result.rows);$('exportResult').disabled=false;
       $('centerStatus').textContent=`处理完成：共 ${result.rows.length} 行，${result.headers.length} 列${result.rows.length>500?'；预览显示前 500 行':''}。`;
       if(result.chartData){$('chartTab').hidden=false;showView('chart');renderCharts(result.chartData)}else{$('chartTab').hidden=true;showView('table')}
-      toast('处理完成，请检查预览和处理报告');if(matchMedia('(max-width:760px)').matches)workspaceController.setMobilePanel('preview');
+      toast('处理完成，请检查预览');if(matchMedia('(max-width:760px)').matches)workspaceController.setMobilePanel('preview');
     }catch(error){toast(error.message)}
   }
-  function resetResult(){state.result=null;state.charts.forEach(item=>item.dispose());state.charts=[];$('dataTable').hidden=true;$('dataTable').tHead.replaceChildren();$('dataTable').tBodies[0].replaceChildren();$('tableEmpty').hidden=false;$('report').hidden=true;$('reportEmpty').hidden=false;$('resultCount').textContent='0 行';$('exportResult').disabled=true;$('chartTab').hidden=true;showView('table');$('centerStatus').textContent='等待导入表格'}
+  function resetResult(){state.result=null;state.charts.forEach(item=>item.dispose());state.charts=[];$('dataTable').hidden=true;$('dataTable').tHead.replaceChildren();$('dataTable').tBodies[0].replaceChildren();$('tableEmpty').hidden=false;$('exportResult').disabled=true;$('chartTab').hidden=true;showView('table');$('centerStatus').textContent='等待导入表格'}
   function clearAll(){state.files={A:null,B:null};renderFile('A');renderFile('B');resetResult();toast('已清空，原始文件没有被修改')}
   function setSynthetic(slot,name,headers,rows){state.files[slot]={name,sheets:[{name:'数据',rows:[headers,...rows]}]};renderFile(slot)}
   function loadSample(){
@@ -256,6 +243,6 @@
   $('fileA').onchange=event=>handleFile('A',event);$('fileB').onchange=event=>handleFile('B',event);
   $('sheetA').onchange=()=>{syncColumnControls();renderSource(currentTable('A'),'主表预览')};$('sheetB').onchange=()=>{syncColumnControls();renderSource(currentTable('B'),'补充表预览')};
   $('runTask').onclick=run;$('loadSample').onclick=loadSample;$('clearAll').onclick=clearAll;$('exportResult').onclick=exportResult;$('tableTab').onclick=()=>showView('table');$('chartTab').onclick=()=>showView('chart');
-  const workspaceController=MimiWorkspace.mount({read:()=>state.ui,write:saveUi,toast,labels:{left:'任务设置栏',right:'处理报告栏'},onMobilePanel:panel=>{if(panel==='preview')state.charts.forEach(item=>item.resize())}});
+  const workspaceController=MimiWorkspace.mount({read:()=>state.ui,write:saveUi,toast,labels:{left:'任务设置栏'},onMobilePanel:panel=>{if(panel==='preview')state.charts.forEach(item=>item.resize())}});
   addEventListener('resize',()=>state.charts.forEach(item=>item.resize()));setMode('match');
 })();

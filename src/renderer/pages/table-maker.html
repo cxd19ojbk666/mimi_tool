@@ -20,7 +20,7 @@
         <button class="tab task-button" type="button" data-mode="grade" role="tab" aria-selected="false" title="统计成绩并生成图表">成绩分析</button>
       </div>
 
-      <section class="task-source stack">
+      <section class="section task-source stack">
         <div class="file-card" id="fileCardA"><strong id="fileNameA">主表</strong><small id="fileMetaA">支持 .xlsx、.csv、.tsv</small><label class="btn upload" for="fileA">选择主表</label><input id="fileA" type="file" accept=".xlsx,.csv,.tsv,.txt" hidden></div>
         <label class="control" id="sheetWrapA" hidden>主表工作表<select class="field" id="sheetA"></select></label>
         <div class="file-card" id="fileCardB"><strong id="fileNameB">补充表</strong><small id="fileMetaB">智能匹配和名单对比时需要</small><label class="btn upload" for="fileB">选择补充表</label><input id="fileB" type="file" accept=".xlsx,.csv,.tsv,.txt" hidden></div>
@@ -32,12 +32,12 @@
           <label class="control">主表匹配列<select class="field" id="matchKeyA"></select></label>
           <label class="control">补充表匹配列<select class="field" id="matchKeyB"></select></label>
           <label class="control">要补充的列<select class="field" id="appendColumn"><option value="*">全部非匹配列</option></select></label>
-          <label class="check-list"><span><input type="checkbox" id="fuzzyMatch" checked>忽略空格、大小写和全角字符差异</span></label>
+          <div class="check-list"><label><input type="checkbox" id="fuzzyMatch" checked>忽略空格、大小写和全角字符差异</label></div>
         </div>
         <div class="stack" data-controls="compare" hidden>
           <label class="control">主表姓名或编号列<select class="field" id="compareKeyA"></select></label>
           <label class="control">补充表姓名或编号列<select class="field" id="compareKeyB"></select></label>
-          <label class="check-list"><span><input type="checkbox" id="compareChanges" checked>同时检查相同列中的内容变化</span></label>
+          <div class="check-list"><label><input type="checkbox" id="compareChanges" checked>同时检查相同列中的内容变化</label></div>
         </div>
         <div class="stack" data-controls="clean" hidden>
           <label class="control">重复判断列<select class="field" id="dedupeKey"><option value="*">整行完全相同</option></select></label>
@@ -66,16 +66,11 @@
     <div class="center-status" id="centerStatus">等待导入表格</div>
   </section>
 
-  <aside class="panel right-panel right" id="rightPanel" data-workspace-panel="right" data-mobile-panel-name="report">
-    <div class="panel-head"><h2>处理报告</h2><div class="panel-head-actions"><span class="pill" id="resultCount">0 行</span><button class="panel-collapse" id="hideRight" title="隐藏处理报告" aria-label="隐藏处理报告">−</button></div></div>
-    <div class="panel-body"><div class="report-empty" id="reportEmpty">处理完成后，这里会说明<br>改了什么、哪些数据需要检查。</div><div id="report" hidden><section class="section"><div class="metric-grid" id="metrics"></div></section><section class="section"><div class="label">需要留意</div><div class="issue-list" id="issues"></div></section></div></div>
-  </aside>
-
-  <div class="panel-resizer left" id="leftResizer" role="separator" aria-label="调整任务设置栏宽度" aria-orientation="vertical" tabindex="0"></div><div class="panel-resizer right" id="rightResizer" role="separator" aria-label="调整处理报告栏宽度" aria-orientation="vertical" tabindex="0"></div>
+  <div class="panel-resizer left" id="leftResizer" role="separator" aria-label="调整任务设置栏宽度" aria-orientation="vertical" tabindex="0"></div>
 </main>
-<button class="side-reveal left" id="showLeft" aria-hidden="true">任务设置</button><button class="side-reveal right" id="showRight" aria-hidden="true">处理报告</button>
+<button class="side-reveal left" id="showLeft" aria-hidden="true">任务设置</button>
 </div>
-<nav class="mobile-nav" aria-label="手机端功能导航"><button class="active" type="button" data-mobile-panel="setup" aria-current="page">任务</button><button type="button" data-mobile-panel="preview">预览</button><button type="button" data-mobile-panel="report">报告</button></nav>
+<nav class="mobile-nav" aria-label="手机端功能导航"><button class="active" type="button" data-mobile-panel="setup" aria-current="page">任务</button><button type="button" data-mobile-panel="preview">预览</button></nav>
 <div id="toast" hidden></div>
 <script src="../../../node_modules/echarts/dist/echarts.min.js"></script>
 <script src="../scripts/mimi-common.js"></script><script src="../scripts/mimi-workspace.js"></script><script src="../scripts/mimi-table.js"></script>
