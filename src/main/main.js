@@ -5,7 +5,8 @@ const pages = {
   launcher: path.join('..', 'renderer', 'index.html'),
   seats: path.join('..', 'renderer', 'pages', 'seating-chart.html'),
   boards: path.join('..', 'renderer', 'pages', 'board-labels.html'),
-  rollcall: path.join('..', 'renderer', 'pages', 'roll-call.html')
+  rollcall: path.join('..', 'renderer', 'pages', 'roll-call.html'),
+  tables: path.join('..', 'renderer', 'pages', 'table-maker.html')
 };
 
 let mainWindow;
@@ -40,6 +41,7 @@ function buildMenu() {
         { label: '咪咪大王排座位', accelerator: 'CmdOrCtrl+1', click: () => openPage('seats') },
         { label: '咪咪大王做板贴', accelerator: 'CmdOrCtrl+2', click: () => openPage('boards') },
         { label: '咪咪大王点名器', accelerator: 'CmdOrCtrl+3', click: () => openPage('rollcall') },
+        { label: '咪咪大王做表格', accelerator: 'CmdOrCtrl+4', click: () => openPage('tables') },
         ...(process.platform === 'darwin' ? [] : [{ type: 'separator' }, { role: 'quit' }])
       ]
     },

@@ -1,7 +1,7 @@
 {
   "name": "mimi-toolbox",
   "version": "1.0.0",
-  "description": "咪咪大王工具箱：排座位与做板贴",
+  "description": "咪咪大王工具箱：班主任常用桌面工具",
   "main": "src/main/main.js",
   "author": "咪的汪",
   "license": "UNLICENSED",
@@ -29,6 +29,7 @@
       "src/renderer/pages/*.html",
       "src/renderer/styles/*.css",
       "src/renderer/scripts/*.js",
+      "node_modules/echarts/dist/echarts.min.js",
       "assets/mimi-toolbox-icon-1024.png",
       "assets/mimi-toolbox-transparent.ico"
     ],
@@ -62,5 +63,8 @@
     "portable": {
       "artifactName": "咪咪大王工具箱-${version}-${arch}-portable.${ext}"
     }
+  },
+  "dependencies": {
+    "echarts": "^6.1.0"
   }
 }
