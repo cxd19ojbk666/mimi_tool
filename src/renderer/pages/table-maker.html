@@ -7,24 +7,34 @@
 <link rel="stylesheet" href="../styles/mimi-ui.css?v=5">
 </head>
 <body data-mimi-tool="table-maker"><div class="shell">
-<header><div class="brand"><div><h1>咪咪大王做表格</h1><p>咪的汪给咪做的表格工具</p></div></div><div class="top-actions"><a class="btn" href="../index.html">首页</a><button class="btn" id="loadSample" type="button">示例数据</button><button class="btn danger" id="clearAll" type="button">清空</button><button class="btn accent" id="exportResult" type="button" disabled>导出 Excel</button></div></header>
+<header><div class="brand"><div><h1>咪咪大王做表格</h1><p>咪的汪给咪做的表格工具</p></div></div><div class="top-actions"><a class="btn" href="../index.html">首页</a><button class="btn" id="loadSample" type="button">示例数据</button><button class="btn danger" id="clearAll" type="button">清空</button><button class="btn" id="saveResult" type="button" disabled>结果存为新表</button><button class="btn accent" id="exportResult" type="button" disabled>导出 Excel</button></div></header>
 
 <main class="workspace" id="workspace" data-mobile-panel="setup">
   <section class="panel left-panel left is-mobile-active" id="leftPanel" data-workspace-panel="left" data-mobile-panel-name="setup">
     <div class="panel-head"><h2>任务设置</h2><div class="panel-head-actions"><button class="panel-collapse" id="hideLeft" title="隐藏任务设置" aria-label="隐藏任务设置">−</button></div></div>
     <div class="panel-body">
       <div class="tabs task-grid" role="tablist" aria-label="表格任务">
-        <button class="tab task-button active" type="button" data-mode="match" role="tab" aria-selected="true" title="把另一张表的信息补充到主表">智能匹配</button>
+        <button class="tab task-button active" type="button" data-mode="match" role="tab" aria-selected="true" title="把另一张表的信息补充到主表">VLOOKUP 匹配</button>
         <button class="tab task-button" type="button" data-mode="compare" role="tab" aria-selected="false" title="找出新增、缺少和变化记录">名单对比</button>
         <button class="tab task-button" type="button" data-mode="clean" role="tab" aria-selected="false" title="清理空格、空行、空列和重复记录">整理表格</button>
         <button class="tab task-button" type="button" data-mode="grade" role="tab" aria-selected="false" title="统计成绩并生成图表">成绩分析</button>
       </div>
 
       <section class="section task-source stack">
-        <div class="file-card" id="fileCardA"><strong id="fileNameA">主表</strong><small id="fileMetaA">支持 .xlsx、.csv、.tsv</small><label class="btn upload" for="fileA">选择主表</label><input id="fileA" type="file" accept=".xlsx,.csv,.tsv,.txt" hidden></div>
-        <label class="control" id="sheetWrapA" hidden>主表工作表<select class="field" id="sheetA"></select></label>
-        <div class="file-card" id="fileCardB"><strong id="fileNameB">补充表</strong><small id="fileMetaB">智能匹配和名单对比时需要</small><label class="btn upload" for="fileB">选择补充表</label><input id="fileB" type="file" accept=".xlsx,.csv,.tsv,.txt" hidden></div>
-        <label class="control" id="sheetWrapB" hidden>补充表工作表<select class="field" id="sheetB"></select></label>
+        <strong>我的数据表 <small id="sourceCount">0 张</small></strong>
+        <label class="btn upload" for="filesInput">＋ 添加表格（可多选）</label><input id="filesInput" type="file" accept=".xlsx,.csv,.tsv,.txt" multiple hidden>
+        <small>每个工作表独立编号为 df1、df2…，可反复选择使用。</small>
+        <div id="sourceList" class="stack" aria-label="数据表列表"></div>
+        <details><summary>＋ 手动输入 / 粘贴数据</summary><div class="stack manual-source">
+          <label class="control">表格名称<input class="field" id="manualName" placeholder="例如：已报名名单"></label>
+          <label class="control">输入方式<select class="field" id="manualFormat"><option value="names">名单：每行一个姓名或编号（无表头）</option><option value="table">表格：从 Excel 粘贴，或输入 CSV</option></select></label>
+          <label class="control">数据内容<textarea class="field" id="manualText" rows="7" placeholder="张小雨&#10;王一鸣&#10;李可心"></textarea></label>
+          <label id="manualHeaderWrap" hidden><input type="checkbox" id="manualHeader" checked>第一行是表头</label>
+          <button class="btn" id="addManual" type="button">添加到数据表</button>
+        </div></details>
+        <label class="control">主表<select class="field" id="sourceA"></select></label>
+        <label class="control" id="sourceBWrap">补充表 / 对比表<select class="field" id="sourceB"></select></label>
+        <small>可选择任意两张表。结果可存为新表，接着与 df3、df4 继续处理。</small>
       </section>
 
       <section class="section stack" id="modeControls">

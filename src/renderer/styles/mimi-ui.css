@@ -145,3 +145,13 @@ body[data-mimi-tool="table-maker"] .center-status{flex:none;padding:11px 15px;bo
  body[data-mimi-tool="roll-call"] .result #resultName{font-size:48px}
  body[data-mimi-tool="roll-call"] .result #resultCaption{display:none}
 }
+
+/* 多数据源工作区 */
+body[data-mimi-tool="table-maker"] .source-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid #e3e9ed;border-radius:10px;background:#fff}
+body[data-mimi-tool="table-maker"] .source-preview{flex:1;min-width:0;text-align:left;overflow-wrap:anywhere;border:0;background:transparent;color:#304354;cursor:pointer;font:inherit;font-size:12px}
+body[data-mimi-tool="table-maker"] .source-item .btn{padding:4px 8px;font-size:11px;flex-shrink:0}
+body[data-mimi-tool="table-maker"] .manual-source{padding-top:12px}
+body[data-mimi-tool="table-maker"] textarea{resize:vertical;min-height:120px}
+body[data-mimi-tool="table-maker"] #sourceList{max-height:220px;overflow:auto}
+body[data-mimi-tool="table-maker"] .task-source small{color:#657885;line-height:1.6}
+body[data-mimi-tool="table-maker"] summary{cursor:pointer;color:#304354}

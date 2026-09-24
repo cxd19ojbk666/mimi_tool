@@ -10,7 +10,7 @@
     clean:{button:'开始整理表格',title:'整理结果'},
     grade:{button:'生成成绩图表',title:'成绩分析'}
   };
-  const state={mode:'match',files:{A:null,B:null},result:null,charts:[],ui:loadUi()};
+  const state={mode:'match',sources:[],nextId:1,result:null,charts:[],ui:loadUi()};
 
   function loadUi(){
     try{
@@ -37,9 +37,45 @@
     return {headers,rows:data,headerIndex};
   }
   function currentTable(slot){
-    const file=state.files[slot];if(!file)return null;
-    const select=$(slot==='A'?'sheetA':'sheetB'),index=Math.max(0,+select.value||0);
-    return tableFromRows(file.sheets[index].rows);
+    return state.sources.find(source=>source.id===$(`source${slot}`).value)?.table||null;
+  }
+  function addSource(name,table){
+    const source={id:`df${state.nextId++}`,name,table};state.sources.push(source);return source;
+  }
+  function renderSources(){
+    for(const slot of ['A','B']){
+      const select=$(`source${slot}`),previous=select.value;
+      select.replaceChildren(option('','请选择数据表'),...state.sources.map(source=>option(source.id,`${source.id} · ${source.name}`)));
+      select.value=state.sources.some(source=>source.id===previous)?previous:'';
+    }
+    if(!$('sourceA').value&&state.sources.length)$('sourceA').value=state.sources[0].id;
+    if(!$('sourceB').value&&state.sources.length>1)$('sourceB').value=state.sources.find(source=>source.id!==$('sourceA').value).id;
+    $('sourceCount').textContent=`${state.sources.length} 张`;
+    $('sourceList').replaceChildren(...state.sources.map(source=>{
+      const row=document.createElement('div');row.className='source-item';
+      const preview=document.createElement('button');preview.type='button';preview.className='source-preview';preview.textContent=`${source.id} · ${source.name}`;preview.title=`${source.table.rows.length} 行 · ${source.table.headers.length} 列；点击预览`;
+      preview.onclick=()=>renderSource(source.table,`${source.id} · ${source.name}`);
+      const remove=document.createElement('button');remove.type='button';remove.className='btn';remove.textContent='移除';remove.setAttribute('aria-label',`移除 ${source.id} ${source.name}`);
+      remove.onclick=()=>{state.sources=state.sources.filter(item=>item!==source);renderSources();sourcesChanged()};row.append(preview,remove);return row;
+    }));
+  }
+  function sourcesChanged(){
+    syncColumnControls();const table=currentTable('A');if(table)renderSource(table,'主表预览');else resetResult();
+  }
+  function addManual(){
+    try{
+      const text=$('manualText').value;if(!text.trim())throw Error('请先输入数据');
+      let table;
+      if($('manualFormat').value==='names')table={headers:['姓名或编号'],rows:text.split(/\r?\n/).map(value=>[value.trim()]).filter(row=>row[0])};
+      else{
+        const rows=D.parseText(text),width=Math.max(...rows.map(row=>row.length));
+        if(!width)throw Error('请先输入数据');
+        const headers=$('manualHeader').checked?uniqueHeaders(Array.from({length:width},(_,i)=>rows[0][i])):Array.from({length:width},(_,i)=>`第${i+1}列`);
+        table={headers,rows:($('manualHeader').checked?rows.slice(1):rows).map(row=>headers.map((_,i)=>row[i]??''))};
+      }
+      if(!table.rows.length)throw Error('请至少输入一行数据');
+      const source=addSource(cleanText($('manualName').value)||'手动输入',table);renderSources();sourcesChanged();renderSource(table,`${source.id} 已添加`);toast(`已添加 ${source.id}，可在主表或补充表中选择`);
+    }catch(error){toast(error.message)}
   }
   function displayValue(value){return value===null||value===undefined?'':String(value)}
   function decodeText(buffer){
@@ -70,6 +106,7 @@
   function suggestedColumn(headers,patterns,fallback=0){const found=headers.findIndex(header=>patterns.some(pattern=>pattern.test(header)));return found>=0?found:Math.min(fallback,Math.max(0,headers.length-1))}
   function syncColumnControls(){
     const a=currentTable('A'),b=currentTable('B');
+    ['matchKeyA','compareKeyA','dedupeKey','studentColumn','scoreColumn','matchKeyB','compareKeyB','appendColumn'].forEach(id=>{if(!((id.endsWith('B')||id==='appendColumn')?b:a))$(id).replaceChildren()});
     if(a){
       ['matchKeyA','compareKeyA','dedupeKey','studentColumn','scoreColumn'].forEach(id=>{
         const first=id==='dedupeKey'?{firstLabel:'整行完全相同',firstValue:'*'}:id==='scoreColumn'?{firstLabel:'自动识别全部成绩列',firstValue:'*'}:{};
@@ -84,32 +121,32 @@
       const items=[option('*','全部非匹配列'),...b.headers.map((header,index)=>option(index,header))];$('appendColumn').replaceChildren(...items);
     }
   }
-  function renderFile(slot){
-    const file=state.files[slot],suffix=slot==='A'?'A':'B',card=$(`fileCard${suffix}`),name=$(`fileName${suffix}`),meta=$(`fileMeta${suffix}`),sheet=$(`sheet${suffix}`),wrap=$(`sheetWrap${suffix}`);
-    card.classList.toggle('loaded',!!file);
-    if(!file){name.textContent=slot==='A'?'主表':'补充表';meta.textContent=slot==='A'?'支持 .xlsx、.csv、.tsv':'智能匹配和名单对比时需要';wrap.hidden=true;return}
-    name.textContent=file.name;meta.textContent=`${file.sheets.length} 个工作表`;
-    sheet.replaceChildren(...file.sheets.map((item,index)=>option(index,item.name)));wrap.hidden=file.sheets.length<2;
-  }
   function renderSource(table,label){
-    state.result=null;$('exportResult').disabled=true;
+    state.result=null;$('exportResult').disabled=true;$('saveResult').disabled=true;
     renderTable(table.headers,table.rows);$('centerStatus').textContent=`${label}：${table.rows.length} 行，${table.headers.length} 列。请选择任务设置后开始处理。`;
   }
-  async function handleFile(slot,event){
-    const file=event.target.files[0];if(!file)return;
-    try{
-      state.files[slot]=await readFile(file);renderFile(slot);syncColumnControls();
-      const table=currentTable(slot);renderSource(table,slot==='A'?'主表已读取':'补充表已读取');toast(`已读取 ${file.name}`);
-    }catch(error){toast(`导入失败：${error.message}`)}finally{event.target.value=''}
+  async function handleFiles(event){
+    const files=Array.from(event.target.files);event.target.value='';let added=0;const failures=[];
+    for(const file of files){
+      try{
+        const workbook=await readFile(file);
+        for(const sheet of workbook.sheets){
+          try{addSource(`${workbook.name} · ${sheet.name}`,tableFromRows(sheet.rows));added++}
+          catch(error){failures.push(`${file.name} / ${sheet.name}：${error.message}`)}
+        }
+      }catch(error){failures.push(`${file.name}：${error.message}`)}
+    }
+    renderSources();sourcesChanged();toast(`已添加 ${added} 张数据表${failures.length?'；部分导入失败':''}`);
+    if(failures.length)$('centerStatus').textContent=`已添加 ${added} 张。${failures.join('；')}`;
   }
 
   function setMode(mode){
     state.mode=mode;document.querySelectorAll('.task-button').forEach(button=>{const active=button.dataset.mode===mode;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active))});
     document.querySelectorAll('[data-controls]').forEach(group=>group.hidden=group.dataset.controls!==mode);
-    const needsB=mode==='match'||mode==='compare';$('fileCardB').hidden=!needsB;$('sheetWrapB').hidden=!needsB||!state.files.B||state.files.B.sheets.length<2;
+    const needsB=mode==='match'||mode==='compare';$('sourceBWrap').hidden=!needsB;
     $('runTask').textContent=MODE_META[mode].button;$('previewTitle').textContent=MODE_META[mode].title;
     $('chartTab').hidden=mode!=='grade';showView('table');
-    if(state.files.A)renderSource(currentTable('A'),'主表预览');
+    if(currentTable('A'))renderSource(currentTable('A'),'主表预览');
   }
   function showView(view){
     const chart=view==='chart'&&state.mode==='grade';$('tableStage').hidden=chart;$('chartStage').hidden=!chart;$('tableTab').classList.toggle('active',!chart);$('chartTab').classList.toggle('active',chart);
@@ -131,7 +168,7 @@
   function runMatch(){
     const {a,b}=requireTables(true),keyA=+$('matchKeyA').value,keyB=+$('matchKeyB').value,loose=$('fuzzyMatch').checked,index=indexRows(b,keyB,loose);
     const selected=$('appendColumn').value==='*'?b.headers.map((_,i)=>i).filter(i=>i!==keyB):[+$('appendColumn').value];
-    const headers=[...a.headers];selected.forEach(i=>safeHeader(headers,b.headers[i]));headers.push('匹配状态');
+    const headers=[...a.headers];selected.forEach(i=>safeHeader(headers,b.headers[i]));safeHeader(headers,'匹配状态','本次匹配');
     const rows=a.rows.map(row=>{const key=normalizeKey(row[keyA],loose),matches=key?index.map.get(key)||[]:[];let status,values;
       if(!key){status='主表匹配值为空';values=selected.map(()=> '')}
       else if(!matches.length){status='未匹配';values=selected.map(()=> '')}
@@ -216,15 +253,20 @@
   function run(){
     try{
       const result=state.mode==='match'?runMatch():state.mode==='compare'?runCompare():state.mode==='clean'?runClean():runGrade();state.result=result;
-      renderTable(result.headers,result.rows);$('exportResult').disabled=false;
+      renderTable(result.headers,result.rows);$('exportResult').disabled=false;$('saveResult').disabled=false;
       $('centerStatus').textContent=`处理完成：共 ${result.rows.length} 行，${result.headers.length} 列${result.rows.length>500?'；预览显示前 500 行':''}。`;
       if(result.chartData){$('chartTab').hidden=false;showView('chart');renderCharts(result.chartData)}else{$('chartTab').hidden=true;showView('table')}
       toast('处理完成，请检查预览');if(matchMedia('(max-width:760px)').matches)workspaceController.setMobilePanel('preview');
     }catch(error){toast(error.message)}
   }
-  function resetResult(){state.result=null;state.charts.forEach(item=>item.dispose());state.charts=[];$('dataTable').hidden=true;$('dataTable').tHead.replaceChildren();$('dataTable').tBodies[0].replaceChildren();$('tableEmpty').hidden=false;$('exportResult').disabled=true;$('chartTab').hidden=true;showView('table');$('centerStatus').textContent='等待导入表格'}
-  function clearAll(){state.files={A:null,B:null};renderFile('A');renderFile('B');resetResult();toast('已清空，原始文件没有被修改')}
-  function setSynthetic(slot,name,headers,rows){state.files[slot]={name,sheets:[{name:'数据',rows:[headers,...rows]}]};renderFile(slot)}
+  function resetResult(){state.result=null;state.charts.forEach(item=>item.dispose());state.charts=[];$('dataTable').hidden=true;$('dataTable').tHead.replaceChildren();$('dataTable').tBodies[0].replaceChildren();$('tableEmpty').hidden=false;$('exportResult').disabled=true;$('saveResult').disabled=true;$('chartTab').hidden=true;showView('table');$('centerStatus').textContent='等待导入表格'}
+  function clearAll(){state.sources=[];state.nextId=1;renderSources();syncColumnControls();resetResult();toast('已清空，原始文件没有被修改')}
+  function setSynthetic(slot,name,headers,rows){const source=addSource(name,{headers,rows});renderSources();$(`source${slot}`).value=source.id}
+  function saveResult(){
+    if(!state.result)return;
+    const source=addSource(`${MODE_META[state.mode].title}`,{headers:state.result.headers.slice(),rows:state.result.rows.map(row=>row.slice())});
+    renderSources();toast(`结果已保存为 ${source.id}，可选择它继续处理`);
+  }
   function loadSample(){
     clearAll();
     if(state.mode==='match'||state.mode==='compare'){
@@ -240,9 +282,11 @@
   function exportResult(){if(!state.result)return;MimiCommon.download(D.xlsx([state.result.headers,...state.result.rows],MODE_META[state.mode].title),state.result.fileName);toast('Excel 已导出')}
 
   document.querySelectorAll('.task-button').forEach(button=>button.onclick=()=>setMode(button.dataset.mode));
-  $('fileA').onchange=event=>handleFile('A',event);$('fileB').onchange=event=>handleFile('B',event);
-  $('sheetA').onchange=()=>{syncColumnControls();renderSource(currentTable('A'),'主表预览')};$('sheetB').onchange=()=>{syncColumnControls();renderSource(currentTable('B'),'补充表预览')};
+  $('filesInput').onchange=handleFiles;
+  $('sourceA').onchange=sourcesChanged;$('sourceB').onchange=sourcesChanged;
+  $('addManual').onclick=addManual;$('saveResult').onclick=saveResult;
+  $('manualFormat').onchange=()=>{$('manualHeaderWrap').hidden=$('manualFormat').value!=='table'};
   $('runTask').onclick=run;$('loadSample').onclick=loadSample;$('clearAll').onclick=clearAll;$('exportResult').onclick=exportResult;$('tableTab').onclick=()=>showView('table');$('chartTab').onclick=()=>showView('chart');
   const workspaceController=MimiWorkspace.mount({read:()=>state.ui,write:saveUi,toast,labels:{left:'任务设置栏'},onMobilePanel:panel=>{if(panel==='preview')state.charts.forEach(item=>item.resize())}});
-  addEventListener('resize',()=>state.charts.forEach(item=>item.resize()));setMode('match');
+  renderSources();addEventListener('resize',()=>state.charts.forEach(item=>item.resize()));setMode('match');
 })();
