@@ -5,10 +5,10 @@
   MimiCommon.init({action:'做表格',subject:'表格'});
   const $=id=>document.getElementById(id),D=MimiCommon.roster,toast=MimiCommon.toast;
   const MODE_META={
-    match:{button:'开始智能匹配',title:'匹配结果'},
-    compare:{button:'开始名单对比',title:'对比结果'},
-    clean:{button:'开始整理表格',title:'整理结果'},
-    grade:{button:'生成成绩图表',title:'成绩分析'}
+    match:{button:'开始合并',title:'合并结果',description:'按姓名或学号，把多张表的内容合到一起',emptyTitle:'把几张表，整理成一张',emptyDescription:'添加至少两张表，自动识别匹配列'},
+    compare:{button:'开始核对',title:'核对结果',description:'对照多份名单，找出新增、缺少和内容变化',emptyTitle:'名单有变化，一眼就知道',emptyDescription:'添加至少两份名单，选择一张作为核对基准'},
+    clean:{button:'开始清理',title:'清理结果',description:'去掉空白和重复记录，让表格更整齐',emptyTitle:'给表格做一次整理',emptyDescription:'添加一张表，清理空格、空行和重复记录'},
+    grade:{button:'开始分析',title:'成绩分析',description:'自动统计总分、平均分和排名，生成成绩图表',emptyTitle:'从成绩表，看见学习情况',emptyDescription:'添加一张成绩表，自动识别姓名和成绩列'}
   };
   const state={mode:'match',sources:[],nextId:1,result:null,charts:[],ui:loadUi(),baseSourceId:'',baseKeys:[],baseSelected:null,joins:[],nextJoinId:1,joinAutoInitialized:false};
 
@@ -39,21 +39,26 @@
   }
   function renderSources(){
     const select=$('sourceA'),previous=select.value;
-    select.replaceChildren(option('','请选择数据表'),...state.sources.map(source=>option(source.id,`${source.id} · ${source.name}`)));
+    select.replaceChildren(option('','请选择数据表'),...state.sources.map(source=>option(source.id,source.name)));
     select.value=state.sources.some(source=>source.id===previous)?previous:'';
     if(!$('sourceA').value&&state.sources.length)$('sourceA').value=state.sources[0].id;
     $('sourceCount').textContent=`${state.sources.length} 张`;
+    $('sourceDisclosure').hidden=!state.sources.length;
+    $('sourceList').hidden=!state.sources.length;
+    $('clearAll').hidden=!state.sources.length;
     $('sourceList').replaceChildren(...state.sources.map(source=>{
       const row=document.createElement('div');row.className='source-item';
-      const preview=document.createElement('button');preview.type='button';preview.className='source-preview';preview.textContent=`${source.id} · ${source.name}`;preview.title=`${source.table.rows.length} 行 · ${source.table.headers.length} 列；点击预览`;
-      preview.onclick=()=>renderSource(source.table,`${source.id} · ${source.name}`);
-      const remove=document.createElement('button');remove.type='button';remove.className='btn';remove.textContent='移除';remove.setAttribute('aria-label',`移除 ${source.id} ${source.name}`);
-      remove.onclick=()=>{state.sources=state.sources.filter(item=>item!==source);renderSources();sourcesChanged()};row.append(preview,remove);
-      const item=document.createElement('div');item.className='source-card';item.append(row);
+      const preview=document.createElement('button');preview.type='button';preview.className='source-preview';preview.textContent=source.name;preview.title=`${source.name} · ${source.table.rows.length} 行 · ${source.table.headers.length} 列；点击预览`;
+      preview.onclick=()=>{renderSource(source.table,source.name,{preserveResult:true});workspaceController.setMobilePanel('preview')};
+      const remove=document.createElement('button');remove.type='button';remove.className='source-remove';remove.textContent='×';remove.setAttribute('aria-label',`移除 ${source.id} ${source.name}`);
+      remove.onclick=()=>{state.sources=state.sources.filter(item=>item!==source);renderSources();sourcesChanged()};
+      const badge=document.createElement('span');badge.className='source-badge';row.append(preview,badge,remove);
+      const item=document.createElement('div');item.className='source-card';item.dataset.sourceId=source.id;item.classList.toggle('is-base',source.id===select.value);item.append(row);
+      const meta=document.createElement('small');meta.className='source-meta';meta.textContent=`${source.table.rows.length} 行 · ${source.table.headers.length} 列 · ${source.table.headerDepth||1} 层表头`;item.append(meta);
       if(source.raw){
         const details=document.createElement('details');details.className='source-settings';details.open=source.settingsOpen;
         details.ontoggle=()=>{source.settingsOpen=details.open};
-        const summary=document.createElement('summary');summary.textContent=`表头：第 ${source.table.headerStart} 行起 · ${source.table.headerDepth} 层`;details.append(summary);
+        const summary=document.createElement('summary');summary.textContent='调整表头';details.append(summary);
         const controls=document.createElement('div');controls.className='source-header-controls';
         for(const [title,key,max] of [['起始行','start',50],['层数','depth',8]]){
           const label=document.createElement('label'),input=document.createElement('input');label.textContent=title;input.type='number';input.className='field';input.min='1';input.max=String(max);input.value=String(key==='start'?source.table.headerStart:source.table.headerDepth);
@@ -71,9 +76,51 @@
       }
       return item;
     }));
+    syncPreviewSources();updateSourceHighlights();refreshFlow();
   }
   function sourcesChanged(){
-    syncColumnControls();renderBuilder();const table=currentTable('A');if(table)renderSource(table,'基准表预览');else resetResult();
+    syncColumnControls();renderBuilder();updateSourceHighlights();refreshFlow();const table=currentTable('A');if(table)renderSource(table,'数据预览');else resetResult();
+  }
+  function updateSourceHighlights(){document.querySelectorAll('.source-card').forEach(card=>{
+    const isBase=card.dataset.sourceId===$('sourceA').value;card.classList.toggle('is-base',isBase);
+    const badge=card.querySelector('.source-badge');badge.hidden=!isBase;badge.textContent=['match','compare'].includes(state.mode)?'基准':'当前';
+  })}
+  function syncPreviewSources(){
+    const select=$('previewSource'),previous=select.value;
+    select.replaceChildren(option('','选择原始表格'),...state.sources.map(source=>option(source.id,source.name)));
+    select.value=state.sources.some(source=>source.id===previous)?previous:'';
+    $('previewToolbar').hidden=!state.sources.length;$('viewResult').hidden=!state.result;
+  }
+  function refreshFlow(){
+    const count=state.sources.length,hasBase=!!currentTable('A'),multi=state.mode==='match'||state.mode==='compare';
+    const canConfigure=hasBase&&(!multi||count>=2);
+    const joinIds=state.joins.map(join=>join.sourceId);
+    const joinsReady=!multi||state.joins.length>0&&new Set(joinIds).size===joinIds.length&&state.joins.every(join=>join.sourceId&&join.sourceId!==$('sourceA').value&&sourceById(join.sourceId));
+    const validKeys=keys=>keys.length>0&&new Set(keys).size===keys.length&&keys.every(index=>Number.isInteger(index)&&index>=0);
+    const keysReady=!multi||validKeys(state.baseKeys)&&state.joins.every(join=>join.keys.length===state.baseKeys.length&&validKeys(join.keys));
+    $('sourceALabel').hidden=!canConfigure||!multi&&count===1;
+    $('sourceHint').hidden=!multi||!canConfigure;
+    $('sourceHint').textContent=state.mode==='match'?'结果保留基准表的每一行。':'对照所有表，找出缺少和变化。';
+    $('modeControls').hidden=!hasBase;
+    $('setupEmpty').hidden=canConfigure;
+    $('setupEmpty').textContent='再添加一张表后即可设置匹配。';
+    $('importHint').hidden=hasBase;
+    $('loadSample').hidden=hasBase;
+    document.querySelector('.merge-builder').hidden=!multi||!canConfigure;
+    document.querySelector('[data-controls="clean"]').hidden=state.mode!=='clean'||!hasBase;
+    document.querySelector('[data-controls="grade"]').hidden=state.mode!=='grade'||!hasBase;
+    $('ruleTitle').textContent=multi?'设置匹配':'设置规则';
+    $('joinHeading').textContent=state.mode==='compare'?'与哪些表核对？':'从哪些表补充？';
+    $('addKey').hidden=!!currentTable('A')&&state.baseKeys.length>=currentTable('A').headers.length;
+    $('addJoin').hidden=!state.sources.some(source=>source.id!==$('sourceA').value&&!joinIds.includes(source.id));
+    $('runTask').disabled=!canConfigure||!joinsReady||!keysReady;
+    let hint='';
+    if(!hasBase)hint=multi?'先添加至少两张表':'先添加一张表';
+    else if(multi&&count<2)hint='再添加一张表';
+    else if(!joinsReady)hint=state.joins.length?'为每张参与表选择不同数据表':'添加参与表';
+    else if(!keysReady)hint='检查匹配列，不能重复或留空';
+    $('runHint').textContent=hint;
+    $('runHint').hidden=!hint;
   }
   function addManual(){
     try{
@@ -88,7 +135,9 @@
       }
       if(!table.rows.length)throw Error('请至少输入一行数据');
       const rawRows=[table.headers,...table.rows],parsed=MimiTableWorkbook.fromRows(rawRows,{format:'manual'});
-      const source=addSource(cleanText($('manualName').value)||'手动输入',parsed,{kind:'rows',rows:rawRows,format:'manual'});renderSources();sourcesChanged();renderSource(parsed,`${source.id} 已添加`);toast(`已添加 ${source.id}，可在基准表或参与表中选择`);
+      const source=addSource(cleanText($('manualName').value)||'手动输入',parsed,{kind:'rows',rows:rawRows,format:'manual'});
+      if(state.joinAutoInitialized&&(state.mode==='match'||state.mode==='compare'))state.joins.push(makeJoin(source.id));
+      renderSources();sourcesChanged();renderSource(parsed,`${source.id} 已添加`);toast(`已添加 ${source.id}，可在基准表或参与表中选择`);
     }catch(error){toast(error.message)}
   }
   function displayValue(value){return value===null||value===undefined?'':String(value)}
@@ -153,26 +202,28 @@
       if(join.sourceId&&!sourceById(join.sourceId)){join.sourceId='';join.keys=[];join.selected=null}
     });
     if(!state.joinAutoInitialized&&state.sources.length>1){
-      const next=state.sources.find(source=>source.id!==baseId);
-      state.joins.push(makeJoin(next?.id||''));state.joinAutoInitialized=true;
+      state.sources.filter(source=>source.id!==baseId).forEach(source=>state.joins.push(makeJoin(source.id)));
+      state.joinAutoInitialized=true;
     }
   }
   function makeJoin(sourceId=''){
     const source=sourceById(sourceId),keys=state.baseKeys.map(index=>suggestedKey(source?.table,index));
-    return {uid:state.nextJoinId++,sourceId,keys,selected:source?source.table.headers.map((_,i)=>i).filter(i=>!keys.includes(i)):null};
+    return {uid:state.nextJoinId++,sourceId,keys,selected:source?source.table.headers.map((_,i)=>i).filter(i=>!keys.includes(i)):null,fieldsOpen:false};
   }
   function fieldPicker(container,source,selected,onChange){
     container.replaceChildren();
     if(!source){const hint=document.createElement('small');hint.textContent='先选择数据表';container.append(hint);return}
+    let current=selected.slice();
+    const update=next=>{current=next.slice();onChange(current);container.querySelectorAll('input[type="checkbox"]').forEach(input=>{input.checked=current.includes(Number(input.value))})};
     const actions=document.createElement('div');actions.className='field-actions';
     for(const [title,indices] of [['全选',source.table.headers.map((_,i)=>i)],['清空',[]]]){
       const button=document.createElement('button');button.type='button';button.className='field-action';button.textContent=title;
-      button.onclick=()=>{onChange(indices);renderBuilder()};actions.append(button);
+      button.onclick=()=>update(indices);actions.append(button);
     }
     container.append(actions);
     source.table.headers.forEach((header,index)=>{
-      const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.checked=selected.includes(index);
-      input.onchange=()=>{const next=new Set(selected);if(input.checked)next.add(index);else next.delete(index);onChange([...next].sort((a,b)=>a-b));renderBuilder()};
+      const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.value=String(index);input.checked=current.includes(index);
+      input.onchange=()=>{const next=new Set(current);if(input.checked)next.add(index);else next.delete(index);update([...next].sort((a,b)=>a-b))};
       label.append(input,document.createTextNode(header));container.append(label);
     });
   }
@@ -186,12 +237,15 @@
     const baseList=$('baseKeyList');baseList.replaceChildren();
     state.baseKeys.forEach((index,position)=>{
       const row=document.createElement('div');row.className='builder-key-row';
-      const text=document.createElement('span');text.textContent=`条件 ${position+1}`;
+      const text=document.createElement('span');text.textContent=state.baseKeys.length===1?'基准表':`条件 ${position+1}`;
       row.append(text,keySelect(base,index,value=>{state.baseKeys[position]=value;state.joins.forEach(join=>{join.keys[position]=suggestedKey(sourceById(join.sourceId)?.table,value)});renderBuilder();renderSource(base,'匹配条件已更新')}));
       if(state.baseKeys.length>1){const remove=document.createElement('button');remove.type='button';remove.className='field-action';remove.textContent='移除';remove.onclick=()=>{state.baseKeys.splice(position,1);state.joins.forEach(join=>join.keys.splice(position,1));renderBuilder();renderSource(base,'匹配条件已更新')};row.append(remove)}
       baseList.append(row);
     });
-    fieldPicker($('baseFieldList'),sourceById(state.baseSourceId),state.baseSelected||[],selected=>{state.baseSelected=selected;renderSource(base,'字段选择已更新')});
+    const baseSource=sourceById(state.baseSourceId);
+    const baseSummary=()=>{$('baseFieldSummary').textContent=`基准表保留字段 · ${state.baseSelected?.length||0}/${baseSource?.table.headers.length||0} 列`};
+    baseSummary();
+    fieldPicker($('baseFieldList'),baseSource,state.baseSelected||[],selected=>{state.baseSelected=selected;baseSummary();renderSource(base,'字段选择已更新')});
     const joinList=$('joinList');joinList.replaceChildren();
     state.joins.forEach((join,joinIndex)=>{
       const source=sourceById(join.sourceId),card=document.createElement('section');card.className='join-card';
@@ -200,26 +254,35 @@
       const remove=document.createElement('button');remove.type='button';remove.className='field-action';remove.textContent='移除';remove.setAttribute('aria-label',`移除参与表 ${joinIndex+1}`);
       remove.onclick=()=>{state.joins.splice(joinIndex,1);renderBuilder();if(base)renderSource(base,'参与表已更新')};top.append(title,remove);card.append(top);
       const select=document.createElement('select');select.className='field';select.setAttribute('aria-label',`选择参与表 ${joinIndex+1}`);
-      select.replaceChildren(option('','请选择数据表'),...state.sources.map(item=>option(item.id,`${item.id} · ${item.name}`)));select.value=join.sourceId;
+      select.replaceChildren(option('','请选择数据表'),...state.sources.filter(item=>item.id!==$('sourceA').value&&(item.id===join.sourceId||!state.joins.some(other=>other!==join&&other.sourceId===item.id))).map(item=>option(item.id,item.name)));select.value=join.sourceId;
       select.onchange=()=>{join.sourceId=select.value;const next=sourceById(join.sourceId);join.keys=state.baseKeys.map(index=>suggestedKey(next?.table,index));join.selected=next?next.table.headers.map((_,i)=>i).filter(i=>!join.keys.includes(i)):null;renderBuilder();if(base)renderSource(base,'参与表已更新')};card.append(select);
       state.baseKeys.forEach((baseIndex,position)=>{
         const row=document.createElement('label');row.className='join-key-row';
         const caption=document.createElement('span');caption.textContent=`${base?.headers[baseIndex]||`条件 ${position+1}`} ↔`;
-        row.append(caption,keySelect(source?.table,join.keys[position],value=>{join.keys[position]=value;renderSource(base,'匹配条件已更新')}));card.append(row);
+        row.append(caption,keySelect(source?.table,join.keys[position],value=>{join.keys[position]=value;refreshFlow();renderSource(base,'匹配条件已更新')}));card.append(row);
       });
-      const fieldsTitle=document.createElement('strong');fieldsTitle.className='join-fields-title';fieldsTitle.textContent='输出字段';card.append(fieldsTitle);
-      const fields=document.createElement('div');fields.className='field-picker';card.append(fields);
-      fieldPicker(fields,source,join.selected||[],selected=>{join.selected=selected;if(base)renderSource(base,'字段选择已更新')});
+      const disclosure=document.createElement('details');disclosure.className='field-disclosure join-fields';disclosure.open=!!join.fieldsOpen;
+      disclosure.ontoggle=()=>{join.fieldsOpen=disclosure.open};
+      const fieldSummary=document.createElement('summary');disclosure.append(fieldSummary);
+      const updateFieldSummary=()=>{fieldSummary.textContent=`补充字段 · ${join.selected?.length||0}/${source?.table.headers.length||0} 列`};updateFieldSummary();
+      const fields=document.createElement('div');fields.className='field-picker';disclosure.append(fields);card.append(disclosure);
+      fieldPicker(fields,source,join.selected||[],selected=>{join.selected=selected;updateFieldSummary();if(base)renderSource(base,'字段选择已更新')});
       joinList.append(card);
     });
+    refreshFlow();
   }
-  function renderSource(table,label){
-    state.result=null;$('exportResult').disabled=true;$('saveResult').disabled=true;
+  function renderSource(table,label,{preserveResult=false}={}){
+    if(!preserveResult){state.result=null;state.charts.forEach(item=>item.dispose());state.charts=[]}
+    $('exportResult').disabled=true;$('saveResult').disabled=true;$('resultActions').hidden=true;
+    $('viewResult').hidden=!state.result;
+    $('previewSource').value=state.sources.find(source=>source.table===table)?.id||'';
+    $('centerTabs').hidden=true;
+    $('previewTitle').textContent='数据预览';
     showView('table');
-    renderTable(table.headers,table.rows,table.headerRows,table.headerMerges);$('centerStatus').textContent=`${label}：${table.rows.length} 行，${table.headers.length} 列，${table.headerDepth||1} 层表头。请选择任务设置后开始处理。`;
+    renderTable(table.headers,table.rows,table.headerRows,table.headerMerges);$('centerStatus').textContent=`${label} · ${table.rows.length} 行 × ${table.headers.length} 列 · ${table.headerDepth||1} 层表头`;
   }
   async function handleFiles(event){
-    const files=Array.from(event.target.files);event.target.value='';let added=0;const failures=[];
+    const files=Array.from(event.target.files);event.target.value='';let added=0;const failures=[],addedSources=[];
     for(const file of files){
       try{
         const workbook=await readFile(file);
@@ -227,28 +290,31 @@
           try{
             const table=sheet.sheet?MimiTableWorkbook.fromWorksheet(sheet.sheet):tableFromRows(sheet.rows,sheet.format);
             const raw=sheet.sheet?{kind:'worksheet',sheet:sheet.sheet}:{kind:'rows',rows:sheet.rows,format:sheet.format};
-            addSource(`${workbook.name} · ${sheet.name}`,table,raw);added++;
+            addedSources.push(addSource(`${workbook.name} · ${sheet.name}`,table,raw));added++;
           }
           catch(error){failures.push(`${file.name} / ${sheet.name}：${error.message}`)}
         }
       }catch(error){failures.push(`${file.name}：${error.message}`)}
     }
+    if(state.joinAutoInitialized&&(state.mode==='match'||state.mode==='compare'))addedSources.filter(source=>source.id!==$('sourceA').value).forEach(source=>state.joins.push(makeJoin(source.id)));
     renderSources();sourcesChanged();toast(`已添加 ${added} 张数据表${failures.length?'；部分导入失败':''}`);
     if(failures.length)$('centerStatus').textContent=`已添加 ${added} 张。${failures.join('；')}`;
   }
 
   function setMode(mode){
-    state.mode=mode;document.querySelectorAll('.task-button').forEach(button=>{const active=button.dataset.mode===mode;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active))});
-    document.querySelectorAll('[data-controls]').forEach(group=>group.hidden=!group.dataset.controls.split(' ').includes(mode));
+    state.mode=mode;document.querySelectorAll('.task-button').forEach(button=>{const active=button.dataset.mode===mode;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active))});
+    $('taskDescription').textContent=MODE_META[mode].description;
+    $('emptyTitle').textContent=MODE_META[mode].emptyTitle;$('emptyDescription').textContent=MODE_META[mode].emptyDescription;
     $('compareChangesWrap').hidden=mode!=='compare';
-    $('sourceALabel').firstChild.textContent=mode==='clean'||mode==='grade'?'数据表':'基准表';
-    $('sourceHint').textContent=mode==='compare'?'按匹配键汇总所有参与表，显示缺少、重复和已选同名字段的变化。':mode==='match'?'以基准表的每一行为准，逐张补充其他表的字段。':'选择一张表进行处理；结果可存为新表继续使用。';
-    $('runTask').textContent=MODE_META[mode].button;$('previewTitle').textContent=MODE_META[mode].title;
-    $('chartTab').hidden=mode!=='grade';showView('table');
-    if(currentTable('A'))renderSource(currentTable('A'),'基准表预览');
+    $('sourceALabel').firstChild.textContent=mode==='clean'||mode==='grade'?'处理哪张表？':'以哪张表为准？';
+    $('runTask').textContent=MODE_META[mode].button;$('previewTitle').textContent='表格预览';
+    $('chartTab').hidden=true;showView('table');renderBuilder();updateSourceHighlights();
+    if(currentTable('A'))renderSource(currentTable('A'),'数据预览');
+    if(matchMedia('(max-width:760px)').matches)workspaceController.setMobilePanel('setup',{scroll:false});
   }
   function showView(view){
     const chart=view==='chart'&&state.mode==='grade';$('tableStage').hidden=chart;$('chartStage').hidden=!chart;$('tableTab').classList.toggle('active',!chart);$('chartTab').classList.toggle('active',chart);
+    $('tableTab').setAttribute('aria-pressed',String(!chart));$('chartTab').setAttribute('aria-pressed',String(chart));
     if(chart){state.charts.forEach(item=>item.resize());requestAnimationFrame(()=>state.charts.forEach(item=>item.resize()))}
   }
   function requireTables(){
@@ -344,16 +410,24 @@
     const top=data.students.slice(0,20).reverse(),c3=chart($('rankingChart'),{...common,title:{...common.title,text:`学生平均分排名${data.students.length>20?'（前20名）':''}`},grid:{left:88,right:30,top:54,bottom:30},xAxis:{type:'value',axisLabel:{color:'#5e7180'}},yAxis:{type:'category',data:top.map(item=>item.name),axisLabel:{color:'#5e7180'}},series:[{type:'bar',data:top.map(item=>round(item.average)),barMaxWidth:22,itemStyle:{color:'#32a889',borderRadius:[0,8,8,0]},label:{show:true,position:'right'}}]});
     state.charts=[c1,c2,c3];
   }
+  function showResult(){
+      const result=state.result;if(!result)return;
+      $('previewSource').value='';$('viewResult').hidden=true;
+      $('previewTitle').textContent=MODE_META[state.mode].title;
+      renderTable(result.headers,result.rows,result.layout?.headerRows,result.layout?.headerMerges);$('exportResult').disabled=false;$('saveResult').disabled=false;$('resultActions').hidden=false;
+      $('centerStatus').textContent=`${result.rows.length} 行 × ${result.headers.length} 列${result.rows.length>500?' · 预览前 500 行':''}`;
+      const details=[result.summary,result.note].filter(Boolean).join('；');$('resultDetails').hidden=!details;$('resultDetails').open=false;$('resultSummary').textContent=details;
+      $('centerTabs').hidden=!result.chartData;
+      if(result.chartData){$('chartTab').hidden=false;showView('chart');renderCharts(result.chartData)}else{$('chartTab').hidden=true;showView('table')}
+  }
   function run(){
     try{
       const result=state.mode==='match'?runMatch():state.mode==='compare'?runCompare():state.mode==='clean'?runClean():runGrade();state.result=result;
-      renderTable(result.headers,result.rows,result.layout?.headerRows,result.layout?.headerMerges);$('exportResult').disabled=false;$('saveResult').disabled=false;
-      $('centerStatus').textContent=`处理完成：共 ${result.rows.length} 行，${result.headers.length} 列${result.rows.length>500?'；预览显示前 500 行':''}。${result.summary||''}${result.note?`；${result.note}`:''}`;
-      if(result.chartData){$('chartTab').hidden=false;showView('chart');renderCharts(result.chartData)}else{$('chartTab').hidden=true;showView('table')}
+      showResult();
       toast('处理完成，请检查预览');if(matchMedia('(max-width:760px)').matches)workspaceController.setMobilePanel('preview');
     }catch(error){toast(error.message)}
   }
-  function resetResult(){state.result=null;state.charts.forEach(item=>item.dispose());state.charts=[];$('dataTable').hidden=true;$('dataTable').tHead.replaceChildren();$('dataTable').tBodies[0].replaceChildren();$('tableEmpty').hidden=false;$('exportResult').disabled=true;$('saveResult').disabled=true;$('chartTab').hidden=true;showView('table');$('centerStatus').textContent='等待导入表格'}
+  function resetResult(){state.result=null;state.charts.forEach(item=>item.dispose());state.charts=[];$('dataTable').hidden=true;$('dataTable').tHead.replaceChildren();$('dataTable').tBodies[0].replaceChildren();$('tableEmpty').hidden=false;$('exportResult').disabled=true;$('saveResult').disabled=true;$('resultActions').hidden=true;$('viewResult').hidden=true;$('centerTabs').hidden=true;$('chartTab').hidden=true;$('previewTitle').textContent='表格预览';showView('table');$('centerStatus').textContent='等待添加表格'}
   function clearAll(){state.sources=[];state.nextId=1;state.baseSourceId='';state.baseKeys=[];state.baseSelected=null;state.joins=[];state.nextJoinId=1;state.joinAutoInitialized=false;renderSources();syncColumnControls();renderBuilder();resetResult();toast('已清空，原始文件没有被修改')}
   function setSynthetic(name,headers,rows){return addSource(name,MimiTableWorkbook.fromRows([headers,...rows],{format:'manual'}))}
   function saveResult(){
@@ -362,7 +436,7 @@
     const format=sources.some(item=>item.table.format==='xlsx')?'xlsx':sources[0]?.table.format||'manual';
     const table=state.result.layout?MimiTableWorkbook.resultAsTable(state.result,state.result.layout,format):MimiTableWorkbook.fromRows([state.result.headers,...state.result.rows],{format:'manual'});
     const source=addSource(`${MODE_META[state.mode].title}`,table);
-    renderSources();toast(`结果已保存为 ${source.id}，可选择它继续处理`);
+    renderSources();$('viewResult').hidden=true;toast(`已添加「${source.name}」，可选择它继续处理`);
   }
   function loadSample(){
     clearAll();
@@ -397,10 +471,14 @@
 
   document.querySelectorAll('.task-button').forEach(button=>button.onclick=()=>setMode(button.dataset.mode));
   $('filesInput').onchange=handleFiles;
+  $('uploadTrigger').onclick=()=>$('filesInput').click();$('emptyUpload').onclick=()=>$('filesInput').click();
   $('sourceA').onchange=sourcesChanged;
+  $('previewSource').onchange=()=>{const source=sourceById($('previewSource').value);if(source)renderSource(source.table,source.name,{preserveResult:true});else if(state.result)showResult()};
+  $('viewResult').onclick=showResult;
   $('addKey').onclick=()=>{const base=currentTable('A');if(!base){toast('请先选择基准表');return}const unused=base.headers.findIndex((_,i)=>!state.baseKeys.includes(i));state.baseKeys.push(unused);state.joins.forEach(join=>join.keys.push(suggestedKey(sourceById(join.sourceId)?.table,unused)));renderBuilder();renderSource(base,'匹配条件已更新')};
   $('addJoin').onclick=()=>{const unused=state.sources.find(source=>source.id!==$('sourceA').value&&!state.joins.some(join=>join.sourceId===source.id));state.joins.push(makeJoin(unused?.id||''));state.joinAutoInitialized=true;renderBuilder();const base=currentTable('A');if(base)renderSource(base,'参与表已更新')};
   $('addManual').onclick=addManual;$('saveResult').onclick=saveResult;
+  ['fuzzyMatch','compareChanges','dedupeKey','cleanSpaces','cleanBlankRows','cleanBlankCols','cleanDuplicates','cleanPunctuation','studentColumn','scoreColumn','passLine','excellentLine'].forEach(id=>$(id).addEventListener('change',()=>{const table=currentTable('A');if(table)renderSource(table,'设置已更新')}));
   $('manualFormat').onchange=()=>{
     const table=$('manualFormat').value==='table';$('manualHeaderWrap').hidden=!table;
     $('manualText').placeholder=table?'姓名,性别,班级\n张小雨,女,一班\n王一鸣,男,一班':'张小雨\n王一鸣\n李可心';
