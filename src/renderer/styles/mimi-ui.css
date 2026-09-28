@@ -155,3 +155,37 @@ body[data-mimi-tool="table-maker"] textarea{resize:vertical;min-height:120px}
 body[data-mimi-tool="table-maker"] #sourceList{max-height:220px;overflow:auto}
 body[data-mimi-tool="table-maker"] .task-source small{color:#657885;line-height:1.6}
 body[data-mimi-tool="table-maker"] summary{cursor:pointer;color:#304354}
+
+/* 多表配置：像工作纸一样逐步选择匹配条件与保留字段。 */
+body[data-mimi-tool="table-maker"] .merge-builder{gap:12px}
+body[data-mimi-tool="table-maker"] .builder-heading{display:grid;gap:2px;margin-top:8px}
+body[data-mimi-tool="table-maker"] .builder-heading strong{color:#2e5368;font-size:14px}
+body[data-mimi-tool="table-maker"] .builder-heading small{color:#657885;font-size:11px;line-height:1.5}
+body[data-mimi-tool="table-maker"] .builder-key-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:7px}
+body[data-mimi-tool="table-maker"] .builder-key-row>span{white-space:nowrap;color:#577080;font-size:12px;font-weight:900}
+body[data-mimi-tool="table-maker"] .builder-key-row .field,body[data-mimi-tool="table-maker"] .join-key-row .field{padding:7px 9px;font-size:12px}
+body[data-mimi-tool="table-maker"] .builder-add{width:100%;padding:7px 10px;border-style:dashed;background:#f2fbfe;color:#286780;box-shadow:none;font-size:12px}
+body[data-mimi-tool="table-maker"] .join-list{gap:10px}
+body[data-mimi-tool="table-maker"] .join-card{display:grid;gap:9px;padding:11px;border:1.5px solid #9fb9c5;border-radius:12px;background:linear-gradient(135deg,#fffef9,#eff9fa);box-shadow:2px 3px 0 #30435417}
+body[data-mimi-tool="table-maker"] .join-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+body[data-mimi-tool="table-maker"] .join-card-head strong{color:#285e73;font-size:13px}
+body[data-mimi-tool="table-maker"] .join-key-row{display:grid;grid-template-columns:minmax(76px,.8fr) minmax(0,1fr);align-items:center;gap:7px;font-size:12px;font-weight:800}
+body[data-mimi-tool="table-maker"] .join-key-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#607786}
+body[data-mimi-tool="table-maker"] .join-fields-title{font-size:12px}
+body[data-mimi-tool="table-maker"] .field-picker{display:flex;flex-wrap:wrap;gap:6px;min-height:30px}
+body[data-mimi-tool="table-maker"] .field-picker label{display:inline-flex;max-width:100%;align-items:center;gap:5px;padding:5px 7px;border:1px solid #b6cdd5;border-radius:8px;background:#fffef8;color:#3b5969;font-size:11px;font-weight:800;overflow-wrap:anywhere;cursor:pointer}
+body[data-mimi-tool="table-maker"] .field-picker label:has(input:checked){border-color:#5fb09b;background:#e3f4ed;color:#276b58}
+body[data-mimi-tool="table-maker"] .field-picker input{width:14px;height:14px;margin:0;flex:none;accent-color:var(--green)}
+body[data-mimi-tool="table-maker"] .field-actions{display:flex;width:100%;gap:6px}
+body[data-mimi-tool="table-maker"] .field-action{padding:3px 5px;border:0;background:transparent;color:#2f7c91;font-size:11px;font-weight:900;text-decoration:underline;text-underline-offset:3px}
+body[data-mimi-tool="table-maker"] .field-action:hover{color:#a33e32}
+body[data-mimi-tool="table-maker"] .source-card{padding:4px;border:1px solid #d8e5e8;border-radius:11px;background:#fff}
+body[data-mimi-tool="table-maker"] .source-card .source-item{padding:2px 4px;border:0}
+body[data-mimi-tool="table-maker"] .source-settings{padding:0 7px 3px;color:#617988;font-size:11px}
+body[data-mimi-tool="table-maker"] .source-settings summary{padding:2px 0;font-weight:800}
+body[data-mimi-tool="table-maker"] .source-header-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:6px 0}
+body[data-mimi-tool="table-maker"] .source-header-controls label{display:grid;gap:3px;font-size:11px;font-weight:800}
+body[data-mimi-tool="table-maker"] .source-header-controls .field{min-height:32px;padding:4px 7px;font-size:12px}
+body[data-mimi-tool="table-maker"] .data-table thead tr:not(:last-child) th{background:#cceaf6}
+@media(min-width:1101px){body[data-mimi-tool="table-maker"]{--mimi-side-left:360px}}
+@media(min-width:761px) and (max-width:1100px){body[data-mimi-tool="table-maker"] .workspace{grid-template-columns:330px minmax(0,1fr)}}

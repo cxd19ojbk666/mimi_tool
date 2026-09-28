@@ -8,6 +8,7 @@
   "private": true,
   "scripts": {
     "start": "electron .",
+    "test": "node --test tests/*.test.js",
     "build:mac": "electron-builder --mac dmg zip --arm64",
     "build:win": "electron-builder --win nsis portable --x64",
     "build": "npm run build:mac && npm run build:win"
@@ -30,6 +31,7 @@
       "src/renderer/styles/*.css",
       "src/renderer/scripts/*.js",
       "node_modules/echarts/dist/echarts.min.js",
+      "node_modules/exceljs/dist/exceljs.min.js",
       "assets/mimi-toolbox-icon-1024.png",
       "assets/mimi-toolbox-transparent.ico"
     ],
@@ -65,6 +67,7 @@
     }
   },
   "dependencies": {
-    "echarts": "^6.1.0"
+    "echarts": "^6.1.0",
+    "exceljs": "^4.4.0"
   }
 }
