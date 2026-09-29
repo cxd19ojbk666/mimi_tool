@@ -1,150 +1,111 @@
 <!doctype html>
 <html lang="zh-CN">
-
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="color-scheme" content="light">
-  <title>咪咪大王做表格</title>
-  <link rel="icon" href="../../../assets/mimi-toolbox-transparent.ico">
-  <link rel="stylesheet" href="../styles/mimi-ui.css?v=5">
-  <link rel="stylesheet" href="../styles/mimi-table.css?v=7">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light">
+<title>咪咪大王做表格</title>
+<link rel="icon" href="../../../assets/mimi-toolbox-transparent.ico">
+<link rel="stylesheet" href="../styles/mimi-ui.css?v=14">
+<link rel="stylesheet" href="../styles/mimi-table.css?v=17">
 </head>
+<body data-mimi-tool="table-maker"><div class="shell">
+<header><div class="brand"><div><h1>咪咪大王做表格</h1><p>咪的汪给咪做的表格工具</p></div></div><div class="top-actions"><a class="btn" href="../index.html">首页</a></div></header>
 
-<body data-mimi-tool="table-maker">
-  <div class="shell">
-    <header>
-      <div class="brand">
-        <div>
-          <h1>咪咪大王做表格</h1>
-          <p>咪的汪给咪做的表格工具</p>
-        </div>
-      </div>
-      <div class="top-actions"><a class="btn" href="../index.html">首页</a><button class="btn" id="loadSample"
-          type="button">示例数据</button><button class="btn danger" id="clearAll" type="button">清空</button><button
-          class="btn" id="saveResult" type="button" disabled>结果存为新表</button><button class="btn accent" id="exportResult"
-          type="button" disabled>导出 Excel</button></div>
-    </header>
-
-    <main class="workspace" id="workspace" data-mobile-panel="setup">
-      <section class="panel left-panel left is-mobile-active" id="leftPanel" data-workspace-panel="left"
-        data-mobile-panel-name="setup">
-        <div class="panel-head">
-          <h2>任务设置</h2>
-          <div class="panel-head-actions"><button class="panel-collapse" id="hideLeft" title="隐藏任务设置"
-              aria-label="隐藏任务设置">−</button></div>
-        </div>
-        <div class="panel-body">
-          <div class="tabs task-grid" role="tablist" aria-label="表格任务">
-            <button class="tab task-button active" type="button" data-mode="match" role="tab" aria-selected="true"
-              title="将多张表的字段补充到基准表">合并</button>
-            <button class="tab task-button" type="button" data-mode="compare" role="tab" aria-selected="false"
-              title="找出新增、缺少和变化记录">核对</button>
-            <button class="tab task-button" type="button" data-mode="clean" role="tab" aria-selected="false"
-              title="清理空格、空行、空列和重复记录">清理</button>
-            <button class="tab task-button" type="button" data-mode="grade" role="tab" aria-selected="false"
-              title="统计成绩并生成图表">成绩</button>
-          </div>
-
-          <section class="section task-source stack">
-            <button class="btn upload" id="uploadTrigger" type="button">＋ 添加表格（可多选）</button><input id="filesInput" type="file"
-              accept=".xlsx,.csv,.tsv,.txt" multiple hidden>
-            <details id="sourceDisclosure" hidden><summary>已添加的表格 <small id="sourceCount">0 张</small></summary><div id="sourceList" class="stack" aria-label="数据表列表"></div></details>
-            <details>
-              <summary>＋ 手动输入 / 粘贴数据</summary>
-              <div class="stack manual-source">
-                <label class="control">表格名称<input class="field" id="manualName" placeholder="例如：已报名名单"></label>
-                <label class="control">输入方式<select class="field" id="manualFormat">
-                    <option value="names">名单：每行一个姓名或编号（无表头）</option>
-                    <option value="table">表格：从 Excel 粘贴，或输入 CSV</option>
-                  </select></label>
-                <label class="control">数据内容<textarea class="field" id="manualText" rows="7"
-                    placeholder="张小雨&#10;王一鸣&#10;李可心"></textarea></label>
-                <small id="manualHint">每行一人；添加后可以作为基准表或参与表。</small>
-                <label id="manualHeaderWrap" hidden><input type="checkbox" id="manualHeader" checked>第一行是表头</label>
-                <button class="btn" id="addManual" type="button">添加到数据表</button>
-              </div>
-            </details>
-          </section>
-
-          <section class="section stack" id="modeControls">
-            <label class="control" id="sourceALabel">基准表<select class="field" id="sourceA"></select></label>
-            <small id="sourceHint">以基准表的每一行为准，逐张补充其他表的字段。</small>
-            <div class="stack merge-builder" data-controls="match compare">
-              <div class="builder-heading"><strong>匹配列</strong></div>
-              <div id="baseKeyList" class="stack"></div>
-              <button class="quiet-action" id="addKey" type="button">＋ 添加匹配列</button>
-              <details id="baseFieldWrap" class="field-disclosure"><summary id="baseFieldSummary">保留字段</summary><div id="baseFieldList" class="field-picker"></div></details>
-              <div class="builder-heading"><strong>参与表</strong><small id="joinCount"></small></div>
-              <div id="joinList" class="stack join-list"></div>
-              <button class="quiet-action" id="addJoin" type="button">＋ 添加参与表</button>
-              <details class="advanced-options"><summary>匹配选项</summary><div class="check-list"><label><input type="checkbox" id="fuzzyMatch" checked>匹配时忽略空格、大小写和全角字符差异</label></div>
-              <div class="check-list" id="compareChangesWrap" hidden><label><input type="checkbox" id="compareChanges"
-                    checked>比较各表中已勾选的同名字段</label></div></details>
-            </div>
-            <div class="stack" data-controls="clean" hidden>
-              <label class="control">重复判断列<select class="field" id="dedupeKey">
-                  <option value="*">整行完全相同</option>
-                </select></label>
-              <div class="check-list">
-                <label><input type="checkbox" id="cleanSpaces" checked>清除首尾空格和多余空白</label>
-                <label><input type="checkbox" id="cleanBlankRows" checked>删除完全空白的行</label>
-                <label><input type="checkbox" id="cleanBlankCols" checked>删除完全空白的列</label>
-                <label><input type="checkbox" id="cleanDuplicates" checked>删除重复记录，保留第一条</label>
-                <label><input type="checkbox" id="cleanPunctuation">统一中文标点和全角数字</label>
-              </div>
-            </div>
-            <div class="stack" data-controls="grade" hidden>
-              <label class="control">学生姓名列<select class="field" id="studentColumn"></select></label>
-              <label class="control">成绩列<select class="field" id="scoreColumn">
-                  <option value="*">自动识别全部成绩列</option>
-                </select></label>
-              <div class="row"><label class="control">及格线<input class="field" id="passLine" type="number" min="0"
-                    max="1000" value="60"></label><label class="control">优秀线<input class="field" id="excellentLine"
-                    type="number" min="0" max="1000" value="90"></label></div>
-            </div>
-          </section>
-        </div>
-        <div class="task-footer"><button class="btn primary run-button" id="runTask" type="button" aria-describedby="runHint" disabled>开始智能匹配</button><small id="runHint" aria-live="polite">先添加至少两张表</small></div>
-      </section>
-
-      <section class="panel center" data-workspace-panel="center" data-mobile-panel-name="preview">
-        <div class="panel-head">
-          <h2 id="previewTitle">结果预览</h2>
-          <div class="tabs center-tabs"><button class="tab center-tab active" id="tableTab"
-              type="button">表格</button><button class="tab center-tab" id="chartTab" type="button" hidden>图表</button>
-          </div>
-        </div>
-        <div class="table-stage" id="tableStage">
-          <div class="table-empty" id="tableEmpty">
-            <div><span aria-hidden="true"></span>先选择任务并导入表格<br><small>所有数据只在本机处理</small></div>
-          </div>
-          <table class="data-table" id="dataTable" hidden>
-            <thead></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="chart-stage" id="chartStage" hidden>
-          <div class="chart-card" id="distributionChart" role="img" aria-label="成绩分布图"></div>
-          <div class="chart-card" id="summaryChart" role="img" aria-label="学科统计图"></div>
-          <div class="chart-card wide" id="rankingChart" role="img" aria-label="学生成绩排名图"></div>
-        </div>
-        <div class="center-status" id="centerStatus">等待导入表格</div>
-      </section>
-
-      <div class="panel-resizer left" id="leftResizer" role="separator" aria-label="调整任务设置栏宽度"
-        aria-orientation="vertical" tabindex="0"></div>
-    </main>
-    <button class="side-reveal left" id="showLeft" aria-hidden="true">任务设置</button>
+<div class="task-switcher">
+  <div class="task-grid" role="group" aria-label="选择表格任务">
+    <button class="task-button active" type="button" data-mode="match" aria-pressed="true">合并表格</button>
+    <button class="task-button" type="button" data-mode="compare" aria-pressed="false">核对名单</button>
+    <button class="task-button" type="button" data-mode="clean" aria-pressed="false">清理数据</button>
+    <button class="task-button" type="button" data-mode="grade" aria-pressed="false">成绩分析</button>
   </div>
-  <nav class="mobile-nav" aria-label="手机端功能导航"><button class="active" type="button" data-mobile-panel="setup"
-      aria-current="page">任务</button><button type="button" data-mobile-panel="preview">预览</button></nav>
-  <div id="toast" hidden></div>
-  <script src="../../../node_modules/echarts/dist/echarts.min.js"></script>
-  <script src="../scripts/mimi-common.js"></script>
-  <script src="../scripts/mimi-workspace.js"></script>
-  <script src="../scripts/mimi-table-merge.js"></script>
-  <script src="../scripts/mimi-table.js?v=2"></script>
-</body>
+</div>
 
-</html>
+<main class="workspace" id="workspace" data-mobile-panel="setup">
+  <section class="panel left-panel left is-mobile-active" id="leftPanel" data-workspace-panel="left" data-mobile-panel-name="setup">
+    <div class="panel-head"><h2>任务设置</h2><div class="panel-head-actions"><button class="btn small danger" id="clearAll" type="button" title="清空当前数据和结果" aria-label="清空当前数据和结果" data-mimi-action="clear">清空</button><button class="panel-collapse" id="hideLeft" title="隐藏任务设置" aria-label="隐藏任务设置">−</button></div></div>
+    <div class="panel-body">
+      <section class="section task-source" id="stepAdd">
+        <div class="step-head"><span class="step-index">1</span><strong>添加数据</strong></div>
+        <div class="source-actions"><button class="btn upload" id="uploadTrigger" type="button" data-tooltip="Excel、CSV，可多选" aria-description="Excel、CSV，可多选">导入文件</button><button class="btn manual-trigger" id="openManual" type="button" aria-haspopup="dialog" aria-controls="manualDialog">手动输入</button></div><input id="filesInput" type="file" accept=".xlsx,.csv,.tsv,.txt" multiple hidden>
+        <div class="source-disclosure" id="sourceDisclosure"><div class="source-list-heading">已加表格<small id="sourceCount">0 张</small></div><div id="sourceList" class="stack" role="list" aria-label="已加表格"></div></div>
+      </section>
+
+      <section class="section" id="modeControls">
+        <div class="step-head"><span class="step-index">2</span><strong id="ruleTitle">设置规则</strong></div>
+        <p class="rule-summary" id="ruleSummary" hidden></p>
+        <button class="btn rule-trigger" id="openRules" type="button" aria-haspopup="dialog" aria-controls="rulesDialog" hidden>查看并设置规则</button>
+      </section>
+    </div>
+    <div class="task-footer" id="taskFooter"><button class="btn primary run-button" id="runTask" type="button" aria-describedby="runHint" disabled>开始</button><small id="runHint" aria-live="polite" hidden></small><button class="quiet-action" id="loadSample" type="button">试用示例</button></div>
+  </section>
+
+  <section class="panel center" data-workspace-panel="center" data-mobile-panel-name="preview">
+    <div class="panel-head"><h2 id="previewTitle">表格预览</h2><div class="tabs center-tabs" id="centerTabs" role="group" aria-label="结果展示方式" hidden><button class="tab center-tab active" id="tableTab" type="button" aria-pressed="true">表格</button><button class="tab center-tab" id="chartTab" type="button" aria-pressed="false" hidden>图表</button></div></div>
+    <div class="preview-toolbar" id="previewToolbar" hidden><label for="previewSource">查看原表</label><select class="field" id="previewSource"></select><button class="btn small" id="viewResult" type="button" hidden>返回结果</button></div>
+    <div class="result-actions" id="resultActions" hidden><div class="result-action-label"><strong>结果已就绪</strong><small id="resultQuality" hidden></small><details id="resultDetails" hidden><summary>处理详情</summary><p id="resultSummary"></p></details></div><div class="result-action-buttons"><button class="btn" id="filterIssues" type="button" aria-pressed="false" hidden>只看待检查</button><button class="btn" id="saveResult" type="button" title="添加到左侧数据列表，继续处理" disabled>继续用此表</button><button class="btn primary" id="exportResult" type="button" disabled>导出表格</button></div></div>
+    <div class="table-stage" id="tableStage" tabindex="0" aria-label="表格预览，可横向滚动"><div class="table-empty" id="tableEmpty"><div><span aria-hidden="true"></span><strong>请添加数据</strong></div></div><table class="data-table" id="dataTable" hidden><thead></thead><tbody></tbody></table></div>
+    <div class="chart-stage" id="chartStage" hidden><div class="chart-card" id="distributionChart" role="img" aria-label="成绩分布图"></div><div class="chart-card" id="summaryChart" role="img" aria-label="学科统计图"></div><div class="chart-card wide" id="rankingChart" role="img" aria-label="学生成绩排名图"></div></div>
+    <div class="center-status" id="centerStatus" role="status">请添加数据</div>
+  </section>
+
+  <div class="panel-resizer left" id="leftResizer" role="separator" aria-label="调整任务设置栏宽度" aria-orientation="vertical" tabindex="0"></div>
+</main>
+<button class="side-reveal left" id="showLeft" aria-hidden="true">任务设置</button>
+</div>
+<nav class="mobile-nav" aria-label="手机端功能导航"><button class="active" type="button" data-mobile-panel="setup" aria-current="page">任务</button><button type="button" data-mobile-panel="preview">预览</button></nav>
+
+<dialog class="table-dialog manual-dialog" id="manualDialog" aria-labelledby="manualDialogTitle">
+  <div class="dialog-head"><div><small>添加数据</small><h2 id="manualDialogTitle">手动输入</h2></div><button class="dialog-close" type="button" data-close-dialog aria-label="关闭手动输入对话框">×</button></div>
+  <div class="dialog-content stack manual-source">
+    <label class="control">名称<input class="field" id="manualName" placeholder="如：报名名单"></label>
+    <label class="control">方式<select class="field" id="manualFormat"><option value="names">名单：每行一人，无表头</option><option value="table">表格：粘贴 Excel / CSV</option></select></label>
+    <label class="control">内容<textarea class="field" id="manualText" rows="7" placeholder="张小雨&#10;王一鸣&#10;李可心"></textarea></label>
+    <small id="manualHint">每行一人。</small>
+    <label id="manualHeaderWrap" hidden><input type="checkbox" id="manualHeader" checked>首行为表头</label>
+    <p class="dialog-error" id="manualError" role="alert" hidden></p>
+  </div>
+  <div class="dialog-actions"><button class="btn" type="button" data-close-dialog>取消</button><button class="btn primary" id="addManual" type="button">加入数据表</button></div>
+</dialog>
+
+<dialog class="table-dialog rules-dialog" id="rulesDialog" aria-labelledby="rulesDialogTitle">
+  <div class="dialog-head"><div><small>任务设置</small><h2 id="rulesDialogTitle">设置规则</h2></div><button class="dialog-close" type="button" data-close-dialog aria-label="关闭规则对话框">×</button></div>
+  <div class="dialog-content rules-content">
+        <label class="control" id="sourceALabel" hidden>基准表<select class="field" id="sourceA" aria-describedby="sourceHint"></select></label>
+        <small id="sourceHint" hidden></small>
+        <div class="stack merge-builder" data-controls="match compare" hidden>
+          <div class="builder-heading"><strong>匹配列</strong></div>
+          <div id="baseKeyList" class="stack"></div>
+          <button class="quiet-action" id="addKey" type="button">＋ 加条件</button>
+          <details class="field-disclosure" id="baseFieldWrap"><summary id="baseFieldSummary">保留字段</summary><div id="baseFieldList" class="field-picker"></div></details>
+          <div class="builder-heading"><strong id="joinHeading">补充表</strong></div>
+          <div id="joinList" class="stack join-list"></div>
+          <button class="btn builder-add" id="addJoin" type="button">＋ 加参与表</button>
+          <details class="advanced-options"><summary>匹配选项</summary><div class="check-list"><label><input type="checkbox" id="fuzzyMatch" checked>忽略空格、大小写、全角差异</label></div><div class="check-list" id="compareChangesWrap" hidden><label><input type="checkbox" id="compareChanges" checked>查同名字段变化</label></div></details>
+        </div>
+        <div class="stack" data-controls="clean" hidden>
+          <label class="control">判重列<select class="field" id="dedupeKey"><option value="*">整行相同</option></select></label>
+          <div class="check-list">
+            <label><input type="checkbox" id="cleanSpaces" checked>去首尾、多余空格</label>
+            <label><input type="checkbox" id="cleanBlankRows" checked>删空行</label>
+            <label><input type="checkbox" id="cleanBlankCols" checked>删空列</label>
+            <label><input type="checkbox" id="cleanDuplicates" checked>去重，留第一条</label>
+            <label><input type="checkbox" id="cleanPunctuation">统一中文标点、全角数字</label>
+          </div>
+        </div>
+        <div class="stack" data-controls="grade" hidden>
+          <label class="control">姓名列<select class="field" id="studentColumn"></select></label>
+          <label class="control">成绩列<select class="field" id="scoreColumn"><option value="*">自动识别</option></select></label>
+          <div class="row"><label class="control">及格线<input class="field" id="passLine" type="number" min="0" max="1000" value="60"></label><label class="control">优秀线<input class="field" id="excellentLine" type="number" min="0" max="1000" value="90"></label></div>
+        </div>
+  </div>
+  <div class="dialog-actions"><button class="btn primary" type="button" data-close-dialog>完成</button></div>
+</dialog>
+<dialog class="table-dialog clear-dialog" id="clearDialog" aria-labelledby="clearDialogTitle">
+  <div class="panel-head"><h2 id="clearDialogTitle">确认清空表格？</h2></div>
+  <div class="dialog-body"><p>当前添加的数据表和处理结果将被清空。</p><p class="hint">清空后无法撤销，请确认不再需要当前内容。</p></div>
+  <div class="dialog-actions"><button class="btn" type="button" data-close-dialog>取消</button><button class="btn danger" id="confirmClear" type="button">确认</button></div>
+</dialog>
+<div id="toast" hidden></div>
+<script src="../../../node_modules/echarts/dist/echarts.min.js"></script>
+<script src="../../../node_modules/exceljs/dist/exceljs.min.js"></script>
+<script src="../scripts/mimi-common.js"></script><script src="../scripts/mimi-workspace.js"></script><script src="../scripts/mimi-table-merge.js"></script><script src="../scripts/mimi-table-workbook.js"></script><script src="../scripts/mimi-table.js?v=17"></script>
+</body></html>

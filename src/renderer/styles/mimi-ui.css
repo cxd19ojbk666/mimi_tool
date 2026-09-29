@@ -152,7 +152,7 @@ body[data-mimi-tool="table-maker"] .source-preview{flex:1;min-width:0;text-align
 body[data-mimi-tool="table-maker"] .source-item .btn{padding:4px 8px;font-size:11px;flex-shrink:0}
 body[data-mimi-tool="table-maker"] .manual-source{padding-top:12px}
 body[data-mimi-tool="table-maker"] textarea{resize:vertical;min-height:120px}
-body[data-mimi-tool="table-maker"] #sourceList{max-height:220px;overflow:auto}
+body[data-mimi-tool="table-maker"] #sourceList{overflow:visible}
 body[data-mimi-tool="table-maker"] .task-source small{color:#657885;line-height:1.6}
 body[data-mimi-tool="table-maker"] summary{cursor:pointer;color:#304354}
 
@@ -179,8 +179,6 @@ body[data-mimi-tool="table-maker"] .field-picker input{width:14px;height:14px;ma
 body[data-mimi-tool="table-maker"] .field-actions{display:flex;width:100%;gap:6px}
 body[data-mimi-tool="table-maker"] .field-action{padding:3px 5px;border:0;background:transparent;color:#2f7c91;font-size:11px;font-weight:900;text-decoration:underline;text-underline-offset:3px}
 body[data-mimi-tool="table-maker"] .field-action:hover{color:#a33e32}
-body[data-mimi-tool="table-maker"] .source-card{padding:4px;border:1px solid #d8e5e8;border-radius:11px;background:#fff}
-body[data-mimi-tool="table-maker"] .source-card .source-item{padding:2px 4px;border:0}
 body[data-mimi-tool="table-maker"] .source-settings{padding:0 7px 3px;color:#617988;font-size:11px}
 body[data-mimi-tool="table-maker"] .source-settings summary{padding:2px 0;font-weight:800}
 body[data-mimi-tool="table-maker"] .source-header-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:6px 0}
@@ -205,16 +203,13 @@ body[data-mimi-tool="table-maker"] .step-index{display:grid;width:24px;height:24
 body[data-mimi-tool="table-maker"] .source-actions{display:flex;align-items:center;gap:9px}
 body[data-mimi-tool="table-maker"] .source-actions .upload{flex:1;margin:0}
 body[data-mimi-tool="table-maker"] .task-source{gap:var(--mimi-control-gap)}
-body[data-mimi-tool="table-maker"] #sourceList{max-height:260px;gap:8px;scrollbar-width:thin;scrollbar-color:#9cb4c1 transparent}
-body[data-mimi-tool="table-maker"] #sourceList::-webkit-scrollbar{display:block;width:6px}
-body[data-mimi-tool="table-maker"] #sourceList::-webkit-scrollbar-thumb{background:#9cb4c1;border-radius:8px}
-body[data-mimi-tool="table-maker"] .source-card{padding:8px 10px;border:1.5px solid #a3b3bc;border-radius:12px 9px 13px 10px;background:#fffef8}
-body[data-mimi-tool="table-maker"] .source-card.is-base{border:2px solid var(--ink);background:#dff5e8;box-shadow:3px 3px 0 rgba(48,67,84,.14)}
+body[data-mimi-tool="table-maker"] #sourceList{gap:0}
+body[data-mimi-tool="table-maker"] .source-card{min-width:0;padding:8px 10px;background:#fffef8}
+body[data-mimi-tool="table-maker"] .source-card + .source-card{border-top:1px solid #c9d8dc}
 body[data-mimi-tool="table-maker"] .source-card .source-item{padding:0;border:0;background:transparent}
 body[data-mimi-tool="table-maker"] .source-preview{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--mimi-small-size);font-weight:900}
-body[data-mimi-tool="table-maker"] .source-remove{width:28px;height:28px;flex:none;border:0;border-radius:8px;background:transparent;color:var(--muted);font-size:20px;line-height:1}
+body[data-mimi-tool="table-maker"] .source-remove{display:grid;width:24px;height:24px;flex:none;place-items:center;padding:0;border:0;border-radius:4px;background:transparent;color:var(--muted);font-family:"Times New Roman",Georgia,serif;font-size:24px;font-weight:400;line-height:1}
 body[data-mimi-tool="table-maker"] .source-remove:hover{background:#ffe7df;color:#a33e32}
-body[data-mimi-tool="table-maker"] .source-meta{display:block;margin:3px 0 0 2px;color:var(--muted);font-size:11px!important}
 body[data-mimi-tool="table-maker"] .source-settings{margin:3px 0 0 2px;padding:0;font-size:11px}
 body[data-mimi-tool="table-maker"] .source-settings summary{display:inline-block;color:#397667;text-decoration:underline;text-underline-offset:3px}
 body[data-mimi-tool="table-maker"] .source-settings summary:before{content:'▸ '}
@@ -225,7 +220,6 @@ body[data-mimi-tool="table-maker"] .manual-entry summary{color:#397667;font-size
 body[data-mimi-tool="table-maker"] .manual-entry .manual-source{margin-top:10px;padding:12px;border:1.5px solid #9fb4c1;border-radius:13px 10px 14px 11px;background:#fffefa}
 body[data-mimi-tool="table-maker"] #sourceHint{margin:0;font-size:var(--mimi-hint-size)}
 body[data-mimi-tool="table-maker"] #modeControls{gap:var(--mimi-control-gap)}
-body[data-mimi-tool="table-maker"] .setup-empty{margin:0;padding:2px 0 2px 32px;color:var(--muted);font-size:var(--mimi-hint-size);line-height:1.6}
 body[data-mimi-tool="table-maker"] .merge-builder{gap:var(--mimi-control-gap)}
 body[data-mimi-tool="table-maker"] .builder-heading{margin-top:4px}
 body[data-mimi-tool="table-maker"] .builder-heading strong{font-size:var(--mimi-label-size)}
@@ -246,7 +240,6 @@ body[data-mimi-tool="table-maker"] #resultSummary{max-width:560px;margin:8px 0 0
 body[data-mimi-tool="table-maker"] .result-action-buttons{display:flex;gap:8px}
 body[data-mimi-tool="table-maker"] .table-empty strong{display:block;color:#344f60;font-size:var(--mimi-heading-size)}
 body[data-mimi-tool="table-maker"] .table-empty small{display:block;margin:7px 0 15px;font-size:var(--mimi-hint-size)}
-body[data-mimi-tool="table-maker"] .table-empty .empty-upload{display:inline-flex;align-items:center;min-height:44px}
 @media(min-width:761px){body[data-mimi-tool="table-maker"] .table-stage{min-height:180px}body[data-mimi-tool="table-maker"] .table-empty{min-height:240px}}
 @media(max-width:760px){
  body[data-mimi-tool="table-maker"] .top-actions{display:flex;margin-right:0}
@@ -256,54 +249,76 @@ body[data-mimi-tool="table-maker"] .table-empty .empty-upload{display:inline-fle
  body[data-mimi-tool="table-maker"] .result-action-buttons .btn{flex:1}
 }
 
-/* 四个工具共用的下拉框；保留原生 select 的表单和键盘行为。 */
+/* 四个工具共用的下拉框。保留原生 select 的表单和键盘语义。 */
 body select.field{
+  --mimi-select-chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m3.5 5.75 4.5 4 4.5-4' stroke='%23304c5d' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   appearance:none;
   -webkit-appearance:none;
-  cursor:pointer;
-  padding-right:34px!important;
-  color:#304354;
+  min-width:0;
+  padding-right:36px;
+  color:var(--ink,#304354);
   text-align:left;
-  border-color:#91a8b5;
   background-color:#fffefa;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%23304a59' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image:var(--mimi-select-chevron);
   background-repeat:no-repeat;
-  background-position:right 12px center;
-  box-shadow:inset 0 -2px 0 rgba(105,133,147,.08);
-  transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease;
+  background-position:right 11px center;
+  background-size:16px 16px;
+  cursor:pointer;
+  transition:border-color .16s ease,box-shadow .16s ease,background-color .16s ease;
 }
-body select.field:hover:not(:disabled){border-color:#4c91a5;background-color:#f2fbfd}
-body select.field:focus-visible{outline:3px solid #68bde8;outline-offset:2px;border-color:#4c91a5}
+body select.field:hover:not(:disabled){border-color:#5e9fac;background-color:#f7fffc}
+body select.field:focus-visible{outline:2px solid var(--green,#32a889);outline-offset:2px}
 body select.field:disabled{cursor:not-allowed;opacity:.55}
-body #editor select.field{padding-right:34px;background-color:#fffefa}
 
 /* Electron 的 Chromium 支持可定制的 select 弹层。 */
 @supports (appearance:base-select){
-  body select.field,body select.field::picker(select){appearance:base-select}
-  body select.field{padding-right:12px!important;background-image:none}
-  body select.field::picker-icon{color:#304a59;transition:transform .16s ease}
-  body select.field:open::picker-icon{transform:rotate(180deg)}
+  body select.field,
+  body select.field::picker(select){appearance:base-select}
+  body select.field{position:relative;background-image:none}
+  body select.field::picker-icon{
+    content:"";
+    position:absolute;
+    top:50%;
+    right:11px;
+    width:16px;
+    height:16px;
+    margin:0;
+    background:var(--mimi-select-chevron) center / 16px 16px no-repeat;
+    pointer-events:none;
+    transform:translateY(-50%) rotate(0deg);
+    transition:transform .18s ease;
+  }
+  body select.field:open::picker-icon{transform:translateY(-50%) rotate(180deg)}
   body select.field::picker(select){
-    left:anchor(left);
-    right:auto;
-    width:max-content;
+    position-area:block-end span-inline-end;
     min-width:anchor-size(width);
-    max-width:min(440px,calc(100vw - 24px));
-    max-height:min(360px,calc(100vh - 32px));
-    margin:5px 0 0;
-    padding:5px;
+    max-width:min(380px,calc(100vw - 24px));
+    max-height:min(320px,55vh);
+    margin:5px 0;
+    padding:6px;
     overflow:auto;
-    border:2px solid #799baa;
-    border-radius:14px 11px 15px 12px;
-    background:#fffdf5;
-    box-shadow:5px 6px 0 rgba(48,67,84,.18),0 14px 30px rgba(48,67,84,.13);
-    color:#304354;
+    border:2px solid var(--ink,#304354);
+    border-radius:15px 11px 16px 12px;
+    background:#fffdf3;
+    box-shadow:5px 6px 0 rgba(48,67,84,.2),0 14px 30px rgba(48,67,84,.12);
+    color:var(--ink,#304354);
     text-align:left;
   }
-  body select.field option{min-height:34px;padding:7px 10px;border-radius:8px;white-space:normal;text-align:left;line-height:1.4;cursor:pointer}
-  body select.field option:hover,body select.field option:focus-visible{background:#dff3fb;color:#24566c}
-  body select.field option:checked{background:#dff5e8;color:#226b57;font-weight:800}
+  body select.field option{
+    min-height:36px;
+    padding:8px 10px;
+    border-radius:9px 7px 10px 8px;
+    color:var(--ink,#304354);
+    font-weight:700;
+    line-height:1.4;
+    text-align:left;
+    justify-content:flex-start;
+    white-space:normal;
+    cursor:pointer;
+  }
+  body select.field option+option{margin-top:2px}
+  body select.field option:hover,body select.field option:focus-visible{background:#e5f6f0;outline:none}
+  body select.field option:checked{background:#d6f1e6;color:#245e50}
   body select.field option::checkmark{display:none}
-  body select.field optgroup{padding:6px 4px 2px;color:#607786;font-weight:800}
+  body select.field optgroup{padding:7px 4px 4px;color:#667e89;font-size:12px;font-weight:900}
 }
-@media(prefers-reduced-motion:reduce){body select.field,body select.field::picker-icon{transition:none}}

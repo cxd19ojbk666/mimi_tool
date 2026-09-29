@@ -226,6 +226,11 @@
       .seat .pos{font-size:calc(8px * var(--ui-scale))}
       .status{font-size:calc(12px * var(--ui-scale))}
     }
+    #closeSettings{box-sizing:border-box;flex:0 0 42px;width:42px;min-width:42px;max-width:42px;height:42px;min-height:42px;padding:0;border:0;border-radius:4px;background:transparent;box-shadow:none;display:grid;place-items:center;font-family:"Times New Roman",Georgia,serif;font-size:30px;font-weight:400;line-height:1}
+    #closeSettings:hover{background:#ffe7df;color:#a33e32}
+    .history-item button[data-history-remove]{box-sizing:border-box;width:28px;min-width:28px;max-width:28px;height:28px;min-height:28px;padding:0;border:0;border-radius:4px;background:transparent;display:grid;place-items:center;font-family:"Times New Roman",Georgia,serif;font-size:24px;font-weight:400;line-height:1}
+    .column-edit-head .layout-icon-btn.remove,.remove-aisle{box-sizing:border-box;width:28px;min-width:28px;height:28px;min-height:28px;padding:0;border:0;border-radius:4px;box-shadow:none;display:grid;place-items:center;font-family:"Times New Roman",Georgia,serif;font-size:24px;font-weight:400;line-height:1}
+    @media(max-width:760px){#closeSettings{flex-basis:44px;width:44px;min-width:44px;max-width:44px;height:44px;min-height:44px}.history-item button[data-history-remove],.column-edit-head .layout-icon-btn.remove,.remove-aisle{width:36px;min-width:36px;max-width:36px;height:36px;min-height:36px}}
   </style>
   <script src="../scripts/mimi-common.js"></script><script src="../scripts/mimi-workspace.js"></script>
 </head>
