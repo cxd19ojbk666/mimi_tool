@@ -255,3 +255,55 @@ body[data-mimi-tool="table-maker"] .table-empty .empty-upload{display:inline-fle
  body[data-mimi-tool="table-maker"] .result-action-buttons{width:100%}
  body[data-mimi-tool="table-maker"] .result-action-buttons .btn{flex:1}
 }
+
+/* 四个工具共用的下拉框；保留原生 select 的表单和键盘行为。 */
+body select.field{
+  appearance:none;
+  -webkit-appearance:none;
+  cursor:pointer;
+  padding-right:34px!important;
+  color:#304354;
+  text-align:left;
+  border-color:#91a8b5;
+  background-color:#fffefa;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%23304a59' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  box-shadow:inset 0 -2px 0 rgba(105,133,147,.08);
+  transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease;
+}
+body select.field:hover:not(:disabled){border-color:#4c91a5;background-color:#f2fbfd}
+body select.field:focus-visible{outline:3px solid #68bde8;outline-offset:2px;border-color:#4c91a5}
+body select.field:disabled{cursor:not-allowed;opacity:.55}
+body #editor select.field{padding-right:34px;background-color:#fffefa}
+
+/* Electron 的 Chromium 支持可定制的 select 弹层。 */
+@supports (appearance:base-select){
+  body select.field,body select.field::picker(select){appearance:base-select}
+  body select.field{padding-right:12px!important;background-image:none}
+  body select.field::picker-icon{color:#304a59;transition:transform .16s ease}
+  body select.field:open::picker-icon{transform:rotate(180deg)}
+  body select.field::picker(select){
+    left:anchor(left);
+    right:auto;
+    width:max-content;
+    min-width:anchor-size(width);
+    max-width:min(440px,calc(100vw - 24px));
+    max-height:min(360px,calc(100vh - 32px));
+    margin:5px 0 0;
+    padding:5px;
+    overflow:auto;
+    border:2px solid #799baa;
+    border-radius:14px 11px 15px 12px;
+    background:#fffdf5;
+    box-shadow:5px 6px 0 rgba(48,67,84,.18),0 14px 30px rgba(48,67,84,.13);
+    color:#304354;
+    text-align:left;
+  }
+  body select.field option{min-height:34px;padding:7px 10px;border-radius:8px;white-space:normal;text-align:left;line-height:1.4;cursor:pointer}
+  body select.field option:hover,body select.field option:focus-visible{background:#dff3fb;color:#24566c}
+  body select.field option:checked{background:#dff5e8;color:#226b57;font-weight:800}
+  body select.field option::checkmark{display:none}
+  body select.field optgroup{padding:6px 4px 2px;color:#607786;font-weight:800}
+}
+@media(prefers-reduced-motion:reduce){body select.field,body select.field::picker-icon{transition:none}}
