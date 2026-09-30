@@ -5,7 +5,7 @@
 <title>咪咪大王做表格</title>
 <link rel="icon" href="../../../assets/mimi-toolbox-transparent.ico">
 <link rel="stylesheet" href="../styles/mimi-ui.css?v=14">
-<link rel="stylesheet" href="../styles/mimi-table.css?v=17">
+<link rel="stylesheet" href="../styles/mimi-table.css?v=20">
 </head>
 <body data-mimi-tool="table-maker"><div class="shell">
 <header><div class="brand"><div><h1>咪咪大王做表格</h1><p>咪的汪给咪做的表格工具</p></div></div><div class="top-actions"><a class="btn" href="../index.html">首页</a></div></header>
@@ -21,18 +21,15 @@
 
 <main class="workspace" id="workspace" data-mobile-panel="setup">
   <section class="panel left-panel left is-mobile-active" id="leftPanel" data-workspace-panel="left" data-mobile-panel-name="setup">
-    <div class="panel-head"><h2>任务设置</h2><div class="panel-head-actions"><button class="btn small danger" id="clearAll" type="button" title="清空当前数据和结果" aria-label="清空当前数据和结果" data-mimi-action="clear">清空</button><button class="panel-collapse" id="hideLeft" title="隐藏任务设置" aria-label="隐藏任务设置">−</button></div></div>
+    <div class="panel-head"><h2>任务设置</h2><div class="panel-head-actions"><button class="btn small danger" id="clearAll" type="button" data-tooltip="清空当前数据和结果" aria-label="清空当前数据和结果" data-mimi-action="clear">清空</button><button class="panel-collapse" id="hideLeft" title="隐藏任务设置" aria-label="隐藏任务设置">−</button></div></div>
     <div class="panel-body">
       <section class="section task-source" id="stepAdd">
-        <div class="step-head"><span class="step-index">1</span><strong>添加数据</strong></div>
-        <div class="source-actions"><button class="btn upload" id="uploadTrigger" type="button" data-tooltip="Excel（.xls、.xlsx）、CSV，可多选" aria-description="Excel（.xls、.xlsx）、CSV，可多选">导入文件</button><button class="btn manual-trigger" id="openManual" type="button" aria-haspopup="dialog" aria-controls="manualDialog">手动输入</button></div><input id="filesInput" type="file" accept=".xls,.xlsx,.csv,.tsv,.txt" multiple hidden>
+        <div class="source-actions"><button class="btn upload" id="uploadTrigger" type="button" data-tooltip="Excel（.xls、.xlsx）、CSV" aria-description="Excel（.xls、.xlsx）、CSV">导入文件</button><button class="btn manual-trigger" id="openManual" type="button" aria-haspopup="dialog" aria-controls="manualDialog">手动输入</button></div><input id="filesInput" type="file" accept=".xls,.xlsx,.csv,.tsv,.txt" multiple hidden>
         <div class="source-disclosure" id="sourceDisclosure"><div class="source-list-heading">已加表格<small id="sourceCount">0 张</small></div><div id="sourceList" class="stack" role="list" aria-label="已加表格"></div></div>
       </section>
 
       <section class="section" id="modeControls">
-        <div class="step-head"><span class="step-index">2</span><strong id="ruleTitle">设置规则</strong></div>
-        <p class="rule-summary" id="ruleSummary" hidden></p>
-        <button class="btn rule-trigger" id="openRules" type="button" aria-haspopup="dialog" aria-controls="rulesDialog" hidden>查看并设置规则</button>
+        <button class="btn rule-trigger" id="openRules" type="button" aria-haspopup="dialog" aria-controls="rulesDialog" hidden>设置规则</button>
       </section>
     </div>
     <div class="task-footer" id="taskFooter"><button class="btn primary run-button" id="runTask" type="button" aria-describedby="runHint" disabled>开始</button><small id="runHint" aria-live="polite" hidden></small><button class="quiet-action" id="loadSample" type="button">试用示例</button></div>
@@ -40,7 +37,7 @@
 
   <section class="panel center" data-workspace-panel="center" data-mobile-panel-name="preview">
     <div class="panel-head"><h2 id="previewTitle">表格预览</h2><div class="tabs center-tabs" id="centerTabs" role="group" aria-label="结果展示方式" hidden><button class="tab center-tab active" id="tableTab" type="button" aria-pressed="true">表格</button><button class="tab center-tab" id="chartTab" type="button" aria-pressed="false" hidden>图表</button></div></div>
-    <div class="preview-toolbar" id="previewToolbar" hidden><label for="previewSource">查看原表</label><select class="field" id="previewSource"></select><button class="btn small" id="viewResult" type="button" hidden>返回结果</button></div>
+    <div class="preview-toolbar" id="previewToolbar" hidden><label for="previewSource">查看原表</label><div class="field preview-source-control"><span class="preview-source-text" id="previewSourceText" aria-hidden="true">选择原始表格</span><select id="previewSource" class="field"></select></div><button class="btn small" id="viewResult" type="button" hidden>返回结果</button></div>
     <div class="result-actions" id="resultActions" hidden><div class="result-action-label"><strong>结果已就绪</strong><small id="resultQuality" hidden></small><details id="resultDetails" hidden><summary>处理详情</summary><p id="resultSummary"></p></details></div><div class="result-action-buttons"><button class="btn" id="filterIssues" type="button" aria-pressed="false" hidden>只看待检查</button><button class="btn" id="saveResult" type="button" title="添加到左侧数据列表，继续处理" disabled>继续用此表</button><button class="btn primary" id="exportResult" type="button" disabled>导出表格</button></div></div>
     <div class="table-stage" id="tableStage" tabindex="0" aria-label="表格预览，可横向滚动"><div class="table-empty" id="tableEmpty"><div><span aria-hidden="true"></span><strong>请添加数据</strong></div></div><table class="data-table" id="dataTable" hidden><thead></thead><tbody></tbody></table></div>
     <div class="chart-stage" id="chartStage" hidden><div class="chart-card" id="distributionChart" role="img" aria-label="成绩分布图"></div><div class="chart-card" id="summaryChart" role="img" aria-label="学科统计图"></div><div class="chart-card wide" id="rankingChart" role="img" aria-label="学生成绩排名图"></div></div>
@@ -69,7 +66,7 @@
 <dialog class="table-dialog rules-dialog" id="rulesDialog" aria-labelledby="rulesDialogTitle">
   <div class="dialog-head"><div><small>任务设置</small><h2 id="rulesDialogTitle">设置规则</h2></div><button class="dialog-close" type="button" data-close-dialog aria-label="关闭规则对话框">×</button></div>
   <div class="dialog-content rules-content">
-        <label class="control" id="sourceALabel" hidden>基准表<select class="field" id="sourceA" aria-describedby="sourceHint"></select></label>
+        <label class="control" id="sourceALabel" hidden>主表<select class="field" id="sourceA" aria-describedby="sourceHint"></select></label>
         <small id="sourceHint" hidden></small>
         <div class="stack merge-builder" data-controls="match compare" hidden>
           <div class="builder-heading"><strong>匹配列</strong></div>
@@ -108,5 +105,5 @@
 <script src="../../../node_modules/echarts/dist/echarts.min.js"></script>
 <script src="../../../node_modules/exceljs/dist/exceljs.min.js"></script>
 <script src="../../../node_modules/xlsx/dist/xlsx.full.min.js"></script>
-<script src="../scripts/mimi-common.js?v=3"></script><script src="../scripts/mimi-workspace.js"></script><script src="../scripts/mimi-table-merge.js"></script><script src="../scripts/mimi-table-workbook.js"></script><script src="../scripts/mimi-table.js?v=18"></script>
+<script src="../scripts/mimi-common.js?v=3"></script><script src="../scripts/mimi-workspace.js"></script><script src="../scripts/mimi-table-merge.js"></script><script src="../scripts/mimi-table-workbook.js"></script><script src="../scripts/mimi-table.js?v=19"></script>
 </body></html>

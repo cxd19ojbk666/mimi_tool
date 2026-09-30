@@ -17,7 +17,7 @@ test('重复键和空键不会被静默匹配',()=>{
   const base=source('df1',['姓名','语文'],[['小雨',90],['',70]],[0],[0,1]);
   const other=source('df2',['姓名','数学'],[['小雨',80],['小雨',85],['',60]],[0],[1]);
   const result=merge({mode:'match',base,joins:[other]});
-  assert.deepEqual(result.rows.map(row=>row.slice(-2)),[['','参与表重复冲突'],['','基准表匹配值为空']]);
+  assert.deepEqual(result.rows.map(row=>row.slice(-2)),[['','参与表重复冲突'],['','主表匹配值为空']]);
   assert.match(result.note,/df2 1 行/);
 });
 

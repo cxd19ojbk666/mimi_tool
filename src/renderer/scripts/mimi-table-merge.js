@@ -16,9 +16,9 @@
     return parts.every(Boolean)?JSON.stringify(parts):null;
   };
   function validate(base,joins){
-    if(!base?.table)throw Error('请先选择基准表');
+    if(!base?.table)throw Error('请先选择主表');
     if(!joins.length)throw Error('请至少添加一张参与表');
-    if(!base.keys.length||base.keys.some(index=>!Number.isInteger(index)||index<0||index>=base.table.headers.length))throw Error('请设置有效的基准表匹配列');
+    if(!base.keys.length||base.keys.some(index=>!Number.isInteger(index)||index<0||index>=base.table.headers.length))throw Error('请设置有效的主表匹配列');
     const ids=new Set([base.id]);
     for(const source of joins){
       if(!source.table)throw Error('请为每张参与表选择数据表');
@@ -26,7 +26,7 @@
       ids.add(source.id);
       if(source.keys.length!==base.keys.length||source.keys.some(index=>!Number.isInteger(index)||index<0||index>=source.table.headers.length))throw Error(`${source.id} 的匹配列尚未设置完整`);
     }
-    if(new Set(base.keys).size!==base.keys.length)throw Error('基准表的匹配列不能重复');
+    if(new Set(base.keys).size!==base.keys.length)throw Error('主表的匹配列不能重复');
     for(const source of joins)if(new Set(source.keys).size!==source.keys.length)throw Error(`${source.id} 的匹配列不能重复`);
   }
   function indexSource(source,loose){
@@ -58,21 +58,43 @@
     });
     return [...byName].filter(([,values])=>values.length>1&&new Set(values).size>1).map(([name])=>name);
   }
+  // 附表字段去向：selected=新增列；overwrites=手动覆盖[{from:附表列, to:主表列, mode:fillEmpty|overwrite}]
   function merge({mode,base,joins,loose=true,compareChanges=true}){
     validate(base,joins);
+    joins.forEach(j=>{if(!Array.isArray(j.overwrites)) j.overwrites=[]});
     const sources=[base,...joins],indexes=sources.map(source=>indexSource(source,loose));
-    const outputColumns=sources.flatMap(source=>source.selected.map(index=>label(source,index)));
-    const columns=sources.flatMap(source=>source.selected.map(index=>({sourceId:source.id,index})));
+    // 新增列：全部 selected 都追加为新列；覆盖列：按手动映射写回主表列，不产生新列
+    const appendCols=joins.flatMap(source=>(source.selected||[]).map(col=>({source,sourceId:source.id,index:col})));
+    const overwriteCols=joins.flatMap(source=>(source.overwrites||[]).filter(o=>Number.isInteger(o.from)&&Number.isInteger(o.to)).map(o=>({source,sourceId:source.id,index:o.from,target:o.to,mode:o.mode||'fillEmpty'})));
+    const outputColumns=[...base.selected.map(index=>label(base,index)),...appendCols.map(c=>label(c.source,c.index))];
+    const columns=[...base.selected.map(index=>({sourceId:base.id,index})),...appendCols.map(c=>({sourceId:c.sourceId,index:c.index}))];
     if(mode==='match'){
       const headers=uniqueHeaders([...outputColumns,...joins.map(source=>`${source.id}·匹配状态`)]);
       const provenance=[];
       const rows=base.table.rows.map((row,rowIndex)=>{
         const key=keyOf(row,base.keys,loose),baseDuplicates=key!==null&&(indexes[0].records.get(key)?.length||0)>1;
+        // 先取主表保留字段，再按覆盖策略写入附表值
+        const basePos=new Map(base.selected.map((col,i)=>[col,i]));
         const values=[...picked(base,row)],statuses=[],origin={[base.id]:rowIndex};
         joins.forEach((source,index)=>{
           const matches=key===null?[]:indexes[index+1].records.get(key)||[];
-          const status=key===null?'基准表匹配值为空':baseDuplicates?'基准表重复':matches.length>1?'参与表重复冲突':matches.length?'已匹配':'未匹配';
-          values.push(...picked(source,status==='已匹配'?matches[0].row:null));statuses.push(status);
+          const status=key===null?'主表匹配值为空':baseDuplicates?'主表重复':matches.length>1?'参与表重复冲突':matches.length?'已匹配':'未匹配';
+          const mrow=status==='已匹配'?matches[0].row:null;
+          // 新增列
+          appendCols.filter(c=>c.source===source).forEach(c=>values.push(mrow?mrow[c.index]??'':''));
+          // 手动覆盖列：fillEmpty 仅主表为空时写入；overwrite 全部覆盖
+          overwriteCols.filter(c=>c.source===source).forEach(c=>{
+            if(!mrow)return;
+            const incoming=mrow[c.index]??'';
+            const pos=basePos.get(c.target);
+            if(pos==null)return;
+            const cur=values[pos];
+            const curEmpty=cur==null||String(cur).trim()==='';
+            const inEmpty=incoming==null||String(incoming).trim()==='';
+            if(inEmpty)return;
+            if(c.mode==='overwrite'||curEmpty)values[pos]=incoming;
+          });
+          statuses.push(status);
           if(status==='已匹配')origin[source.id]=matches[0].index;
         });
         provenance.push(origin);

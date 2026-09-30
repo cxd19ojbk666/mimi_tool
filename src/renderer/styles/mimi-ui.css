@@ -249,26 +249,47 @@ body[data-mimi-tool="table-maker"] .table-empty small{display:block;margin:7px 0
  body[data-mimi-tool="table-maker"] .result-action-buttons .btn{flex:1}
 }
 
-/* 四个工具共用的下拉框。保留原生 select 的表单和键盘语义。 */
+/* 四个工具统一的鼠标悬停文本：复刻做表格导入文件按钮的深色气泡样式。 */
+[data-tooltip]{position:relative}
+[data-tooltip]::after{content:attr(data-tooltip);position:absolute;z-index:60;top:calc(100% + 9px);left:50%;width:max-content;max-width:min(240px,80vw);padding:7px 11px;border:1px solid #355568;border-radius:8px;background:#355568;box-shadow:0 4px 10px #243b4b30;color:#fff;font-size:12px;font-weight:700;line-height:1.4;white-space:normal;text-align:center;pointer-events:none;opacity:0;visibility:hidden;transform:translate(-50%,-4px);transition:opacity .12s ease,transform .12s ease,visibility .12s ease}
+[data-tooltip]:is(:hover,:focus-visible)::after{opacity:1;visibility:visible;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){[data-tooltip]::after{transition:none}}
+
+/* 四个工具下拉框统一：全部复刻点名器-学生名单-筛选-性别筛选下拉框样式，保留原生 select 的表单和键盘语义。 */
 body select.field{
   --mimi-select-chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m3.5 5.75 4.5 4 4.5-4' stroke='%23304c5d' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   appearance:none;
   -webkit-appearance:none;
+  width:100%;
   min-width:0;
-  padding-right:36px;
-  color:var(--ink,#304354);
-  text-align:left;
+  min-height:42px;
+  padding:9px 36px 9px 12px;
+  border:2px solid #91a8b5;
+  border-radius:13px 10px 14px 11px;
   background-color:#fffefa;
   background-image:var(--mimi-select-chevron);
   background-repeat:no-repeat;
   background-position:right 11px center;
   background-size:16px 16px;
+  box-shadow:inset 0 -2px 0 rgba(105,133,147,.08);
+  color:var(--ink,#304354);
+  font-size:14px;
+  font-weight:800;
+  line-height:1.5;
+  text-align:left;
   cursor:pointer;
   transition:border-color .16s ease,box-shadow .16s ease,background-color .16s ease;
 }
 body select.field:hover:not(:disabled){border-color:#5e9fac;background-color:#f7fffc}
 body select.field:focus-visible{outline:2px solid var(--green,#32a889);outline-offset:2px}
 body select.field:disabled{cursor:not-allowed;opacity:.55}
+/* 做表格 / 排座位里曾把下拉框改小，统一改回标准尺寸。 */
+body[data-mimi-tool="table-maker"] .builder-key-row .field,
+body[data-mimi-tool="table-maker"] .join-key-row .field,
+body[data-mimi-tool="table-maker"] .source-header-controls .field{padding:9px 36px 9px 12px;font-size:14px;min-height:42px}
+/* 做板贴缩放框只保留宽度，框体样式与其他工具一致。 */
+body select.field.zoom{width:74px;min-height:42px;padding:9px 30px 9px 10px;font-size:12px}
+@media(max-width:760px){body select.field{min-height:46px;padding:10px 36px 10px 11px;font-size:16px}body select.field.zoom{min-height:46px}}
 
 /* Electron 的 Chromium 支持可定制的 select 弹层。 */
 @supports (appearance:base-select){

@@ -19,7 +19,32 @@
     download(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),`${document.title}-备份-${new Date().toISOString().slice(0,10)}.json`);
     toast(text.backupSaved);
   }
+  function initTooltips(){
+    // 四个工具统一悬停文本：把原生 title 转为深色气泡 data-tooltip，避免浏览器默认黄底样式。
+    const convert=root=>{
+      const scope=root instanceof Element?root:document;
+      if(scope instanceof Element&&scope.hasAttribute('title')){
+        const text=scope.getAttribute('title').trim();
+        if(text&&!scope.hasAttribute('data-tooltip'))scope.setAttribute('data-tooltip',text);
+        scope.removeAttribute('title');
+      }
+      (scope.querySelectorAll?scope.querySelectorAll('[title]'):[]).forEach(element=>{
+        const text=(element.getAttribute('title')||'').trim();
+        if(text&&!element.hasAttribute('data-tooltip'))element.setAttribute('data-tooltip',text);
+        element.removeAttribute('title');
+      });
+    };
+    convert(document);
+    new MutationObserver(mutations=>{
+      mutations.forEach(mutation=>{
+        mutation.addedNodes.forEach(node=>{if(node instanceof Element)convert(node)});
+        if(mutation.type==='attributes'&&mutation.target instanceof Element&&mutation.target.hasAttribute('title'))convert(mutation.target);
+      });
+    }).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['title']});
+    // 动态通过 el.title 赋值的座位、按钮等也会被上面的监听自动转换。
+  }
   function init({action,subject}){
+    initTooltips();
     document.title=`咪咪大王${action}`;
     document.querySelector('.brand h1').textContent=document.title;
     document.querySelector('.brand p').textContent=`咪的汪给咪做的${subject}工具`;

@@ -49,13 +49,20 @@
       for(let r=item.top-first;r<=item.bottom-first;r++)for(let c=item.left-1;c<item.right;c++)covered[r][c]=master;
     }
     const headers=uniquePaths(covered);
+    // 表头之前的通栏标题/填报行：预览时作横幅展示，导出时原样还原，保证界面美观
+    const preamble=[];
+    for(let row=1;row<first;row++){
+      const values=Array.from({length:width},(_,col)=>raw.value(row,col+1,false));
+      if(values.some(v=>!empty(v)))preamble.push(values);
+    }
+    const title=preamble.length?String(preamble[0].find(v=>!empty(v))??'').trim():'';
     const rows=[],dataStyles=[],rowHeights=[];
     for(let row=first+levels;row<=raw.lastRow;row++){
       rows.push(Array.from({length:width},(_,col)=>raw.value(row,col+1,false)));
       dataStyles.push(Array.from({length:width},(_,col)=>raw.style(row,col+1)));
       rowHeights.push(raw.height(row));
     }
-    return {headers,rows,headerRows,resolvedHeaderRows:covered,headerMerges,headerStart:first,headerDepth:levels,headerStyles:headerRows.map((_,offset)=>Array.from({length:width},(_,col)=>raw.style(first+offset,col+1))),headerHeights:headerRows.map((_,offset)=>raw.height(first+offset)),dataStyles,rowHeights,columnWidths:Array.from({length:width},(_,col)=>raw.widthOf(col+1)),format};
+    return {headers,rows,headerRows,resolvedHeaderRows:covered,headerMerges,headerStart:first,headerDepth:levels,preamble,title,headerStyles:headerRows.map((_,offset)=>Array.from({length:width},(_,col)=>raw.style(first+offset,col+1))),headerHeights:headerRows.map((_,offset)=>raw.height(first+offset)),dataStyles,rowHeights,columnWidths:Array.from({length:width},(_,col)=>raw.widthOf(col+1)),format};
   }
   function fromRows(rows,{start=1,depth=1,format='csv'}={}){
     const width=Math.max(0,...rows.map(row=>row.length));
@@ -70,23 +77,51 @@
     if(width>500)throw Error('工作表超过 500 列，请先缩小数据范围');
     return {width,lastRow,merges};
   }
+  // 智能推测表头：跳过“大标题/填报行”等单值通栏行，区分文本表头与数字数据行。
+  function rowFilled(sheet,info,r){
+    let count=0;const values=[];
+    for(let c=1;c<=info.width;c++){const cell=sheet.getCell(r,c);if(cell.isMerged&&cell.master?.address!==cell.address)continue;const v=plain(cell.value);if(!empty(v)){count++;values.push(v)}}
+    return {count,values};
+  }
+  function isTitleLike(sheet,info,r,count){
+    if(count!==1)return false;
+    // 单个非空值 + 存在跨越多列的横向合并，即视为标题/填报行
+    return info.merges.some(item=>item.top<=r&&item.bottom>=r&&(item.right-item.left)>=Math.max(3,Math.floor(info.width/4)));
+  }
+  function looksLikeDataRow(sheet,info,r){
+    // 数据行特征：数字/日期单元格占比高
+    let num=0,filled=0;
+    for(let c=1;c<=info.width;c++){
+      const cell=sheet.getCell(r,c);if(cell.isMerged&&cell.master?.address!==cell.address)continue;
+      const v=cell.value;if(v==null||v==='')continue;filled++;
+      if(typeof v==='number'||v instanceof Date)num++;
+      else if(typeof v==='string'&&/^[-+]?\d+(\.\d+)?$/.test(v.trim().normalize('NFKC').replace(/,/g,'')))num++;
+    }
+    return filled>=3&&num/filled>=0.25;
+  }
   function suggestHeader(sheet){
     const info=worksheetInfo(sheet),limit=Math.min(15,info.lastRow);
     let start=1;
     for(let r=1;r<=limit;r++){
-      let count=0;
-      for(let c=1;c<=info.width;c++){const cell=sheet.getCell(r,c);if(cell.isMerged&&cell.master?.address!==cell.address)continue;if(!empty(plain(cell.value)))count++}
+      const {count}=rowFilled(sheet,info,r);
+      if(count===0)continue;
+      if(isTitleLike(sheet,info,r,count))continue; // 跳过“附件2…录入表”“填报时间…”等通栏标题行
       if(count>=2){start=r;break}
-      if(count===1&&r===limit)start=r;
+      if(r===limit)start=r;
     }
+    // 纵向扩展：有合并延续就继续；遇到明显数据行就停；最多 8 层
     let depth=1;
-    while(depth<5&&start+depth<=info.lastRow){
-      const row=start+depth-1;
+    while(depth<8&&start+depth<=info.lastRow){
+      const row=start+depth-1,next=start+depth;
       const hasHorizontalMerge=info.merges.some(item=>item.top<=row&&item.bottom>=row&&item.right>item.left&&item.top>=start);
-      const hasVerticalContinuation=info.merges.some(item=>item.top<start+depth&&item.bottom>=start+depth&&item.top>=start);
-      if(!hasHorizontalMerge&&!hasVerticalContinuation)break;
-      depth++;
+      const hasVerticalContinuation=info.merges.some(item=>item.top<next&&item.bottom>=next&&item.top>=start);
+      if(hasHorizontalMerge||hasVerticalContinuation){depth++;continue}
+      // 无合并时：下一行仍像表头文字则继续，若像数据行则停止
+      if(!looksLikeDataRow(sheet,info,next)){const {count}=rowFilled(sheet,info,next);if(count>=2&&!looksLikeDataRow(sheet,info,row)){depth++;continue}}
+      break;
     }
+    // 若首层误含数字数据行，回退一层
+    while(depth>1&&looksLikeDataRow(sheet,info,start+depth-1))depth--;
     return {start,depth};
   }
   function fromWorksheet(sheet,options={}){
@@ -161,10 +196,22 @@
       const row=sheet.getRow(rowIndex);if(height)row.height=height;
       values.forEach((value,column)=>{const cell=row.getCell(column+1);cell.value=value===''?null:value;cell.style=clone(styles?.[column])});
     };
-    layout.headerRows.forEach((row,index)=>put(index+1,row,layout.headerStyles[index],layout.headerHeights[index]));
-    result.rows.forEach((row,index)=>put(layout.headerDepth+index+1,row,layout.rowStyles[index],layout.rowHeights[index]));
-    for(const item of layout.headerMerges)sheet.mergeCells(item.top+1,item.left+1,item.bottom+1,item.right+1);
-    sheet.views=[{state:'frozen',ySplit:layout.headerDepth}];
+    // 还原主表标题/填报行（通栏合并、居中加粗），视觉与原表一致
+    let offset=0;
+    const preamble=result.preamble||sources[0]?.table.preamble||[];
+    preamble.forEach(values=>{
+      offset++;
+      const row=sheet.getRow(offset);
+      row.height=22;
+      const text=String(values.find(v=>v!==''&&v!=null)??'');
+      const cell=row.getCell(1);cell.value=text||null;
+      cell.font={size:14,bold:true};cell.alignment={horizontal:'center',vertical:'middle'};
+      if(layout.columnWidths.length>1)sheet.mergeCells(offset,1,offset,layout.columnWidths.length);
+    });
+    layout.headerRows.forEach((row,index)=>put(offset+index+1,row,layout.headerStyles[index],layout.headerHeights[index]));
+    result.rows.forEach((row,index)=>put(offset+layout.headerDepth+index+1,row,layout.rowStyles[index],layout.rowHeights[index]));
+    for(const item of layout.headerMerges)sheet.mergeCells(offset+item.top+1,item.left+1,offset+item.bottom+1,item.right+1);
+    sheet.views=[{state:'frozen',ySplit:offset+layout.headerDepth}];
     return new Blob([await book.xlsx.writeBuffer()],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   }
   function toDelimited(result,format='csv',layout=result.layout){
