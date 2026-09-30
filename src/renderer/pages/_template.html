@@ -1,0 +1,54 @@
+<!doctype html>
+<!-- 咪咪工具统一页面模板：新增工具请复制本文件，仅替换 [TOOL] 与中心区内容。
+  约定（四个工具已统一）：.shell > header(.brand + .top-actions) + main.workspace + mobile-nav + dialog + #toast；
+  body 必须带 data-mimi-tool="[TOOL]"；样式只用 mimi-ui.css，页内 <style> 仅写 body[data-mimi-tool="[TOOL]"] 作用域覆盖；
+  脚本顺序固定：mimi-common.js → mimi-settings.js → mimi-workspace.js → 业务脚本。 -->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light">
+<title>咪咪大王[TOOL]</title>
+<link rel="icon" href="../../../assets/mimi-toolbox-transparent.ico">
+<link rel="stylesheet" href="../styles/mimi-ui.css">
+<style>
+/* 页内仅允许本工具作用域样式。示例：body[data-mimi-tool="[TOOL]"] .stage { } */
+</style>
+<script defer src="../scripts/mimi-common.js"></script>
+<script defer src="../scripts/mimi-settings.js"></script>
+<script defer src="../scripts/mimi-workspace.js"></script>
+</head>
+<body data-mimi-tool="[TOOL]">
+<div class="shell">
+  <header>
+    <div class="brand"><div><h1>咪咪大王[TOOL]</h1><p>咪的汪给咪做的[TOOL]工具</p></div></div>
+    <div class="top-actions">
+      <a class="btn" href="../index.html">首页</a>
+      <button class="btn" type="button" data-mimi-open-settings>设置</button>
+      <button class="btn" type="button" data-mimi-action="backup">备份</button>
+      <button class="btn" type="button" data-mimi-action="restore">恢复</button>
+      <button class="btn accent" type="button" data-mimi-action="export">导出</button>
+    </div>
+  </header>
+  <main class="workspace" id="workspace" data-mobile-panel="setup">
+    <section class="panel left-panel left" data-workspace-panel="left" data-mobile-panel-name="setup">
+      <div class="panel-head"><h2>设置</h2><div class="panel-head-actions"><button class="btn small danger" type="button" data-mimi-action="clear">清空</button><button class="panel-collapse" id="hideLeft" aria-label="隐藏设置">−</button></div></div>
+      <div class="panel-body"></div>
+    </section>
+    <section class="panel center" data-workspace-panel="center" data-mobile-panel-name="main">
+      <div class="panel-head"><h2>工作区</h2></div>
+      <div class="panel-body"></div>
+      <div class="status"></div>
+    </section>
+    <aside class="panel right-panel right" data-workspace-panel="right" data-mobile-panel-name="review">
+      <div class="panel-head"><h2>结果</h2><div class="panel-head-actions"><button class="panel-collapse" id="hideRight" aria-label="隐藏结果">−</button></div></div>
+      <div class="panel-body"></div>
+    </aside>
+    <div class="panel-resizer left" id="leftResizer" role="separator" aria-label="调整左栏宽度" aria-orientation="vertical" tabindex="0"></div>
+    <div class="panel-resizer right" id="rightResizer" role="separator" aria-label="调整右栏宽度" aria-orientation="vertical" tabindex="0"></div>
+  </main>
+  <button class="side-reveal left" id="showLeft">设置</button>
+  <button class="side-reveal right" id="showRight">结果</button>
+</div>
+<nav class="mobile-nav" aria-label="手机端功能导航"><button class="active" type="button" data-mobile-panel="setup">设置</button><button type="button" data-mobile-panel="main">工作区</button><button type="button" data-mobile-panel="review">结果</button></nav>
+<dialog id="mimiSettingsDialog" aria-labelledby="mimiSettingsTitle"><div class="dialog-head"><h2 id="mimiSettingsTitle">我的设置</h2><button data-mimi-close-settings aria-label="关闭设置">×</button></div><div class="dialog-body"></div><div class="dialog-actions"><button data-mimi-reset-settings>恢复默认</button></div></dialog>
+<div id="toast" hidden></div>
+</body></html>

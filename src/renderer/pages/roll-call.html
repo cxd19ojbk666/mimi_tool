@@ -148,10 +148,10 @@ body[data-mimi-tool="roll-call"] .dialog-actions{display:flex;justify-content:fl
  body[data-mimi-tool="roll-call"] .drawing .draw-progress{opacity:0}
 }
 </style>
-<script defer src="../../../node_modules/xlsx/dist/xlsx.full.min.js"></script><script defer src="../scripts/mimi-common.js?v=3"></script><script defer src="../scripts/mimi-workspace.js?v=3"></script>
+<script defer src="../../../node_modules/xlsx/dist/xlsx.full.min.js"></script><script defer src="../scripts/mimi-common.js?v=3"></script><script defer src="../scripts/mimi-settings.js"></script><script defer src="../scripts/mimi-workspace.js?v=3"></script>
 </head>
 <body data-mimi-tool="roll-call"><div class="shell">
-<header><div class="brand"><div><h1>咪咪大王点名器</h1><p>公平随机，让每个名字都被看见</p></div></div><div class="top-actions"><a class="btn" href="../index.html">首页</a></div></header>
+<header><div class="brand"><div><h1>咪咪大王点名器</h1><p>公平随机，让每个名字都被看见</p></div></div><div class="top-actions"><a class="btn" href="../index.html">首页</a><button class="btn" type="button" data-mimi-open-settings>设置</button><button class="btn" type="button" data-mimi-action="backup">备份</button><button class="btn" type="button" data-mimi-action="restore">恢复</button></div></header>
 <main class="workspace" id="workspace" data-mobile-panel="draw">
 <section class="panel left-panel left" id="leftPanel" data-workspace-panel="left" data-mobile-panel-name="setup">
 <div class="panel-head"><h2>学生名单</h2><div class="panel-head-actions"><button class="btn small danger" id="clearRoster" type="button" data-tooltip="清空学生名单和点名记录" aria-label="清空学生名单和点名记录">清空</button><button class="panel-collapse" id="hideLeft" title="隐藏学生名单" aria-label="隐藏学生名单">−</button></div></div>
