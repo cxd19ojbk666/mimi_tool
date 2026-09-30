@@ -1,5 +1,5 @@
 /* 咪咪工具共享：界面偏好设置（字体 / 字号 / 紧凑 / 动效 / 危险确认）的唯一行为源。
- * 各工具只需在页面放置约定结构的设置对话框，即可获得统一行为。
+ * 可在页面放置约定结构的设置对话框；未放置时会自动创建共享设置侧栏。
  * 约定：对话框 id="mimiSettingsDialog"，内部单选 name="mimiFont" / name="mimiScale"，
  * 开关 id="mimiCompact" / "mimiReduceMotion" / "mimiConfirmDanger" / "mimiShowLabels"(可选)，
  * 打开按钮 [data-mimi-open-settings]，关闭按钮 [data-mimi-close-settings]，重置按钮 [data-mimi-reset-settings]。
@@ -12,7 +12,17 @@
 
   // 读取本地保存的偏好，损坏时回退到默认值。
   function load(key) {
-    try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(key) || '{}')); }
+    try {
+      var saved = JSON.parse(localStorage.getItem(key) || '{}') || {};
+      return {
+        font: ['round', 'hand', 'clear'].includes(saved.font) ? saved.font : DEFAULTS.font,
+        scale: ['small', 'normal', 'large'].includes(saved.scale) ? saved.scale : DEFAULTS.scale,
+        compact: !!saved.compact,
+        reduceMotion: !!saved.reduceMotion,
+        confirmDanger: saved.confirmDanger === undefined ? DEFAULTS.confirmDanger : !!saved.confirmDanger,
+        showLabels: saved.showLabels === undefined ? DEFAULTS.showLabels : !!saved.showLabels
+      };
+    }
     catch (e) { return Object.assign({}, DEFAULTS); }
   }
 
@@ -22,6 +32,35 @@
     var key = options.key || 'mimi-appearance-v1';
     var toast = options.toast || (global.MimiCommon && global.MimiCommon.toast) || function () {};
     var prefs = load(key);
+
+    // The newer tools share a settings sheet; older tools keep their existing dialogs.
+    if (!document.getElementById('mimiSettingsDialog')) {
+      var dialog = document.createElement('dialog');
+      dialog.id = 'mimiSettingsDialog';
+      dialog.setAttribute('aria-labelledby', 'mimiSettingsTitle');
+      dialog.innerHTML = `<div class="mimi-settings-shell">
+        <div class="mimi-settings-head"><div><h2 id="mimiSettingsTitle">我的设置</h2><p>调整操作界面的显示方式，修改后即时生效。</p></div><button class="btn mimi-settings-close" type="button" data-mimi-close-settings aria-label="关闭设置">×</button></div>
+        <div class="mimi-settings-body">
+          <section class="mimi-settings-section"><div class="mimi-settings-kicker"><b>界面字体</b><span>即时预览</span></div><div class="mimi-settings-choices">
+            <label><input type="radio" name="mimiFont" value="round"><span><strong>圆润</strong><small>活泼亲切</small></span></label>
+            <label><input type="radio" name="mimiFont" value="hand"><span><strong>手写</strong><small>粉笔板书</small></span></label>
+            <label><input type="radio" name="mimiFont" value="clear"><span><strong>清晰</strong><small>利落易读</small></span></label>
+          </div></section>
+          <section class="mimi-settings-section"><div class="mimi-settings-kicker"><b>文字大小</b><span>全局缩放</span></div><div class="mimi-settings-choices">
+            <label><input type="radio" name="mimiScale" value="small"><span><strong>小号</strong><small>显示更多内容</small></span></label>
+            <label><input type="radio" name="mimiScale" value="normal"><span><strong>标准</strong><small>平衡舒适</small></span></label>
+            <label><input type="radio" name="mimiScale" value="large"><span><strong>大号</strong><small>更轻松阅读</small></span></label>
+          </div></section>
+          <section class="mimi-settings-section"><div class="mimi-settings-kicker"><b>界面偏好</b><span>自动保存</span></div>
+            <label class="mimi-settings-toggle"><span><b>紧凑布局</b><small>减少留白，显示更多内容</small></span><input id="mimiCompact" type="checkbox"></label>
+            <label class="mimi-settings-toggle"><span><b>减少动态效果</b><small>减少动画和过渡</small></span><input id="mimiReduceMotion" type="checkbox"></label>
+          </section>
+        </div>
+        <div class="mimi-settings-foot"><small>设置已保存在此设备</small><button class="btn" type="button" data-mimi-reset-settings>恢复默认</button></div>
+      </div>`;
+      document.body.append(dialog);
+      dialog.addEventListener('click', function (event) { if (event.target === dialog) dialog.close(); });
+    }
 
     // 把偏好写入 <html data-*>，全站 CSS 只认这组属性。
     function apply(syncForm) {

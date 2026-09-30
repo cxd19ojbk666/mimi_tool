@@ -1,0 +1,128 @@
+/* The four tools share one outer frame. Tool styles own the panels and canvas. */
+html { min-width: 320px; }
+body[data-mimi-tool] { min-width: 320px; }
+body[data-mimi-tool] .shell {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1520px;
+  min-width: 0;
+  margin-inline: auto;
+  padding: 24px 28px 34px;
+}
+body[data-mimi-tool] .shell > header {
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-width: 0;
+  margin: 0 0 24px;
+  padding: 7px 4px 10px;
+}
+body[data-mimi-tool] .shell > header .brand { min-width: 0; }
+body[data-mimi-tool] .shell > header .brand h1 {
+  margin: 0;
+  font-family: var(--display-font, "YouYuan", "Yuanti SC", sans-serif);
+  font-size: calc(36px * var(--ui-scale, 1));
+  font-weight: 900;
+  line-height: 1.2;
+}
+body[data-mimi-tool] .shell > header .brand p {
+  margin: 7px 0 0;
+  font-size: calc(13px * var(--ui-scale, 1));
+  line-height: 1.5;
+}
+body[data-mimi-tool] .shell > header .top-actions {
+  display: grid;
+  flex: none;
+  align-items: center;
+  grid-template-columns: repeat(4, 64px);
+  gap: 8px;
+  width: 280px;
+  margin: 0 112px 0 auto;
+}
+@media (min-width: 761px) {
+  body[data-mimi-tool] .shell > header .top-actions:has(> .export-wrap, > .btn.accent) {
+    grid-template-columns: repeat(4, 64px) 112px;
+    width: 400px;
+  }
+}
+body[data-mimi-tool] .shell > header .top-actions > .btn,
+body[data-mimi-tool] .shell > header .top-actions > .export-wrap > .btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  height: 43px;
+  min-height: 43px;
+  padding: 8px 13px;
+  font-size: calc(14px * var(--ui-scale, 1));
+  line-height: 1.5;
+  white-space: nowrap;
+  text-align: center;
+}
+body[data-mimi-tool] .shell > .workspace { min-width: 0; }
+body[data-mimi-tool] .shell > header .top-actions > .export-wrap { min-width: 0; }
+
+@media (min-width: 761px) and (max-width: 1100px) {
+  body[data-mimi-tool] .shell { padding: 18px; }
+  body[data-mimi-tool] .shell > header { flex-wrap: wrap; }
+  body[data-mimi-tool] .shell > header .top-actions {
+    max-width: 100%;
+    margin: 0 0 0 auto;
+  }
+}
+
+@media (max-width: 760px) {
+  body[data-mimi-tool] .shell {
+    padding: calc(10px + env(safe-area-inset-top)) max(10px, env(safe-area-inset-right))
+      calc(92px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  }
+  body[data-mimi-tool] .shell > header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 14px;
+    padding: 3px 2px 0;
+  }
+  body[data-mimi-tool] .shell > header::after { display: none; }
+  body[data-mimi-tool] .shell > header .brand {
+    flex: 0 1 auto;
+    padding-left: 43px;
+  }
+  body[data-mimi-tool] .shell > header .brand::before { top: 9px; width: 34px; height: 11px; }
+  body[data-mimi-tool] .shell > header .brand h1 {
+    font-size: clamp(calc(27px * var(--ui-scale, 1)), calc(8.5vw * var(--ui-scale, 1)), calc(34px * var(--ui-scale, 1)));
+    line-height: 1.12;
+    letter-spacing: .04em;
+  }
+  body[data-mimi-tool] .shell > header .brand p {
+    display: block;
+    margin-top: 5px;
+    font-size: calc(12px * var(--ui-scale, 1));
+    line-height: 1.45;
+  }
+  body[data-mimi-tool] .shell > header .top-actions {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+    margin: 0;
+  }
+  body[data-mimi-tool] .shell > header .top-actions > .btn,
+  body[data-mimi-tool] .shell > header .top-actions > .export-wrap > .btn {
+    width: 100%;
+    height: 44px;
+    min-height: 44px;
+    padding: 7px 3px;
+    font-size: calc(12px * var(--ui-scale, 1));
+  }
+  body[data-mimi-tool] .shell > header .top-actions > :nth-child(n+5) { grid-column: 1 / -1; }
+  body[data-mimi-tool="board-labels"] .shell > header .brand::before {
+    width: 34px;
+    height: 34px;
+  }
+}

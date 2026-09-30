@@ -94,7 +94,7 @@
       table.hidden=!entries.length;$('tableEmpty').hidden=!!entries.length;
       $('previewEmptyTitle').textContent=filtered?'没有符合条件的数据':'这张表还没有数据行';
       $('previewEmptyHint').textContent=filtered?'试试其他关键词，或清除筛选查看整张表':'可以切换其他表格，或检查表头设置';
-      $('previewEmptyActions').hidden=true;$('resetPreviewFilters').hidden=!filtered;
+      $('previewEmptyHint').hidden=false;$('resetPreviewFilters').hidden=!filtered;
       $('clearPreviewSearch').hidden=!search.value;
       $('previewPageLabel').textContent=`${page+1} / ${slice.pages}`;
       $('previewPrevious').disabled=page===0;$('previewNext').disabled=page===slice.pages-1;
@@ -125,9 +125,9 @@
       current=null;entries=[];page=0;search.value='';closeDetail();
       table.tHead.replaceChildren();table.tBodies[0].replaceChildren();table.hidden=true;
       $('previewTools').hidden=true;$('previewPagination').hidden=true;$('tableTitleBanner').hidden=true;
-      $('tableEmpty').hidden=false;$('previewEmptyActions').hidden=false;$('resetPreviewFilters').hidden=true;
-      $('previewEmptyTitle').textContent='把表格放进来，先看看数据';
-      $('previewEmptyHint').textContent='支持 Excel、CSV，也可以直接粘贴名单';
+      $('tableEmpty').hidden=false;$('resetPreviewFilters').hidden=true;
+      $('previewEmptyTitle').textContent='请先导入数据';
+      $('previewEmptyHint').textContent='';$('previewEmptyHint').hidden=true;
     }
     search.addEventListener('input',event=>{if(!event.isComposing)filter()});
     search.addEventListener('compositionend',filter);

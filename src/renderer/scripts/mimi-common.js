@@ -63,7 +63,25 @@
       requestAnimationFrame(()=>syncFromNative(select));
       setTimeout(()=>syncFromNative(select),60);
       setTimeout(()=>syncFromNative(select),200);
+      watchOpen();
       return true;
+    };
+    // 连续快击时单次同步可能踩空：只要还有箭头处于展开态，就持续用原生状态校准，
+    // 弹层真实关闭后自动停表，避免常驻轮询。
+    let watching=false;
+    const watchOpen=()=>{
+      if(watching||nativeOpen(document.createElement('select'))===null)return;
+      watching=true;
+      let ticks=0;
+      const timer=setInterval(()=>{
+        ticks++;
+        let anyOpen=false;
+        document.querySelectorAll('select.field.is-open,select#previewSource.is-open').forEach(select=>{
+          anyOpen=true;
+          syncFromNative(select);
+        });
+        if(!anyOpen||ticks>20){clearInterval(timer);watching=false}
+      },50);
     };
     // 根据展开 / 收起状态切换箭头方向的样式类。
     const setOpen=(select,open)=>{
@@ -110,6 +128,7 @@
       select.addEventListener('keydown',event=>{
         if(event.key==='Escape')setOpen(select,false);
         else if(event.key==='ArrowDown'||event.key==='ArrowUp'||event.key==='Enter'||event.key===' ')setOpen(select,true);
+        pollNative(select);
       });
       document.addEventListener('pointerdown',event=>{
         if(!select.contains(event.target)&&!select.isEqualNode(event.target))setOpen(select,false);

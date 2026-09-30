@@ -1,0 +1,264 @@
+/* Four-tool control layer. Load after each tool's layout and canvas styles. */
+body[data-mimi-tool] {
+  --mimi-control-ink: #304354;
+  --mimi-control-border: #91a8b5;
+  --mimi-control-blue: #68bde8;
+  --mimi-control-green: #32a889;
+  --mimi-control-coral: #ff785d;
+  --mimi-control-surface: #fffefa;
+  --mimi-control-radius: 13px 10px 14px 11px;
+  --mimi-control-shadow: 3px 4px 0 rgba(48, 67, 84, .18);
+}
+
+/* Appearance preferences use the same font and size scale in every tool. */
+:root { --ui-font: "YouYuan", "Yuanti SC", "STKaiti", "KaiTi", sans-serif; --display-font: "YouYuan", "Yuanti SC", "STKaiti", sans-serif; --ui-scale: 1; }
+html[data-font="hand"] { --ui-font: "STKaiti", "KaiTi", "Songti SC", serif; --display-font: "STKaiti", "KaiTi", serif; }
+html[data-font="clear"] { --ui-font: "Avenir Next", "PingFang SC", "Noto Sans CJK SC", sans-serif; --display-font: "Futura", "PingFang SC", sans-serif; }
+html[data-scale="small"] { --ui-scale: .9; }
+html[data-scale="large"] { --ui-scale: 1.1; }
+body[data-mimi-tool="roll-call"], body[data-mimi-tool="table-maker"] {
+  --mimi-title-size: calc(36px * var(--ui-scale));
+  --mimi-heading-size: calc(19px * var(--ui-scale));
+  --mimi-label-size: calc(14px * var(--ui-scale));
+  --mimi-hint-size: calc(12.5px * var(--ui-scale));
+  font-family: var(--ui-font);
+  font-size: calc(15px * var(--ui-scale));
+}
+body[data-mimi-tool="table-maker"] { --mimi-title-size: calc(30px * var(--ui-scale)); --mimi-heading-size: calc(18px * var(--ui-scale)); }
+body[data-mimi-tool="roll-call"] :is(button, input, textarea, select),
+body[data-mimi-tool="table-maker"] :is(button, input, textarea, select) { font-family: var(--ui-font); }
+body[data-mimi-tool="roll-call"] :is(.brand h1, .panel-head h2),
+body[data-mimi-tool="table-maker"] :is(.brand h1, .panel-head h2) { font-family: var(--display-font); }
+html[data-density="compact"] body[data-mimi-tool="roll-call"] .panel-body,
+html[data-density="compact"] body[data-mimi-tool="table-maker"] .panel-body,
+html[data-density="compact"] body[data-mimi-tool="table-maker"] .left-panel .panel-body { padding: 14px; }
+html[data-density="compact"] body[data-mimi-tool="roll-call"] .section + .section,
+html[data-density="compact"] body[data-mimi-tool="table-maker"] .section + .section { margin-top: 12px; padding-top: 12px; }
+html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-motion="reduced"] *::after {
+  animation-duration: .01ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+  transition-duration: .01ms !important;
+}
+
+/* Text, number and multiline inputs use the same shape and focus treatment. */
+body[data-mimi-tool] :is(input.field:not([type="color"]), textarea.field, select.field),
+body[data-mimi-tool="board-labels"] #editor :is(input.field:not([type="color"]), textarea.field, select.field),
+body[data-mimi-tool="table-maker"] #previewPageSize {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 2px solid var(--mimi-control-border);
+  border-radius: var(--mimi-control-radius);
+  background-color: var(--mimi-control-surface);
+  box-shadow: inset 0 -2px 0 rgba(105, 133, 147, .08);
+  color: var(--mimi-control-ink);
+  font-size: calc(14px * var(--ui-scale, 1));
+  font-weight: 700;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+}
+body[data-mimi-tool] :is(input.field:not([type="color"]), textarea.field, select.field):hover:not(:disabled),
+body[data-mimi-tool="board-labels"] #editor :is(input.field:not([type="color"]), textarea.field, select.field):hover:not(:disabled),
+body[data-mimi-tool="table-maker"] #previewPageSize:hover:not(:disabled) {
+  border-color: #5e9fac;
+  background-color: #f7fffc;
+}
+body[data-mimi-tool] :is(input.field:not([type="color"]), textarea.field, select.field):focus,
+body[data-mimi-tool="board-labels"] #editor :is(input.field:not([type="color"]), textarea.field, select.field):focus,
+body[data-mimi-tool="table-maker"] #previewPageSize:focus {
+  border-color: var(--mimi-control-blue);
+  box-shadow: 0 0 0 4px rgba(104, 189, 232, .22);
+  outline: none;
+}
+body[data-mimi-tool] :is(input.field:not([type="color"]), textarea.field, select.field):disabled,
+body[data-mimi-tool="table-maker"] #previewPageSize:disabled { opacity: .5; cursor: not-allowed; }
+body[data-mimi-tool] textarea.field { resize: vertical; line-height: 26px; }
+body[data-mimi-tool] :is(select.field, #previewPageSize) { padding-right: 36px; font-weight: 800; cursor: pointer; }
+body[data-mimi-tool] .mimi-select-wrap { width: 100%; min-width: 0; }
+body[data-mimi-tool="board-labels"] .mimi-select-wrap:has(> .zoom) { width: 88px; flex: 0 0 88px; }
+body[data-mimi-tool="board-labels"] .mimi-select-wrap > .zoom { width: 100%; min-height: 42px; }
+body[data-mimi-tool="table-maker"] .preview-pagination .mimi-select-wrap { width: 112px; flex: 0 0 112px; }
+body[data-mimi-tool="table-maker"] #previewPageSize { min-height: 36px; padding: 5px 30px 5px 9px; font-size: 12px; }
+body[data-mimi-tool="table-maker"] .preview-pagination .mimi-select-arrow { right: 8px; }
+body[data-mimi-tool="table-maker"] .preview-pagination .btn { width: 34px; min-width: 34px; }
+body[data-mimi-tool="table-maker"] .preview-search {
+  min-height: 42px;
+  height: 42px;
+  border: 2px solid var(--mimi-control-border);
+  border-radius: var(--mimi-control-radius);
+  background: var(--mimi-control-surface);
+  box-shadow: inset 0 -2px 0 rgba(105, 133, 147, .08);
+}
+body[data-mimi-tool="table-maker"] .preview-search:hover { border-color: #5e9fac; background: #f7fffc; }
+body[data-mimi-tool="table-maker"] .preview-search:focus-within { border-color: var(--mimi-control-blue); box-shadow: 0 0 0 4px rgba(104, 189, 232, .22); }
+
+/* One button vocabulary: neutral, primary, export, destructive and upload. */
+body[data-mimi-tool] :is(.btn, .file, .filelabel, .chip),
+body[data-mimi-tool="table-maker"] :is(.source-actions .btn, .preview-options .btn, .preview-pagination .btn),
+body[data-mimi-tool="board-labels"] #editor .editor-actions .btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 9px 14px;
+  border: 2px solid var(--mimi-control-ink);
+  border-radius: var(--mimi-control-radius);
+  background: #fffdf6;
+  box-shadow: var(--mimi-control-shadow);
+  color: var(--mimi-control-ink);
+  font-size: calc(14px * var(--ui-scale, 1));
+  font-weight: 800;
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+body[data-mimi-tool] :is(.btn, .file, .filelabel, .chip):hover:not(:disabled),
+body[data-mimi-tool="table-maker"] :is(.source-actions .btn, .preview-options .btn, .preview-pagination .btn):hover:not(:disabled),
+body[data-mimi-tool="board-labels"] #editor .editor-actions .btn:hover:not(:disabled) {
+  border-color: var(--mimi-control-ink);
+  background: #fff9d8;
+  transform: translateY(-2px);
+  box-shadow: 4px 6px 0 rgba(48, 67, 84, .18);
+}
+body[data-mimi-tool] :is(.btn, .file, .filelabel, .chip):active:not(:disabled),
+body[data-mimi-tool="table-maker"] :is(.source-actions .btn, .preview-options .btn, .preview-pagination .btn):active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 rgba(48, 67, 84, .18);
+}
+body[data-mimi-tool] :is(.btn.primary, .btn.accent, .btn.danger) { border-color: var(--mimi-control-ink); }
+body[data-mimi-tool] .btn.primary { background: var(--mimi-control-green); color: #fff; }
+body[data-mimi-tool] .btn.primary:hover:not(:disabled) { background: #279575; color: #fff; }
+body[data-mimi-tool] .btn.accent { background: var(--mimi-control-coral); color: #fff; }
+body[data-mimi-tool] .btn.accent:hover:not(:disabled) { background: #e8654b; color: #fff; }
+body[data-mimi-tool] .btn.danger { background: #fff5ef; color: #a33e32; }
+body[data-mimi-tool] .btn.danger:hover:not(:disabled) { background: #ffe7df; color: #a33e32; }
+body[data-mimi-tool] .btn.small,
+body[data-mimi-tool="table-maker"] :is(.preview-options .btn, .preview-pagination .btn) {
+  min-height: 34px;
+  padding: 6px 10px;
+  font-size: calc(13px * var(--ui-scale, 1));
+}
+body[data-mimi-tool] :is(.btn, .file, .filelabel, .chip):disabled,
+body[data-mimi-tool] :is(.file, .filelabel).is-disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+body[data-mimi-tool] :is(.file, .filelabel),
+body[data-mimi-tool="table-maker"] #uploadTrigger {
+  border-style: dashed;
+  border-color: var(--mimi-control-blue);
+  background: #eefaff;
+  color: #286780;
+}
+body[data-mimi-tool] :is(.file, .filelabel):hover:not(:disabled),
+body[data-mimi-tool="table-maker"] #uploadTrigger:hover:not(:disabled) { background: #dff5ff; }
+body[data-mimi-tool] :is(.top-actions, header .actions) > .btn,
+body[data-mimi-tool] header .export-wrap > .btn { min-height: 43px; }
+body[data-mimi-tool="board-labels"] .toolbar .history-btn,
+body[data-mimi-tool="seating-chart"] .refresh-icon-btn { padding: 0; }
+body[data-mimi-tool="board-labels"] .toolbar > .row > .btn,
+body[data-mimi-tool="board-labels"] .toolbar > .row > .mimi-select-wrap > .zoom { height: 42px; min-height: 42px; }
+body[data-mimi-tool="board-labels"] .toolbar > .row > .history-btn { width: 42px; min-width: 42px; max-width: 42px; }
+body[data-mimi-tool] :is(.roster-template-btn, .text-btn, .quiet-action, .help-link) {
+  border: 0;
+  background: transparent;
+  color: #397667;
+  font-size: calc(13px * var(--ui-scale, 1));
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+body[data-mimi-tool] :is(.roster-template-btn, .text-btn, .quiet-action, .help-link):hover { color: #a33e32; }
+body[data-mimi-tool] :is(.roster-template-btn, .text-btn, .quiet-action, .help-link):focus-visible { outline: 2px solid var(--mimi-control-blue); outline-offset: 2px; }
+
+/* Selection, switches and tabs share states while keeping each tool's layout. */
+body[data-mimi-tool] :is(input[type="checkbox"], input[type="radio"], input[type="range"]) { accent-color: var(--mimi-control-green); }
+body[data-mimi-tool] :is(.tabs, .task-grid) { border: 2px solid #9cb4c1; border-radius: 15px; background: #dfeef3; }
+body[data-mimi-tool] :is(.tab, .task-button) { border: 0; border-radius: 10px; background: transparent; color: #627785; font-weight: 800; }
+body[data-mimi-tool] :is(.tab.active, .task-button.active) { background: #ffc94f; color: var(--mimi-control-ink); box-shadow: 2px 3px 0 rgba(48, 67, 84, .15); }
+body[data-mimi-tool] :is(.tab, .task-button):hover:not(.active) { background: rgba(255, 253, 246, .7); color: var(--mimi-control-ink); }
+body[data-mimi-tool] :is(.btn, .file, .filelabel, .chip, .tab, .task-button):focus-visible,
+body[data-mimi-tool] .mimi-select-wrap:focus-within,
+body[data-mimi-tool] :is(.preview-search, .preview-source-control):focus-within {
+  outline: 2px solid var(--mimi-control-blue);
+  outline-offset: 2px;
+}
+body[data-mimi-tool] :is(.btn, .file, .filelabel, .chip, .tab, .task-button):focus-visible { box-shadow: 0 0 0 4px rgba(104, 189, 232, .18); }
+
+/* The shared settings sheet is mounted by table maker and roll call. */
+body[data-mimi-tool] #mimiSettingsDialog {
+  width: min(540px, calc(100% - 22px));
+  max-width: none;
+  height: 100%;
+  max-height: 100%;
+  margin: 0 0 0 auto;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid var(--mimi-control-ink);
+  border-radius: 24px 0 0 24px;
+  background: #fffdf3;
+  color: var(--mimi-control-ink);
+  box-shadow: -12px 0 45px rgba(38, 55, 62, .23);
+}
+body[data-mimi-tool] #mimiSettingsDialog::backdrop { background: rgba(35, 50, 58, .32); backdrop-filter: blur(3px); }
+body[data-mimi-tool] #mimiSettingsDialog[open] { animation: mimi-settings-in .26s cubic-bezier(.2, .8, .2, 1); }
+@keyframes mimi-settings-in { from { transform: translateX(24px); opacity: .45; } }
+.mimi-settings-shell { height: 100%; display: flex; flex-direction: column; }
+.mimi-settings-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 25px 27px 20px; border-bottom: 2px dashed #b5a96e; background: #fff1ac; }
+.mimi-settings-head h2 { margin: 0; color: #345365; font: 900 calc(24px * var(--ui-scale))/1.2 var(--display-font); }
+.mimi-settings-head p { margin: 6px 0 0; color: #6d7c84; font-size: calc(13px * var(--ui-scale)); }
+body[data-mimi-tool] .mimi-settings-close { width: 42px; min-width: 42px; height: 42px; min-height: 42px; padding: 0; border-radius: 50%; font-size: 27px; line-height: 1; }
+.mimi-settings-body { display: grid; gap: 25px; padding: 23px 27px 30px; overflow: auto; }
+.mimi-settings-section { display: grid; gap: 12px; }
+.mimi-settings-section + .mimi-settings-section { padding-top: 22px; border-top: 2px dashed #ccd5d7; }
+.mimi-settings-kicker { display: flex; align-items: center; justify-content: space-between; }
+.mimi-settings-kicker b { color: #345365; font-size: calc(15px * var(--ui-scale)); }
+.mimi-settings-kicker span { color: #708092; font-size: calc(11px * var(--ui-scale)); }
+.mimi-settings-choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.mimi-settings-choices label { position: relative; min-width: 0; cursor: pointer; }
+.mimi-settings-choices input { position: absolute; opacity: 0; }
+.mimi-settings-choices label span { display: grid; height: 100%; min-height: 82px; place-items: center; gap: 4px; padding: 12px 9px; border: 2px solid #a5b5bd; border-radius: 14px 11px 15px 12px; background: #fffef8; text-align: center; transition: transform .15s, box-shadow .15s; }
+.mimi-settings-choices strong { font-size: calc(14px * var(--ui-scale)); }
+.mimi-settings-choices small { color: #708092; font-size: calc(11px * var(--ui-scale)); }
+.mimi-settings-choices input:checked + span { border-color: var(--mimi-control-ink); background: #dff5e8; box-shadow: 3px 4px 0 rgba(48, 67, 84, .16); transform: translateY(-2px); }
+.mimi-settings-choices input:focus-visible + span { outline: 3px solid var(--mimi-control-blue); outline-offset: 2px; }
+.mimi-settings-toggle { display: flex; align-items: center; justify-content: space-between; gap: 18px; min-height: 48px; cursor: pointer; }
+.mimi-settings-toggle + .mimi-settings-toggle { border-top: 1px solid #dde2df; }
+.mimi-settings-toggle b, .mimi-settings-toggle small { display: block; }
+.mimi-settings-toggle b { font-size: calc(14px * var(--ui-scale)); }
+.mimi-settings-toggle small { margin-top: 2px; color: #708092; font-size: calc(11px * var(--ui-scale)); }
+.mimi-settings-toggle input { position: relative; flex: 0 0 48px; width: 48px; height: 27px; margin: 0; appearance: none; border: 2px solid var(--mimi-control-ink); border-radius: 20px; background: #e5e7df; box-shadow: 1px 2px 0 rgba(48, 67, 84, .15); cursor: pointer; transition: background-color .18s; }
+.mimi-settings-toggle input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 17px; height: 17px; border: 1.5px solid var(--mimi-control-ink); border-radius: 50%; background: #fff; transition: transform .18s; }
+.mimi-settings-toggle input:checked { background: #73cfac; }
+.mimi-settings-toggle input:checked::after { transform: translateX(21px); }
+.mimi-settings-toggle input:focus-visible { outline: 3px solid var(--mimi-control-blue); outline-offset: 2px; }
+.mimi-settings-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding: 14px 27px 20px; border-top: 2px dashed #c5d1d3; background: #f8fcf7; }
+.mimi-settings-foot small { color: #708092; font-size: calc(12px * var(--ui-scale)); }
+
+@media (max-width: 760px) {
+  body[data-mimi-tool] :is(input.field:not([type="color"]), textarea.field, select.field) { min-height: 46px; font-size: 16px; }
+  body[data-mimi-tool] :is(.btn, .file, .filelabel, .chip) { min-height: 44px; }
+  body[data-mimi-tool="board-labels"] .mimi-select-wrap:has(> .zoom) { width: 88px; flex-basis: 88px; }
+  body[data-mimi-tool="table-maker"] #previewPageSize { min-height: 38px; }
+  body[data-mimi-tool="table-maker"] .preview-search { min-height: 40px; height: 40px; }
+  body[data-mimi-tool="table-maker"] .brand h1 { font-size: calc(23px * var(--ui-scale)); }
+  body[data-mimi-tool="roll-call"] .brand h1 { font-size: calc(30px * var(--ui-scale)); }
+  body[data-mimi-tool="board-labels"] .toolbar > .row > .btn,
+  body[data-mimi-tool="board-labels"] .toolbar > .row > .mimi-select-wrap > .zoom { height: 44px; min-height: 44px; }
+  body[data-mimi-tool="board-labels"] .toolbar > .row > .history-btn { width: 44px; min-width: 44px; max-width: 44px; }
+  body[data-mimi-tool] #mimiSettingsDialog { width: 100%; height: min(88%, 760px); margin: auto 0 0; border-radius: 20px 20px 0 0; }
+  body[data-mimi-tool] #mimiSettingsDialog[open] { animation: mimi-settings-up .26s ease; }
+  .mimi-settings-head, .mimi-settings-body, .mimi-settings-foot { padding-left: 19px; padding-right: 19px; }
+  .mimi-settings-choices { gap: 7px; }
+  .mimi-settings-choices label span { min-height: 78px; padding: 10px 5px; }
+}
+@keyframes mimi-settings-up { from { transform: translateY(28px); opacity: .5; } }
+@media (prefers-reduced-motion: reduce) {
+  body[data-mimi-tool] :is(.btn, .file, .filelabel, .chip, .tab, .task-button, input.field, textarea.field, select.field) { transition: none; }
+}

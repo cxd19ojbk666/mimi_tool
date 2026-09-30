@@ -4,6 +4,7 @@
   if(document.body?.dataset.mimiTool!=='table-maker')return;
   MimiCommon.init({action:'做表格',subject:'表格'});
   const $=id=>document.getElementById(id),D=MimiCommon.roster,toast=MimiCommon.toast;
+  MimiSettings.mount({key:'mimi-table-appearance-v1',toast});
   const MODE_META={
     match:{title:'合并结果'},
     compare:{title:'核对结果'},
@@ -533,7 +534,6 @@
   document.querySelectorAll('[data-close-dialog]').forEach(button=>button.onclick=()=>button.closest('dialog').close());
   $('filesInput').onchange=handleFiles;
   $('uploadTrigger').onclick=()=>$('filesInput').click();
-  $('previewImport').onclick=()=>$('filesInput').click();$('previewManual').onclick=()=>$('openManual').click();
   $('sourceA').onchange=sourcesChanged;
   $('previewSource').onchange=()=>{const source=sourceById($('previewSource').value);if(source)renderSource(source.table,source.name,{preserveResult:true});else if(state.result)showResult()};
   $('viewResult').onclick=showResult;

@@ -10,15 +10,17 @@
   
   <script src="../../../node_modules/xlsx/dist/xlsx.full.min.js"></script><script src="../scripts/mimi-common.js?v=3"></script><script src="../scripts/mimi-settings.js"></script><script src="../scripts/mimi-workspace.js"></script><script defer src="../scripts/mimi-seating.js"></script>
   <link rel="stylesheet" href="../styles/mimi-seating.css">
+  <link rel="stylesheet" href="../styles/mimi-controls.css">
+<link rel="stylesheet" href="../styles/mimi-layout.css">
 </head>
 <body data-mimi-tool="seating-chart"><div class="shell">
   <header>
     <div class="brand"><div><h1>咪咪大王排座位</h1><p>咪的汪给咪做的排座位工具</p></div></div>
-    <div class="top-actions actions"><a class="btn" href="../index.html" aria-label="返回咪咪大王工具箱">首页</a><button class="btn settings-trigger" id="openSettings" data-mimi-open-settings type="button">设置</button><button class="btn" id="saveBackup" data-mimi-action="backup">备份</button><button class="btn" id="restoreBackup" data-mimi-action="restore" type="button">恢复</button><input hidden id="restoreFile" type="file" accept=".json"><button class="btn accent" id="exportPng" data-tooltip="导出完整座位平面图">导出 PNG</button></div>
+    <div class="top-actions actions"><a class="btn" href="../index.html" aria-label="返回咪咪大王工具箱">首页</a><button class="btn settings-trigger" id="openSettings" data-mimi-open-settings type="button">设置</button><button class="btn" id="saveBackup" data-mimi-action="backup">备份</button><button class="btn" id="restoreBackup" data-mimi-action="restore" type="button">恢复</button><input hidden id="restoreFile" type="file" accept=".json"><button class="btn accent" id="exportPng">导出 PNG</button></div>
   </header>
   <main class="workspace" id="workspace" data-mobile-panel="setup">
     <section class="panel left-panel left is-mobile-active" id="leftPanel" data-workspace-panel="left" data-mobile-panel-name="setup">
-      <div class="panel-head"><h2>准备排座</h2><div class="panel-head-actions"><button class="btn small danger" id="clearSetup" type="button" title="清空布局、名单、规则、历史座位和排座结果" aria-label="清空布局、名单、规则、历史座位和排座结果" data-mimi-action="clear">清空</button><button class="panel-collapse" id="hideLeft" title="隐藏准备排座" aria-label="隐藏准备排座">−</button></div></div>
+      <div class="panel-head"><h2>准备排座</h2><div class="panel-head-actions"><button class="btn small danger" id="clearSetup" type="button" aria-label="清空布局、名单、规则、历史座位和排座结果" data-mimi-action="clear">清空</button><button class="panel-collapse" id="hideLeft" aria-label="隐藏准备排座">−</button></div></div>
       <div class="panel-body">
         <div class="tabs setup-tabs" role="tablist" aria-label="排座设置分类"><button class="tab active" role="tab" aria-selected="true" data-tab="layout">布局</button><button class="tab" role="tab" aria-selected="false" data-tab="roster">名单</button><button class="tab" role="tab" aria-selected="false" data-tab="rules">规则</button></div>
         <div class="tabpage active" id="tab-layout">
@@ -41,21 +43,21 @@
           <div class="section position-rule"><div class="position-names"><div><label class="label">需要往前坐</label><textarea class="field" id="frontNames" placeholder="张三&#10;李四&#10;每行一人，换行可继续添加。"></textarea></div><div><label class="label">需要往后坐</label><textarea class="field" id="backNames" placeholder="王五&#10;赵六&#10;每行一人，换行可继续添加。"></textarea></div></div><div class="row position-options"><div><label class="label">前几排</label><input class="field" id="frontRows" type="number" min="1" value="2"></div><div><label class="label">后几排</label><input class="field" id="backRows" type="number" min="1" value="2"></div><div><label class="label">优先级</label><select class="field" id="frontWeight"><option value="hard" selected>必须</option><option value="8">高</option><option value="4">中</option></select></div></div></div>
           <div class="section"><label class="label">不能挨着谁（不要上课讲话喔~）</label><textarea class="field" id="apartPairs" placeholder="张三，李四&#10;王五，赵六&#10;每行一组，姓名用中英文逗号分隔；换行可继续添加。"></textarea></div>
           <div class="section"><label class="label">固定小组（学习好搭子）</label><textarea class="field" id="groupLines" placeholder="张三，李四，王五，赵六&#10;钱七，孙八&#10;每行一组，姓名用中英文逗号分隔；换行可继续添加。"></textarea></div>
-          <div class="section"><label class="label">历史座位 <span id="historyCount">0 份</span></label><p class="hint">上传以前导出的 JSON 备份。新方案会优先避开相同座位，也会尽量换开曾经相邻的同学。</p><label class="filelabel" for="historyFiles">上传历史座位</label><input hidden id="historyFiles" type="file" accept=".json,application/json" multiple><div class="history-box"><div class="history-head"><b>已参考的历史</b><button class="btn small danger" id="clearHistory" title="清空全部历史座位" aria-label="清空全部历史座位" type="button" data-mimi-action="clear">清空</button></div><div id="historyList" class="history-list"></div></div></div>
+          <div class="section"><label class="label">历史座位 <span id="historyCount">0 份</span></label><p class="hint">上传以前导出的 JSON 备份。新方案会优先避开相同座位，也会尽量换开曾经相邻的同学。</p><label class="filelabel" for="historyFiles">上传历史座位</label><input hidden id="historyFiles" type="file" accept=".json,application/json" multiple><div class="history-box"><div class="history-head"><b>已参考的历史</b><button class="btn small danger" id="clearHistory" aria-label="清空全部历史座位" type="button" data-mimi-action="clear">清空</button></div><div id="historyList" class="history-list"></div></div></div>
         </div>
       </div>
     </section>
     <section class="panel center" data-workspace-panel="center" data-mobile-panel-name="seats">
-      <div class="canvas-toolbar"><div><b id="roomTitle">我的教室</b></div><div><button class="btn small" id="clearSeats" title="清空排座结果和全部锁定" aria-label="清空布局：清除排座结果和全部锁定" data-mimi-action="clear">清空布局</button><button class="btn small" id="editLayout" type="button" aria-pressed="false">编辑布局</button><button class="btn small" id="toggleLabels" type="button" aria-pressed="false" title="隐藏座位规则标签">隐藏标签</button><button class="btn accent" id="generate">开始排座</button></div></div>
+      <div class="canvas-toolbar"><div><b id="roomTitle">我的教室</b></div><div><button class="btn small" id="clearSeats" aria-label="清空布局：清除排座结果和全部锁定" data-mimi-action="clear">清空布局</button><button class="btn small" id="editLayout" type="button" aria-pressed="false">编辑布局</button><button class="btn small" id="toggleLabels" type="button" aria-pressed="false">隐藏标签</button><button class="btn accent" id="generate">开始排座</button></div></div>
       <div class="classroom-wrap"><div class="classroom"><div class="room-fixtures" aria-hidden="true"><span class="window-fixture left-windows"><i></i><i></i><i></i></span><span class="window-fixture right-windows"><i></i><i></i><i></i></span></div><div class="front"><div class="board"></div><span>黑板 · 讲台</span></div><div class="seat-columns" id="seatMap"></div></div></div>
       <div class="status"><span><i class="dot green"></i>拖动姓名，或依次点击两个座位换座；右上角可锁定</span><span><i class="dot orange"></i>桌面端可拖动过道，手机端可在“编辑布局”中增删</span></div>
     </section>
     <aside class="panel right-panel right" id="rightPanel" data-workspace-panel="right" data-mobile-panel-name="review">
-      <div class="panel-head"><h2>方案评估</h2><div class="panel-head-actions"><button class="panel-collapse" id="hideRight" title="隐藏方案评估" aria-label="隐藏方案评估">−</button></div></div>
+      <div class="panel-head"><h2>方案评估</h2><div class="panel-head-actions"><button class="panel-collapse" id="hideRight" aria-label="隐藏方案评估">−</button></div></div>
       <div class="panel-body">
         <div><div class="scorebox"><div class="scoretop"><div><small>当前方案</small><div class="score" id="score">--</div></div><span id="scoreLabel">尚未排座</span></div><div class="meter"><i id="scoreMeter"></i></div></div><div id="warnings" class="warnings" aria-live="polite"></div></div>
         <div class="section"><label class="label">候选方案 <span>点击切换</span></label><div id="candidates"><div class="empty-note">暂无候选方案</div></div></div>
-        <div class="section"><label class="label">随机种子 <span>可复现</span></label><div class="row"><input class="field" id="seed" value="2026"><button class="btn refresh-icon-btn" id="randomSeed" type="button" title="刷新随机种子" aria-label="刷新随机种子"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3a5 5 0 1 0 4.55 2.91.5.5 0 0 1 .91-.41A6 6 0 1 1 8 2z"></path><path d="M8 4.47V.53a.25.25 0 0 1 .41-.19l2.36 1.97a.25.25 0 0 1 0 .38L8.41 4.66A.25.25 0 0 1 8 4.47"></path></svg></button></div><p class="hint">名单、规则和种子相同时，可重新生成同样的方案。</p></div>
+        <div class="section"><label class="label">随机种子 <span>可复现</span></label><div class="row"><input class="field" id="seed" value="2026"><button class="btn refresh-icon-btn" id="randomSeed" type="button" aria-label="刷新随机种子"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3a5 5 0 1 0 4.55 2.91.5.5 0 0 1 .91-.41A6 6 0 1 1 8 2z"></path><path d="M8 4.47V.53a.25.25 0 0 1 .41-.19l2.36 1.97a.25.25 0 0 1 0 .38L8.41 4.66A.25.25 0 0 1 8 4.47"></path></svg></button></div><p class="hint">名单、规则和种子相同时，可重新生成同样的方案。</p></div>
       </div>
     </aside>
     <div class="panel-resizer left" id="leftResizer" role="separator" aria-label="调整准备排座栏宽度" aria-orientation="vertical" tabindex="0"></div>

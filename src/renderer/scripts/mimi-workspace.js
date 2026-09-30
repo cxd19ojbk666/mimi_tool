@@ -86,6 +86,7 @@
   if(document.body?.dataset.mimiTool!=='roll-call')return;
   MimiCommon.init({action:'点名器',subject:'点名'});
   const $=id=>document.getElementById(id),D=MimiCommon.roster,toast=MimiCommon.toast,KEY='mimi-roll-call-v2';
+  MimiSettings.mount({key:'mimi-roll-call-appearance-v1',toast});
   const defaults=()=>({students:[],history:[],options:{mode:'student',gender:'all',group:'all',noRepeat:true},ui:{}});
   let state=defaults(),busy=false,sheets=[],pending=null,storageWarning=false,revealTimer=0;
   try{

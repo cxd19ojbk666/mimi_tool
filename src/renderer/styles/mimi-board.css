@@ -129,3 +129,6 @@ html[data-motion="reduced"] *,html[data-motion="reduced"] *:before,html[data-mot
 #closeAppearanceSettings{box-sizing:border-box;flex:0 0 42px;width:42px;min-width:42px;max-width:42px;height:42px;min-height:42px;padding:0;border:0;border-radius:4px;background:transparent;box-shadow:none;display:grid;place-items:center;font-family:"Times New Roman",Georgia,serif;font-size:30px;font-weight:400;line-height:1}
 #closeAppearanceSettings:hover{background:#ffe7df;color:#a33e32}
 @media(max-width:760px){#closeAppearanceSettings{flex-basis:44px;width:44px;min-width:44px;max-width:44px;height:44px;min-height:44px}}
+
+/* 编辑板贴栏的拖拽区域透明，保留握柄原有的黄绿条纹。 */
+@media(min-width:1101px){.panel-resizer.right{background:transparent}}

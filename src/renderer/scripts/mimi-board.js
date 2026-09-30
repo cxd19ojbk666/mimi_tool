@@ -226,7 +226,7 @@ document.querySelectorAll('#settingsBody > .section').forEach((section,index)=>{
   button.setAttribute('aria-controls',contents.map(child=>child.id).join(' '));
   const update=()=>{
     const collapsed=section.classList.contains('is-folded');
-    const label=collapsed?'展开':'收起';button.title=label;button.setAttribute('aria-label',label);button.setAttribute('aria-expanded',String(!collapsed));
+    button.removeAttribute('title');button.setAttribute('aria-label',collapsed?'展开':'收起');button.setAttribute('aria-expanded',String(!collapsed));
   };
   button.onclick=()=>{section.classList.toggle('is-folded');update()};
   heading.append(button);update();
