@@ -188,8 +188,8 @@
     try{
       if(file.size>5*1024*1024)throw Error('文件超过 5 MB，请删去无关内容后重试');
       const extension=file.name.split('.').pop().toLowerCase();
-      if(!['xlsx','txt','csv','tsv'].includes(extension))throw Error('请上传 .xlsx、.txt、.csv 或 .tsv 文件；旧版 .xls 请另存为 .xlsx');
-      if(extension==='xlsx'){
+      if(!['xls','xlsx','txt','csv','tsv'].includes(extension))throw Error('请上传 .xls、.xlsx、.txt、.csv 或 .tsv 文件');
+      if(extension==='xls'||extension==='xlsx'){
         const workbook=await D.readWorkbook(file);sheets=workbook;$('sheetSelect').replaceChildren(...sheets.map((s,i)=>new Option(s.name,String(i))));$('sheetControl').hidden=false;preview(sheets[0].rows());
       }else{
         const bytes=await file.arrayBuffer();let text;

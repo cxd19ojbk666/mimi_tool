@@ -157,7 +157,11 @@
       const workbook=new ExcelJS.Workbook();await workbook.xlsx.load(await file.arrayBuffer());
       return {name:file.name,sheets:workbook.worksheets.map(sheet=>({name:sheet.name,sheet,format:'xlsx'}))};
     }
-    if(!['csv','tsv','txt'].includes(ext))throw Error('请选择 .xlsx、.csv、.tsv 或 .txt 文件');
+    if(ext==='xls'){
+      const sheets=await D.readWorkbook(file,{raw:true});
+      return {name:file.name,sheets:sheets.map(sheet=>({name:sheet.name,rows:sheet.rows(),format:'xls'}))};
+    }
+    if(!['csv','tsv','txt'].includes(ext))throw Error('请选择 .xls、.xlsx、.csv、.tsv 或 .txt 文件');
     const text=decodeText(await file.arrayBuffer()),rows=D.parseText(text);
     return {name:file.name,sheets:[{name:'数据',rows,format:ext}]};
   }
@@ -455,7 +459,7 @@
   function saveResult(){
     if(!state.result)return;
     const sources=state.result.sourceIds?.map(sourceById).filter(Boolean)||[];
-    const format=sources.some(item=>item.table.format==='xlsx')?'xlsx':sources[0]?.table.format||'manual';
+    const format=sources.some(item=>['xls','xlsx'].includes(item.table.format))?'xlsx':sources[0]?.table.format||'manual';
     const table=state.result.layout?MimiTableWorkbook.resultAsTable(state.result,state.result.layout,format):MimiTableWorkbook.fromRows([state.result.headers,...state.result.rows],{format:'manual'});
     const source=addSource(`${MODE_META[state.mode].title}`,table);
     renderSources();$('viewResult').hidden=true;toast(`已添加「${source.name}」，可选择它继续处理`);
@@ -484,7 +488,7 @@
     try{
       $('exportResult').disabled=true;
       const result=state.result,sources=result.sourceIds?.map(sourceById).filter(Boolean)||[];
-      const baseFormat=sources[0]?.table.format||'xlsx',hasExcel=sources.some(source=>source.table.format==='xlsx');
+      const baseFormat=sources[0]?.table.format||'xlsx',hasExcel=sources.some(source=>['xls','xlsx'].includes(source.table.format));
       const format=result.layout&&!hasExcel&&['csv','tsv','txt'].includes(baseFormat)?baseFormat:'xlsx';
       const blob=format==='xlsx'?(result.layout?await MimiTableWorkbook.toXlsx(result,sources,result.layout):D.xlsx([result.headers,...result.rows],MODE_META[state.mode].title)):MimiTableWorkbook.toDelimited(result,format);
       const name=result.fileName.replace(/\.xlsx$/i,`.${format}`);MimiCommon.download(blob,name);toast(`已导出 ${format.toUpperCase()} 结果`);

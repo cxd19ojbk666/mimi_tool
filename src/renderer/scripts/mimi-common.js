@@ -112,7 +112,22 @@
     }
     return files;
   }
-  async function readWorkbook(file){
+  async function readWorkbook(file,{raw=false}={}){
+    const extension=file.name.split('.').pop().toLowerCase();
+    if(extension==='xls'){
+      if(!global.XLSX)throw Error('Excel 格式组件未加载');
+      const buffer=await file.arrayBuffer(),signature=new Uint8Array(buffer,0,Math.min(8,buffer.byteLength));
+      if(signature.length<8||![0xd0,0xcf,0x11,0xe0,0xa1,0xb1,0x1a,0xe1].every((byte,index)=>signature[index]===byte))throw Error('不是有效的 XLS 文件');
+      const workbook=global.XLSX.read(buffer,{type:'array',cellDates:raw});
+      if(!workbook.SheetNames.length)throw Error('找不到可读取的工作表');
+      return workbook.SheetNames.map(name=>({name,rows:()=>{
+        const sheet=workbook.Sheets[name],ref=sheet['!ref'];if(!ref)return [];
+        const range=global.XLSX.utils.decode_range(ref);range.s.r=0;range.s.c=0;
+        if(range.e.c>=500)throw Error('工作表超过 500 列，请先缩小数据范围');
+        return global.XLSX.utils.sheet_to_json(sheet,{header:1,range,defval:'',blankrows:true,raw});
+      }}));
+    }
+    if(extension!=='xlsx')throw Error('请选择 .xls 或 .xlsx 文件');
     const files=await unzip(await file.arrayBuffer()),decoder=new TextDecoder();
     const xml=path=>{if(!files[path])return null;const doc=new DOMParser().parseFromString(decoder.decode(files[path]),'application/xml');if(doc.querySelector('parsererror'))throw Error('工作表 XML 损坏');return doc};
     const shared=[...(xml('xl/sharedStrings.xml')?.querySelectorAll('si')||[])].map(si=>[...si.querySelectorAll('t')].map(t=>t.textContent).join(''));

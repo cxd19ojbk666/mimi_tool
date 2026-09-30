@@ -25,7 +25,7 @@
     <div class="panel-body">
       <section class="section task-source" id="stepAdd">
         <div class="step-head"><span class="step-index">1</span><strong>添加数据</strong></div>
-        <div class="source-actions"><button class="btn upload" id="uploadTrigger" type="button" data-tooltip="Excel、CSV，可多选" aria-description="Excel、CSV，可多选">导入文件</button><button class="btn manual-trigger" id="openManual" type="button" aria-haspopup="dialog" aria-controls="manualDialog">手动输入</button></div><input id="filesInput" type="file" accept=".xlsx,.csv,.tsv,.txt" multiple hidden>
+        <div class="source-actions"><button class="btn upload" id="uploadTrigger" type="button" data-tooltip="Excel（.xls、.xlsx）、CSV，可多选" aria-description="Excel（.xls、.xlsx）、CSV，可多选">导入文件</button><button class="btn manual-trigger" id="openManual" type="button" aria-haspopup="dialog" aria-controls="manualDialog">手动输入</button></div><input id="filesInput" type="file" accept=".xls,.xlsx,.csv,.tsv,.txt" multiple hidden>
         <div class="source-disclosure" id="sourceDisclosure"><div class="source-list-heading">已加表格<small id="sourceCount">0 张</small></div><div id="sourceList" class="stack" role="list" aria-label="已加表格"></div></div>
       </section>
 
@@ -107,5 +107,6 @@
 <div id="toast" hidden></div>
 <script src="../../../node_modules/echarts/dist/echarts.min.js"></script>
 <script src="../../../node_modules/exceljs/dist/exceljs.min.js"></script>
-<script src="../scripts/mimi-common.js"></script><script src="../scripts/mimi-workspace.js"></script><script src="../scripts/mimi-table-merge.js"></script><script src="../scripts/mimi-table-workbook.js"></script><script src="../scripts/mimi-table.js?v=17"></script>
+<script src="../../../node_modules/xlsx/dist/xlsx.full.min.js"></script>
+<script src="../scripts/mimi-common.js?v=3"></script><script src="../scripts/mimi-workspace.js"></script><script src="../scripts/mimi-table-merge.js"></script><script src="../scripts/mimi-table-workbook.js"></script><script src="../scripts/mimi-table.js?v=18"></script>
 </body></html>
