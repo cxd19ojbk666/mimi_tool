@@ -43,8 +43,92 @@
     }).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['title']});
     // 动态通过 el.title 赋值的座位、按钮等也会被上面的监听自动转换。
   }
+  // 全项目下拉框右侧箭头统一旋转动效：给每个原生 select 包一层定位容器，
+  // 用独立箭头元素做 rotate 动画（原生 background-image 无法做旋转过渡）。
+  function initSelectArrows(){
+    // 读取浏览器原生弹层的真实开合状态（支持 :open 的 Chromium 直接可查）。
+    const nativeOpen=select=>{
+      try{return select.matches(':open')}catch{return null}
+    };
+    // 以原生状态为准同步箭头；不支持 :open 时返回 false，由调用方用启发式兜底。
+    const syncFromNative=select=>{
+      const open=nativeOpen(select);
+      if(open===null||open===undefined)return false;
+      setOpen(select,open);
+      return true;
+    };
+    // 交互后分多帧同步一次，对齐弹层实际出现 / 消失的时机，避免单次读取时序漂移。
+    const pollNative=select=>{
+      if(nativeOpen(select)===null)return false;
+      requestAnimationFrame(()=>syncFromNative(select));
+      setTimeout(()=>syncFromNative(select),60);
+      setTimeout(()=>syncFromNative(select),200);
+      return true;
+    };
+    // 根据展开 / 收起状态切换箭头方向的样式类。
+    const setOpen=(select,open)=>{
+      const wrap=select.closest?.('.mimi-select-wrap');
+      if(wrap)wrap.classList.toggle('is-open',!!open);
+      select.classList.toggle('is-open',!!open);
+      const control=select.closest?.('.preview-source-control');
+      if(control)control.classList.toggle('is-open',!!open);
+    };
+    // 把原生 select 包裹起来并追加可旋转的箭头元素，已包过的直接跳过。
+    const enhance=select=>{
+      if(!(select instanceof HTMLSelectElement))return;
+      if(select.dataset.mimiArrow==='1')return;
+      select.dataset.mimiArrow='1';
+      // 透明覆盖型的预览数据源下拉框本身就是定位容器，只需挂状态类。
+      if(select.closest?.('.preview-source-control')){bind(select);return}
+      const wrap=document.createElement('span');
+      wrap.className='mimi-select-wrap';
+      select.before(wrap);
+      wrap.append(select);
+      const arrow=document.createElement('span');
+      arrow.className='mimi-select-arrow';
+      arrow.setAttribute('aria-hidden','true');
+      wrap.append(arrow);
+      bind(select);
+    };
+    // 监听展开 / 收起事件：单击切换方向（第二次点击关闭弹层时不触发 blur/change，只能靠切换），失焦/选值/按 Esc/点外部关闭。
+    const isOpen=select=>{
+      if(select.classList.contains('is-open'))return true;
+      const wrap=select.closest?.('.mimi-select-wrap');
+      if(wrap&&wrap.classList.contains('is-open'))return true;
+      const control=select.closest?.('.preview-source-control');
+      return !!(control&&control.classList.contains('is-open'));
+    };
+    const bind=select=>{
+      // 同一次点击中 pointerdown 先于 focus 触发：此处按当前状态切换，focus 不再重复置位，
+      // 第一次点击 Closed→Open，第二次点击 Open→Closed，箭头随弹层开合回弹。
+      // 支持 :open 的浏览器再以原生弹层真实状态为准做多帧校准，连续快击也不漂移。
+      select.addEventListener('pointerdown',()=>{setOpen(select,!isOpen(select));pollNative(select)});
+      select.addEventListener('click',()=>pollNative(select));
+      select.addEventListener('focus',()=>pollNative(select));
+      select.addEventListener('blur',()=>setOpen(select,false));
+      select.addEventListener('change',()=>{if(!pollNative(select))setOpen(select,false)});
+      select.addEventListener('keydown',event=>{
+        if(event.key==='Escape')setOpen(select,false);
+        else if(event.key==='ArrowDown'||event.key==='ArrowUp'||event.key==='Enter'||event.key===' ')setOpen(select,true);
+      });
+      document.addEventListener('pointerdown',event=>{
+        if(!select.contains(event.target)&&!select.isEqualNode(event.target))setOpen(select,false);
+      },true);
+    };
+    document.querySelectorAll('select.field,select#previewSource').forEach(enhance);
+    new MutationObserver(mutations=>{
+      mutations.forEach(mutation=>{
+        mutation.addedNodes.forEach(node=>{
+          if(!(node instanceof Element))return;
+          if(node.matches?.('select.field,select#previewSource'))enhance(node);
+          node.querySelectorAll?.('select.field,select#previewSource').forEach(enhance);
+        });
+      });
+    }).observe(document.documentElement,{childList:true,subtree:true});
+  }
   function init({action,subject}){
     initTooltips();
+    initSelectArrows();
     document.title=`咪咪大王${action}`;
     document.querySelector('.brand h1').textContent=document.title;
     document.querySelector('.brand p').textContent=`咪的汪给咪做的${subject}工具`;
