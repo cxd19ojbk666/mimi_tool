@@ -37,10 +37,16 @@ body[data-mimi-tool] .shell > header .top-actions {
   display: grid;
   flex: none;
   align-items: center;
+  justify-content: end;
   grid-template-columns: repeat(4, 64px);
   gap: 8px;
   width: 280px;
   margin: 0 112px 0 auto;
+}
+/* 没有导出按钮的页面（点名器 / 做表格）：按钮贴着右侧放，右边缘与板贴页导出按钮对齐。 */
+body[data-mimi-tool] .shell > header .top-actions:not(:has(> .export-wrap, > .btn.accent)) {
+  width: auto;
+  grid-template-columns: repeat(2, 64px);
 }
 @media (min-width: 761px) {
   body[data-mimi-tool] .shell > header .top-actions:has(> .export-wrap, > .btn.accent) {
@@ -72,7 +78,6 @@ body[data-mimi-tool] .shell > header .top-actions > .export-wrap { min-width: 0;
   body[data-mimi-tool] .shell > header { flex-wrap: wrap; }
   body[data-mimi-tool] .shell > header .top-actions {
     max-width: 100%;
-    margin: 0 0 0 auto;
   }
 }
 
@@ -121,6 +126,9 @@ body[data-mimi-tool] .shell > header .top-actions > .export-wrap { min-width: 0;
     font-size: calc(12px * var(--ui-scale, 1));
   }
   body[data-mimi-tool] .shell > header .top-actions > :nth-child(n+5) { grid-column: 1 / -1; }
+  body[data-mimi-tool] .shell > header .top-actions:not(:has(> .export-wrap, > .btn.accent)) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   body[data-mimi-tool="board-labels"] .shell > header .brand::before {
     width: 34px;
     height: 34px;

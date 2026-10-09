@@ -38,7 +38,7 @@
     return state.sources.find(source=>source.id===$(`source${slot}`).value)?.table||null;
   }
   function addSource(name,table,raw=null){
-    const source={id:`df${state.nextId++}`,name,table,raw,settingsOpen:false};state.sources.push(source);return source;
+    const source={id:`df${state.nextId++}`,name,table,raw};state.sources.push(source);return source;
   }
   function renderSources(){
     const select=$('sourceA'),previous=select.value;
@@ -55,25 +55,6 @@
       remove.onclick=()=>{state.sources=state.sources.filter(item=>item!==source);renderSources();sourcesChanged()};
       const badge=document.createElement('span');badge.className='source-badge';row.append(preview,badge,remove);
       const item=document.createElement('div');item.className='source-card';item.setAttribute('role','listitem');item.dataset.sourceId=source.id;item.classList.toggle('is-base',source.id===select.value);item.append(row);
-      if(source.raw){
-        const details=document.createElement('details');details.className='source-settings';details.open=source.settingsOpen;
-        details.ontoggle=()=>{source.settingsOpen=details.open};
-        const summary=document.createElement('summary');summary.textContent='调整表头';details.append(summary);
-        const controls=document.createElement('div');controls.className='source-header-controls';
-        for(const [title,key,max] of [['起始行','start',50],['层数','depth',8]]){
-          const label=document.createElement('label'),input=document.createElement('input');label.textContent=title;input.type='number';input.className='field';input.min='1';input.max=String(max);input.value=String(key==='start'?source.table.headerStart:source.table.headerDepth);
-          input.onchange=()=>{try{
-            const start=key==='start'?Number(input.value):source.table.headerStart,depth=key==='depth'?Number(input.value):source.table.headerDepth;
-            if(!Number.isInteger(start)||!Number.isInteger(depth)||start<1||depth<1||start>50||depth>8)throw Error('表头起始行或层数无效');
-            source.table=source.raw.kind==='worksheet'?MimiTableWorkbook.fromWorksheet(source.raw.sheet,{start,depth}):MimiTableWorkbook.fromRows(source.raw.rows,{start,depth,format:source.raw.format});
-            if(source.id===state.baseSourceId)state.baseSourceId='';
-            state.joins.filter(join=>join.sourceId===source.id).forEach(join=>{join.keys=state.baseKeys.map(index=>suggestedKey(source.table,index));join.selected=source.table.headers.map((_,i)=>i).filter(i=>!join.keys.includes(i))});
-            source.settingsOpen=true;renderSources();sourcesChanged();toast(`${source.id} 的表头已更新`);
-          }catch(error){input.value=String(key==='start'?source.table.headerStart:source.table.headerDepth);toast(error.message)}};
-          label.append(input);controls.append(label);
-        }
-        details.append(controls);item.append(details);
-      }
       return item;
     }));
     syncPreviewSources();updateSourceHighlights();refreshFlow();
@@ -87,51 +68,118 @@
   })}
   function syncPreviewSources(){
     const select=$('previewSource'),previous=select.value;
-    select.replaceChildren(option('',state.result?MODE_META[state.mode].title:'选择原始表格'),...state.sources.map(source=>option(source.id,source.name)));
-    select.options[0].disabled=!state.result;
-    select.value=state.sources.some(source=>source.id===previous)?previous:'';
+    select.replaceChildren(...(state.result?[option('',MODE_META[state.mode].title)]:[]),...state.sources.map(source=>option(source.id,source.name)));
+    select.value=state.sources.some(source=>source.id===previous)?previous:state.result?'':state.sources[0]?.id||'';
     updatePreviewSourceTitle();
     $('previewToolbar').hidden=!state.sources.length;$('viewResult').hidden=!state.result;
   }
   function updatePreviewSourceTitle(){
     const select=$('previewSource');
-    if(select.options[0]){select.options[0].textContent=state.result?MODE_META[state.mode].title:'选择原始表格';select.options[0].disabled=!state.result}
-    const name=select.selectedOptions[0]?.textContent||'选择原始表格';
+    if(state.result&&select.options[0])select.options[0].textContent=MODE_META[state.mode].title;
+    const name=select.selectedOptions[0]?.textContent||'';
     $('previewSourceText').textContent=name;
     // 透明覆盖的 select 沿用统一深色气泡提示，写在容器上而非 select 自身，避免原生 title 样式。
     const control=select.closest('.preview-source-control');
     if(select.value&&name)control?.setAttribute('data-tooltip',name);
     else control?.removeAttribute('data-tooltip');
+    updatePreviewHeaderSettings();
+  }
+  function updatePreviewHeaderSettings(){
+    const controls=$('previewHeaderControls');
+    const source=sourceById($('previewSource').value);
+    controls.replaceChildren();
+    for(const [title,key,max] of [['起始行','start',50],['层数','depth',8]]){
+      const label=document.createElement('label'),input=document.createElement('input');label.textContent=title;input.type='number';input.className='field';input.min='1';input.max=String(max);input.value=source?.raw?String(key==='start'?source.table.headerStart:source.table.headerDepth):'';
+      input.disabled=!source?.raw;
+      input.onchange=()=>{try{
+        const start=key==='start'?Number(input.value):source.table.headerStart,depth=key==='depth'?Number(input.value):source.table.headerDepth;
+        if(!Number.isInteger(start)||!Number.isInteger(depth)||start<1||depth<1||start>50||depth>8)throw Error('表头起始行或层数无效');
+        source.table=source.raw.kind==='worksheet'?MimiTableWorkbook.fromWorksheet(source.raw.sheet,{start,depth}):MimiTableWorkbook.fromRows(source.raw.rows,{start,depth,format:source.raw.format});
+        if(source.id===state.baseSourceId)state.baseSourceId='';
+        state.joins.filter(join=>join.sourceId===source.id).forEach(join=>{join.keys=state.baseKeys.map(index=>suggestedKey(source.table,index));join.selected=source.table.headers.map((_,i)=>i).filter(i=>!join.keys.includes(i))});
+        renderSources();sourcesChanged();renderSource(source.table,source.name);toast(`${source.id} 的表头已更新`);
+      }catch(error){input.value=String(key==='start'?source.table.headerStart:source.table.headerDepth);toast(error.message)}};
+      label.append(input);controls.append(label);
+    }
   }
   function refreshFlow(){
     const count=state.sources.length,hasBase=!!currentTable('A'),multi=state.mode==='match'||state.mode==='compare';
     const canConfigure=hasBase&&(!multi||count>=2);
     const joinIds=state.joins.map(join=>join.sourceId);
-    const joinsReady=!multi||state.joins.length>0&&new Set(joinIds).size===joinIds.length&&state.joins.every(join=>join.sourceId&&join.sourceId!==$('sourceA').value&&sourceById(join.sourceId));
-    const validKeys=keys=>keys.length>0&&new Set(keys).size===keys.length&&keys.every(index=>Number.isInteger(index)&&index>=0);
-    const keysReady=!multi||validKeys(state.baseKeys)&&state.joins.every(join=>join.keys.length===state.baseKeys.length&&validKeys(join.keys));
     $('sourceALabel').hidden=!canConfigure||!multi&&count===1;
     $('sourceHint').hidden=!multi||!canConfigure;
-    $('sourceHint').textContent=state.mode==='match'?'结果只保留主表的行。':'核对各表的缺失和变化。';
+    $('sourceHint').textContent=state.mode==='match'?'':'核对各表的缺失和变化。';
     $('modeControls').hidden=!canConfigure;
     $('openRules').hidden=!canConfigure;
     $('loadSample').hidden=hasBase;
     document.querySelector('.merge-builder').hidden=!multi||!canConfigure;
+    $('rulesJoins').hidden=!multi||!canConfigure;
+    $('baseHeading').hidden=!multi;
+    $('rulesDialog').classList.toggle('is-multi',multi);
     document.querySelector('[data-controls="clean"]').hidden=state.mode!=='clean'||!hasBase;
     document.querySelector('[data-controls="grade"]').hidden=state.mode!=='grade'||!hasBase;
     $('rulesDialogTitle').textContent=multi?'设置匹配规则':state.mode==='clean'?'设置清理规则':'设置成绩分析规则';
+    $('rulesDialogHint').hidden=multi;
+    $('rulesDialogHint').textContent=multi?'':state.mode==='clean'?'勾选需要清理的内容。':'选择成绩列和分数标准。';
     $('joinHeading').textContent=state.mode==='compare'?'核对表':'补充表';
+    $('joinCount').textContent=`${state.joins.length} 张`;
     $('addKey').hidden=!!currentTable('A')&&state.baseKeys.length>=currentTable('A').headers.length;
     $('addJoin').hidden=!state.sources.some(source=>source.id!==$('sourceA').value&&!joinIds.includes(source.id));
-    $('runTask').disabled=!canConfigure||!joinsReady||!keysReady;
-    let hint='';
-    if(canConfigure&&!joinsReady)hint=state.joins.length?'参与表重复或为空':'加参与表';
-    else if(canConfigure&&!keysReady)hint='匹配列重复或为空';
+    const hint=multi&&canConfigure?validateRules():'';
+    $('runTask').disabled=!canConfigure||!!hint;
     $('runHint').textContent=hint;
     $('runHint').hidden=!hint;
+    $('rulesRun').disabled=$('runTask').disabled;
+    $('rulesRun').textContent=({match:'开始合并',compare:'开始核对',clean:'开始清理',grade:'开始分析'})[state.mode];
+    $('rulesStatus').textContent=hint?'请完善规则':canConfigure?'规则已就绪':'请先添加数据表';
+    $('rulesStatus').classList.toggle('has-error',!!hint);
+    const base=currentTable('A');
+    const fieldCount=(state.baseSelected?.length||0)+state.joins.reduce((sum,join)=>sum+(join.selected?.length||0),0);
+    $('rulesSummary').textContent=hint||(multi&&canConfigure?state.mode==='match'?`以主表 ${base.rows.length} 行为准 · ${state.joins.length} 张补充表 · 输出 ${fieldCount} 个数据字段`:`核对 ${state.joins.length+1} 张表 · ${state.baseKeys.length} 个匹配条件`:canConfigure?'修改即时生效，可以开始处理。':'');
     // 数据表列表保持折叠；需要时再查看具体表格。
     if(canConfigure&&!refreshFlow._welcomed){refreshFlow._welcomed=true;$('modeControls')?.scrollIntoView({behavior:'smooth',block:'nearest'});}
     if(!count)refreshFlow._welcomed=false;
+  }
+  function validateRules(){
+    const base=currentTable('A'),errors=[];
+    const checkKeys=(keys,table,label,list,errorNode)=>{
+      const invalid=keys.map((index,position)=>!Number.isInteger(index)||index<0||index>=(table?.headers.length||0)?`${label}的条件 ${position+1} 请选择匹配列`:keys.filter(value=>value===index).length>1?`${label}的匹配列不能重复`:'');
+      list?.querySelectorAll('select').forEach((select,position)=>{select.setAttribute('aria-invalid',String(!!invalid[position]));if(invalid[position])select.setAttribute('aria-describedby',errorNode.id);else select.removeAttribute('aria-describedby')});
+      const message=invalid.find(Boolean)||(!keys.length?`${label}请选择匹配列`:'');
+      if(errorNode){errorNode.textContent=message;errorNode.hidden=!message}
+      if(message)errors.push(message);
+    };
+    checkKeys(state.baseKeys,base,'主表',$('baseKeyList'),$('baseKeyError'));
+    if(!state.joins.length)errors.push('请至少添加一张参与表');
+    const ids=new Set([$('sourceA').value]);
+    state.joins.forEach((join,index)=>{
+      const source=sourceById(join.sourceId),card=$('joinList').children[index];
+      let message=!source?`参与表 ${index+1} 请选择数据表`:ids.has(join.sourceId)?`参与表 ${index+1} 不能重复使用同一张表`:'';
+      ids.add(join.sourceId);
+      checkKeys(join.keys,source?.table,`参与表 ${index+1}`,card?.querySelector('.join-key-list'),card?.querySelector('.join-key-error'));
+      if(join.keys.length!==state.baseKeys.length)message=message||`参与表 ${index+1} 请补齐匹配列`;
+      if(state.mode==='match'){
+        const targets=new Set();
+        (join.overwrites||[]).forEach((ow,position)=>{
+          const validFrom=Number.isInteger(ow.from)&&ow.from>=0&&ow.from<(source?.table.headers.length||0);
+          const validTo=Number.isInteger(ow.to)&&ow.to>=0&&ow.to<base.headers.length;
+          const row=card?.querySelectorAll('.overwrite-row')[position];
+          const selects=row?.querySelectorAll('select');
+          const duplicate=targets.has(ow.to),kept=state.baseSelected?.includes(ow.to);
+          selects?.[0]?.setAttribute('aria-invalid',String(!validFrom));
+          selects?.[1]?.setAttribute('aria-invalid',String(!validTo||duplicate||!kept));
+          const issue=!validFrom||!validTo?'请选择补充表列和主表列':duplicate?'同一主表字段不能重复覆盖':!kept?'请先在保留字段中勾选该列':'';
+          const error=row?.querySelector('.overwrite-error');
+          if(error){error.textContent=issue;error.hidden=!issue;selects?.forEach(select=>{if(issue)select.setAttribute('aria-describedby',error.id);else select.removeAttribute('aria-describedby')})}
+          if(issue)message=message||`参与表 ${index+1}：${issue}`;
+          targets.add(ow.to);
+        });
+      }
+      const error=card?.querySelector('.join-card-error');
+      if(error){error.textContent=message;error.hidden=!message}
+      if(message)errors.push(message);
+    });
+    return errors[0]||'';
   }
   function addManual(){
     try{
@@ -209,6 +257,7 @@
         if(join.sourceId===baseId){join.sourceId=sourceById(previousBaseId)?.id||'';join.selected=null}
         const source=sourceById(join.sourceId);
         join.keys=state.baseKeys.map(index=>suggestedKey(source?.table,index));
+        join.overwrites=[];
         if(join.selected===null&&source)join.selected=source.table.headers.map((_,i)=>i).filter(i=>!join.keys.includes(i));
       });
     }
@@ -222,68 +271,87 @@
   }
   function makeJoin(sourceId=''){
     const source=sourceById(sourceId),keys=state.baseKeys.map(index=>suggestedKey(source?.table,index));
-    return {uid:state.nextJoinId++,sourceId,keys,selected:source?source.table.headers.map((_,i)=>i).filter(i=>!keys.includes(i)):null,fieldsOpen:false,overwrites:[],overwriteOpen:true};
+    return {uid:state.nextJoinId++,sourceId,keys,selected:source?source.table.headers.map((_,i)=>i).filter(i=>!keys.includes(i)):null,overwrites:[],overwriteOpen:false};
   }
   function fieldPicker(container,source,selected,onChange){
     container.replaceChildren();
+    const heading=container.previousElementSibling;
+    heading?.querySelector('.field-actions')?.remove();
     if(!source){const hint=document.createElement('small');hint.textContent='先选择数据表';container.append(hint);return}
     let current=selected.slice();
-    const update=next=>{current=next.slice();onChange(current);container.querySelectorAll('input[type="checkbox"]').forEach(input=>{input.checked=current.includes(Number(input.value))})};
+    const update=next=>{current=next.slice();onChange(current);container.querySelectorAll('input[type="checkbox"]').forEach(input=>{input.checked=current.includes(Number(input.value))});refreshFlow()};
+    if(source.table.headers.length>=8){
+      const search=document.createElement('input');search.type='search';search.className='field field-filter';search.placeholder='搜索字段…';search.setAttribute('aria-label',`搜索 ${source.name} 的字段`);
+      const empty=document.createElement('small');empty.className='field-filter-empty';empty.textContent='没有找到对应字段';empty.hidden=true;
+      search.oninput=()=>{const query=search.value.trim().toLocaleLowerCase();let visible=0;container.querySelectorAll('label').forEach(label=>{label.hidden=!label.textContent.toLocaleLowerCase().includes(query);if(!label.hidden)visible++});empty.hidden=visible>0};
+      container.append(search,empty);
+    }
     const actions=document.createElement('div');actions.className='field-actions';
     for(const [title,indices] of [['全选',source.table.headers.map((_,i)=>i)],['清空',[]]]){
       const button=document.createElement('button');button.type='button';button.className='field-action';button.textContent=title;
       button.onclick=()=>update(indices);actions.append(button);
     }
-    container.append(actions);
+    if(heading?.classList.contains('field-picker-heading'))heading.append(actions);else container.append(actions);
     source.table.headers.forEach((header,index)=>{
       const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.value=String(index);input.checked=current.includes(index);
       input.onchange=()=>{const next=new Set(current);if(input.checked)next.add(index);else next.delete(index);update([...next].sort((a,b)=>a-b))};
       label.append(input,document.createTextNode(header));container.append(label);
     });
   }
-  function keySelect(table,value,onChange){
-    const select=document.createElement('select');select.className='field';select.setAttribute('aria-label','匹配列');
+  function keySelect(table,value,onChange,label='匹配列',focusKey=''){
+    const select=document.createElement('select');select.className='field';select.setAttribute('aria-label',label);select.dataset.ruleFocus=focusKey;
     select.replaceChildren(option('-1','请选择列'),...(table?.headers||[]).map((header,index)=>option(index,header)));
     select.value=String(value??-1);select.onchange=()=>onChange(Number(select.value));return select;
   }
+  function focusRule(input){
+    // 公共控件会异步包裹新下拉框；等包裹完成后再恢复焦点，避免 DOM 移动使焦点丢失。
+    requestAnimationFrame(()=>{if(input?.isConnected&&$('rulesDialog').open)input.focus({preventScroll:true})});
+  }
   function renderBuilder(){
+    const focusKey=document.activeElement?.dataset.ruleFocus;
     ensureBuilderState();const base=currentTable('A');
     const baseList=$('baseKeyList');baseList.replaceChildren();
     state.baseKeys.forEach((index,position)=>{
       const row=document.createElement('div');row.className='builder-key-row';
-      const text=document.createElement('span');text.textContent=state.baseKeys.length===1?'主表':`条件 ${position+1}`;
-      row.append(text,keySelect(base,index,value=>{state.baseKeys[position]=value;state.joins.forEach(join=>{join.keys[position]=suggestedKey(sourceById(join.sourceId)?.table,value)});renderBuilder();renderSource(base,'匹配条件已更新')}));
-      if(state.baseKeys.length>1){const remove=document.createElement('button');remove.type='button';remove.className='field-action';remove.textContent='移除';remove.onclick=()=>{state.baseKeys.splice(position,1);state.joins.forEach(join=>join.keys.splice(position,1));renderBuilder();renderSource(base,'匹配条件已更新')};row.append(remove)}
+      const text=document.createElement('span');text.textContent=`条件 ${position+1}`;
+      row.append(text,keySelect(base,index,value=>{state.baseKeys[position]=value;state.joins.forEach(join=>{join.keys[position]=suggestedKey(sourceById(join.sourceId)?.table,value)});renderBuilder();renderSource(base,'匹配条件已更新')},`主表条件 ${position+1} 的匹配列`,`base-key-${position}`));
+      if(state.baseKeys.length>1){const remove=document.createElement('button');remove.type='button';remove.className='field-action';remove.textContent='×';remove.setAttribute('aria-label',`移除匹配条件 ${position+1}`);remove.onclick=()=>{state.baseKeys.splice(position,1);state.joins.forEach(join=>join.keys.splice(position,1));renderBuilder();$('addKey').focus();renderSource(base,'匹配条件已更新')};row.append(remove)}
       baseList.append(row);
     });
     const baseSource=sourceById(state.baseSourceId);
-    const baseSummary=()=>{$('baseFieldSummary').textContent=`主表保留字段 · ${state.baseSelected?.length||0}/${baseSource?.table.headers.length||0} 列`};
+    const baseSummary=()=>{$('baseFieldSummary').textContent=`保留字段 · ${state.baseSelected?.length||0}/${baseSource?.table.headers.length||0} 列`};
     baseSummary();
     fieldPicker($('baseFieldList'),baseSource,state.baseSelected||[],selected=>{state.baseSelected=selected;baseSummary();renderSource(base,'字段选择已更新')});
     const joinList=$('joinList');joinList.replaceChildren();
     state.joins.forEach((join,joinIndex)=>{
       const source=sourceById(join.sourceId),card=document.createElement('section');card.className='join-card';
       const top=document.createElement('div');top.className='join-card-head';
-      const title=document.createElement('strong');title.textContent=`参与表 ${joinIndex+1}`;
+      const title=document.createElement('strong');title.textContent=`${state.mode==='compare'?'核对表':'补充表'} ${joinIndex+1}`;
       const remove=document.createElement('button');remove.type='button';remove.className='field-action';remove.textContent='移除';remove.setAttribute('aria-label',`移除参与表 ${joinIndex+1}`);
-      remove.onclick=()=>{state.joins.splice(joinIndex,1);renderBuilder();if(base)renderSource(base,'参与表已更新')};top.append(title,remove);card.append(top);
+      remove.onclick=()=>{state.joins.splice(joinIndex,1);renderBuilder();$('addJoin').focus();if(base)renderSource(base,'参与表已更新')};top.append(title,remove);card.append(top);
       const select=document.createElement('select');select.className='field';select.setAttribute('aria-label',`选择参与表 ${joinIndex+1}`);
       select.replaceChildren(option('','请选择数据表'),...state.sources.filter(item=>item.id!==$('sourceA').value&&(item.id===join.sourceId||!state.joins.some(other=>other!==join&&other.sourceId===item.id))).map(item=>option(item.id,item.name)));select.value=join.sourceId;
-      select.onchange=()=>{join.sourceId=select.value;const next=sourceById(join.sourceId);join.keys=state.baseKeys.map(index=>suggestedKey(next?.table,index));join.selected=next?next.table.headers.map((_,i)=>i).filter(i=>!join.keys.includes(i)):null;renderBuilder();if(base)renderSource(base,'参与表已更新')};card.append(select);
+      select.dataset.ruleFocus=`join-source-${join.uid}`;
+      select.onchange=()=>{join.sourceId=select.value;const next=sourceById(join.sourceId);join.keys=state.baseKeys.map(index=>suggestedKey(next?.table,index));join.selected=next?next.table.headers.map((_,i)=>i).filter(i=>!join.keys.includes(i)):null;join.overwrites=[];renderBuilder();if(base)renderSource(base,'参与表已更新')};
+      const sourceLabel=document.createElement('label');sourceLabel.className='control';sourceLabel.append(document.createTextNode('选择数据表'),select);card.append(sourceLabel);
+      const keyList=document.createElement('div');keyList.className='stack join-key-list';
+      const keyLegend=document.createElement('div');keyLegend.className='join-key-legend';keyLegend.innerHTML='<span>主表匹配列</span><span>此表对应列</span>';card.append(keyLegend,keyList);
       state.baseKeys.forEach((baseIndex,position)=>{
         const row=document.createElement('label');row.className='join-key-row';
-        const caption=document.createElement('span');caption.textContent=`${base?.headers[baseIndex]||`条件 ${position+1}`} ↔`;
-        row.append(caption,keySelect(source?.table,join.keys[position],value=>{join.keys[position]=value;refreshFlow();renderSource(base,'匹配条件已更新')}));card.append(row);
+        const caption=document.createElement('span');caption.className='join-key-caption';caption.textContent=base?.headers[baseIndex]||`条件 ${position+1}`;caption.title=caption.textContent;
+        const arrow=document.createElement('span');arrow.className='match-arrow';arrow.textContent='↔';arrow.setAttribute('aria-hidden','true');
+        row.append(caption,arrow,keySelect(source?.table,join.keys[position],value=>{join.keys[position]=value;refreshFlow();renderSource(base,'匹配条件已更新')},`参与表 ${joinIndex+1} 对应主表 ${caption.textContent} 的匹配列`,`join-key-${join.uid}-${position}`));keyList.append(row);
       });
+      const keyError=document.createElement('p');keyError.className='rule-inline-error join-key-error';keyError.id=`join-key-error-${join.uid}`;keyError.hidden=true;card.append(keyError);
       // 手动覆盖：选择“附表列 → 主表列”，决定写回主表的字段与策略
-      const owWrap=document.createElement('div');owWrap.className='join-overwrite';
-      const owHead=document.createElement('div');owHead.className='builder-heading';
-      const owTitle=document.createElement('strong');owTitle.textContent='覆盖主表字段';
-      const owHint=document.createElement('small');owHint.textContent='手动选择需写回主表的字段';
-      owHead.append(owTitle,owHint);owWrap.append(owHead);
+      const owWrap=document.createElement('details');owWrap.className='join-overwrite';owWrap.open=!!join.overwriteOpen;
+      owWrap.ontoggle=()=>{if(owWrap.isConnected)join.overwriteOpen=owWrap.open};
+      const owTitle=document.createElement('summary');owWrap.append(owTitle);
+      const owHint=document.createElement('p');owHint.className='overwrite-hint';owHint.textContent='把补充表的值写回主表已有列。默认仅填空；选择全部覆盖会替换主表原值。';owWrap.append(owHint);
       const owList=document.createElement('div');owList.className='stack';owWrap.append(owList);
       const paintOw=()=>{
         owList.replaceChildren();
+        owTitle.textContent=`填入主表已有列${join.overwrites?.length?` · ${join.overwrites.length} 项`:'（可选）'}`;
         (join.overwrites||[]).forEach((ow,oi)=>{
           const row=document.createElement('div');row.className='overwrite-row';
           const fromSel=document.createElement('select');fromSel.className='field';fromSel.setAttribute('aria-label','附表字段');
@@ -297,24 +365,31 @@
           modeSel.replaceChildren(option('fillEmpty','仅填空'),option('overwrite','全部覆盖'));modeSel.value=ow.mode||'fillEmpty';modeSel.title='仅填空：主表为空才写入；全部覆盖：直接覆盖主表值';
           modeSel.onchange=()=>{ow.mode=modeSel.value;if(base)renderSource(base,'覆盖方式已更新')};
           const del=document.createElement('button');del.type='button';del.className='field-action';del.textContent='移除';
-          del.onclick=()=>{join.overwrites.splice(oi,1);paintOw();refreshFlow();if(base)renderSource(base,'覆盖已移除')};
-          row.append(fromSel,arrow,toSel,modeSel,del);owList.append(row);
+          del.setAttribute('aria-label',`移除参与表 ${joinIndex+1} 的覆盖字段 ${oi+1}`);
+          del.onclick=()=>{join.overwrites.splice(oi,1);paintOw();addOw.focus();refreshFlow();if(base)renderSource(base,'覆盖已移除')};
+          const fromLabel=document.createElement('label');fromLabel.className='control';fromLabel.append(document.createTextNode('补充表列'),fromSel);
+          const toLabel=document.createElement('label');toLabel.className='control';toLabel.append(document.createTextNode('写入主表列'),toSel);
+          const modeLabel=document.createElement('label');modeLabel.className='control overwrite-mode';modeLabel.append(document.createTextNode('写入方式'),modeSel);
+          const error=document.createElement('small');error.className='rule-inline-error overwrite-error';error.id=`overwrite-error-${join.uid}-${oi}`;error.hidden=true;
+          row.append(fromLabel,arrow,toLabel,modeLabel,del,error);owList.append(row);
         });
         if(!(join.overwrites||[]).length){const empty=document.createElement('small');empty.className='overwrite-empty';empty.textContent='暂无覆盖，所选补充字段将作为新增列';owList.append(empty)}
       };
       paintOw();
       const addOw=document.createElement('button');addOw.type='button';addOw.className='quiet-action';addOw.textContent='＋ 加覆盖字段';
-      addOw.onclick=()=>{join.overwrites.push({from:-1,to:-1,mode:'fillEmpty'});paintOw()};
-      owWrap.append(addOw);card.append(owWrap);
-      const disclosure=document.createElement('details');disclosure.className='field-disclosure join-fields';disclosure.open=!!join.fieldsOpen;
-      disclosure.ontoggle=()=>{join.fieldsOpen=disclosure.open};
-      const fieldSummary=document.createElement('summary');disclosure.append(fieldSummary);
-      const updateFieldSummary=()=>{fieldSummary.textContent=`补充字段 · ${join.selected?.length||0}/${source?.table.headers.length||0} 列`};updateFieldSummary();
+      addOw.onclick=()=>{join.overwrites.push({from:-1,to:-1,mode:'fillEmpty'});paintOw();refreshFlow();focusRule(owList.lastElementChild?.querySelector('select'))};
+      owWrap.append(addOw);if(state.mode==='match')card.append(owWrap);
+      const disclosure=document.createElement('div');disclosure.className='field-disclosure join-fields';
+      const fieldHeading=document.createElement('div');fieldHeading.className='field-picker-heading';disclosure.append(fieldHeading);
+      const fieldSummary=document.createElement('h4');fieldSummary.className='field-heading';fieldHeading.append(fieldSummary);
+      const updateFieldSummary=()=>{fieldSummary.textContent=`${state.mode==='compare'?'保留核对字段':'保留字段'} · ${join.selected?.length||0}/${source?.table.headers.length||0} 列`};updateFieldSummary();
       const fields=document.createElement('div');fields.className='field-picker';disclosure.append(fields);card.append(disclosure);
       fieldPicker(fields,source,join.selected||[],selected=>{join.selected=selected;updateFieldSummary();if(base)renderSource(base,'字段选择已更新')});
+      const cardError=document.createElement('p');cardError.className='rule-inline-error join-card-error';cardError.hidden=true;card.append(cardError);
       joinList.append(card);
     });
     refreshFlow();
+    if(focusKey&&$('rulesDialog').open)focusRule(Array.from($('rulesDialog').querySelectorAll('[data-rule-focus]')).find(input=>input.dataset.ruleFocus===focusKey));
   }
   function renderSource(table,label,{preserveResult=false}={}){
     if(!preserveResult){state.result=null;state.charts.forEach(item=>item.dispose());state.charts=[]}
@@ -530,7 +605,9 @@
 
   document.querySelectorAll('.task-button').forEach(button=>button.onclick=()=>setMode(button.dataset.mode));
   $('openManual').onclick=()=>{$('manualError').hidden=true;$('manualDialog').showModal();$('manualName').focus()};
-  $('openRules').onclick=()=>{$('rulesDialog').showModal();const first=state.mode==='match'||state.mode==='compare'?$('sourceA'):state.mode==='clean'?$('dedupeKey'):$('studentColumn');first.focus()};
+  $('openRules').onclick=()=>{refreshFlow();$('rulesDialog').showModal();const first=state.mode==='match'||state.mode==='compare'?$('sourceA'):state.mode==='clean'?$('dedupeKey'):$('studentColumn');first.focus()};
+  $('rulesDialog').addEventListener('close',()=>$('openRules').focus({preventScroll:true}));
+  $('rulesRun').onclick=()=>{refreshFlow();if($('rulesRun').disabled)return;$('rulesDialog').close();run()};
   document.querySelectorAll('[data-close-dialog]').forEach(button=>button.onclick=()=>button.closest('dialog').close());
   $('filesInput').onchange=handleFiles;
   $('uploadTrigger').onclick=()=>$('filesInput').click();
@@ -538,8 +615,8 @@
   $('previewSource').onchange=()=>{const source=sourceById($('previewSource').value);if(source)renderSource(source.table,source.name,{preserveResult:true});else if(state.result)showResult()};
   $('viewResult').onclick=showResult;
   $('filterIssues').onclick=()=>{state.issuesOnly=!state.issuesOnly;showResult()};
-  $('addKey').onclick=()=>{const base=currentTable('A');if(!base){toast('请先选择主表');return}const unused=base.headers.findIndex((_,i)=>!state.baseKeys.includes(i));state.baseKeys.push(unused);state.joins.forEach(join=>join.keys.push(suggestedKey(sourceById(join.sourceId)?.table,unused)));renderBuilder();renderSource(base,'匹配条件已更新')};
-  $('addJoin').onclick=()=>{const unused=state.sources.find(source=>source.id!==$('sourceA').value&&!state.joins.some(join=>join.sourceId===source.id));state.joins.push(makeJoin(unused?.id||''));state.joinAutoInitialized=true;renderBuilder();const base=currentTable('A');if(base)renderSource(base,'参与表已更新')};
+  $('addKey').onclick=()=>{const base=currentTable('A');if(!base){toast('请先选择主表');return}const unused=base.headers.findIndex((_,i)=>!state.baseKeys.includes(i));state.baseKeys.push(unused);state.joins.forEach(join=>join.keys.push(suggestedKey(sourceById(join.sourceId)?.table,unused)));renderBuilder();focusRule($('baseKeyList').lastElementChild?.querySelector('select'));renderSource(base,'匹配条件已更新')};
+  $('addJoin').onclick=()=>{const unused=state.sources.find(source=>source.id!==$('sourceA').value&&!state.joins.some(join=>join.sourceId===source.id));state.joins.push(makeJoin(unused?.id||''));state.joinAutoInitialized=true;renderBuilder();const card=$('joinList').lastElementChild;card?.scrollIntoView({behavior:'smooth',block:'nearest'});focusRule(card?.querySelector('select'));const base=currentTable('A');if(base)renderSource(base,'参与表已更新')};
   $('addManual').onclick=addManual;$('saveResult').onclick=saveResult;
   ['fuzzyMatch','compareChanges','dedupeKey','cleanSpaces','cleanBlankRows','cleanBlankCols','cleanDuplicates','cleanPunctuation','studentColumn','scoreColumn','passLine','excellentLine'].forEach(id=>$(id).addEventListener('change',()=>{refreshFlow();const table=currentTable('A');if(table)renderSource(table,'设置已更新')}));
   $('manualFormat').onchange=()=>{

@@ -26,22 +26,8 @@
   }
 
   function mount($,{styleToCss,onResetFilters}){
-    let current=null,entries=[],page=0,size=100,selected=null,chart=false;
+    let current=null,entries=[],page=0,size=100,chart=false;
     const table=$('dataTable'),stage=$('tableStage'),search=$('previewSearch');
-    function closeDetail(restoreFocus=false){
-      $('previewCellDetail').hidden=true;
-      if(restoreFocus&&selected?.isConnected)selected.focus();
-      selected?.classList.remove('is-selected');selected=null;
-    }
-    function selectCell(cell){
-      if(!cell)return;
-      closeDetail();selected=cell;cell.classList.add('is-selected');
-      table.querySelector('td[tabindex="0"]')?.setAttribute('tabindex','-1');cell.tabIndex=0;
-      const index=Number(cell.parentElement.dataset.rowIndex),col=cell.cellIndex-1;
-      $('previewCellLabel').textContent=`第 ${index+1} 行 · ${current.headers[col]}`;
-      $('previewCellValue').textContent=text(current.rows[index][col])||'（空单元格）';
-      $('previewCellDetail').hidden=false;
-    }
     function measureHeaders(){
       if(table.hidden||chart)return;
       let top=0;
@@ -75,7 +61,6 @@
     }
     function paint(){
       if(!current)return;
-      closeDetail();
       const slice=paginate(entries,page,size);page=slice.page;
       const body=table.tBodies[0],fragment=document.createDocumentFragment();
       slice.entries.forEach(({row,index},rowIndex)=>{
@@ -109,7 +94,6 @@
       const changed=chart!==isChart;chart=isChart;
       $('previewTools').hidden=chart||!current;$('previewPagination').hidden=chart||!current;
       $('tableTitleBanner').hidden=chart||!current?.title;
-      closeDetail();
       if(chart&&current)$('centerStatus').textContent=`共 ${current.rows.length} 行 · 图表基于全部分析结果`;
       else if(current&&changed)paint();
     }
@@ -122,7 +106,7 @@
       renderHead();filter();
     }
     function reset(){
-      current=null;entries=[];page=0;search.value='';closeDetail();
+      current=null;entries=[];page=0;search.value='';
       table.tHead.replaceChildren();table.tBodies[0].replaceChildren();table.hidden=true;
       $('previewTools').hidden=true;$('previewPagination').hidden=true;$('tableTitleBanner').hidden=true;
       $('tableEmpty').hidden=false;$('resetPreviewFilters').hidden=true;
@@ -140,17 +124,13 @@
       const wrap=table.classList.toggle('is-wrapped');$('wrapPreview').setAttribute('aria-pressed',String(wrap));
       requestAnimationFrame(measureHeaders);
     };
-    $('closeCellDetail').onclick=()=>closeDetail(true);
-    table.onclick=event=>selectCell(event.target.closest('td'));
     table.onkeydown=event=>{
       const cell=event.target.closest('td');if(!cell)return;
-      if(event.key==='Enter'||event.key===' '){event.preventDefault();selectCell(cell)}
-      else if(event.key==='Escape')closeDetail(true);
-      else if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(event.key)){
+      if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(event.key)){
         event.preventDefault();
         const row=cell.parentElement,body=table.tBodies[0];
         const next=event.key==='ArrowUp'?body.rows[row.sectionRowIndex-1]?.cells[cell.cellIndex]:event.key==='ArrowDown'?body.rows[row.sectionRowIndex+1]?.cells[cell.cellIndex]:row.cells[cell.cellIndex+(event.key==='ArrowLeft'?-1:1)];
-        if(next?.tagName==='TD'){cell.tabIndex=-1;next.tabIndex=0;next.focus();if(selected)selectCell(next)}
+        if(next?.tagName==='TD'){cell.tabIndex=-1;next.tabIndex=0;next.focus()}
       }
     };
     return {render,reset,setView};
