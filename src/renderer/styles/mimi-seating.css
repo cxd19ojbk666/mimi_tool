@@ -193,7 +193,6 @@
     }
     .status{font-size:calc(13px * var(--ui-scale))}
     .panel-collapse{font-size:calc(17px * var(--ui-scale))}
-    #toast.mimi-toast{font-size:calc(13px * var(--ui-scale))}
     .rule-title,.history-head b{font-size:calc(13px * var(--ui-scale))}
     .rule-meta,.history-empty,.history-item{font-size:calc(12px * var(--ui-scale))}
     .empty-note,.filelabel{font-size:calc(13px * var(--ui-scale))}

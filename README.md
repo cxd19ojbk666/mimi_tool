@@ -105,8 +105,6 @@ Excel 表格支持多级表头和合并单元格；如自动识别有误，可�
 const controller = MimiWorkspace.mount({
   read: () => uiState,
   write: () => saveUiState(),
-  toast: message => showToast(message),
-  labels: {left: '设置栏', right: '编辑栏'},
   onMobilePanel: panel => console.log(panel)
 });
 ```
@@ -131,6 +129,5 @@ const controller = MimiWorkspace.mount({
 单格式导出保留“导出 PNG”等格式名称，多格式导出使用“导出”菜单。
 业务状态和清空后的恢复方式由各页面负责。
 
-`MimiCommon.toast(message)` 统一显示 4 秒提示；`MimiCommon.backup(data)`
-统一生成“页面标题-备份-日期.json”并提示“备份已下载”。旧备份的数据结构及本地存储键保持兼容。
+`MimiCommon.backup(data)` 统一生成“页面标题-备份-日期.json”。旧备份的数据结构及本地存储键保持兼容。
 `MimiCommon.download(blob,name)` 共用下载和临时 URL 释放逻辑。

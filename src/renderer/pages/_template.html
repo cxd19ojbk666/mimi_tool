@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- 咪咪工具统一页面模板：新增工具请复制本文件，仅替换 [TOOL] 与中心区内容。
-  约定（四个工具已统一）：.shell > header(.brand + .top-actions) + main.workspace + mobile-nav + dialog + #toast；
+  约定（四个工具已统一）：.shell > header(.brand + .top-actions) + main.workspace + mobile-nav + dialog；
   body 必须带 data-mimi-tool="[TOOL]"；样式只用 mimi-ui.css，页内 <style> 仅写 body[data-mimi-tool="[TOOL]"] 作用域覆盖；
   脚本顺序固定：mimi-common.js → mimi-settings.js → mimi-workspace.js → 业务脚本。 -->
 <html lang="zh-CN">
@@ -52,5 +52,5 @@
 </div>
 <nav class="mobile-nav" aria-label="手机端功能导航"><button class="active" type="button" data-mobile-panel="setup">设置</button><button type="button" data-mobile-panel="main">工作区</button><button type="button" data-mobile-panel="review">结果</button></nav>
 <dialog id="mimiSettingsDialog" aria-labelledby="mimiSettingsTitle"><div class="dialog-head"><h2 id="mimiSettingsTitle">我的设置</h2><button data-mimi-close-settings aria-label="关闭设置">×</button></div><div class="dialog-body"></div><div class="dialog-actions"><button data-mimi-reset-settings>恢复默认</button></div></dialog>
-<div id="toast" hidden></div>
+
 </body></html>

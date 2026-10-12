@@ -1,15 +1,7 @@
-/* 咪咪工具共享：品牌文案、消息提示、文件下载与名单数据工具。 */
+/* 咪咪工具共享：品牌文案、文件下载与名单数据工具。 */
 (function(global){
   'use strict';
-  const text=Object.freeze({backup:'备份',restore:'恢复',clear:'清空',export:'导出',backupSaved:'备份已下载',backupRestored:'备份已恢复',restoreFailed:'恢复失败：备份文件无法读取'});
-  let toastTimer;
-  function toast(message){
-    const element=document.getElementById('toast');
-    element.textContent=message;
-    element.hidden=false;
-    clearTimeout(toastTimer);
-    toastTimer=setTimeout(()=>{element.hidden=true},4000);
-  }
+  const text=Object.freeze({backup:'备份',restore:'恢复',clear:'清空',export:'导出'});
   function download(blob,name){
     const url=URL.createObjectURL(blob),link=document.createElement('a');
     link.href=url;link.download=name;link.click();
@@ -17,7 +9,7 @@
   }
   function backup(data){
     download(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),`${document.title}-备份-${new Date().toISOString().slice(0,10)}.json`);
-    toast(text.backupSaved);
+
   }
   function initTooltips(){
     // 四个工具统一悬停文本：把原生 title 转为深色气泡 data-tooltip，避免浏览器默认黄底样式。
@@ -157,9 +149,6 @@
       if(button.tagName==='BUTTON')button.type='button';
       if(key==='clear')button.classList.add('danger');
     });
-    const element=document.getElementById('toast');
-    element.className='mimi-toast';element.hidden=true;
-    element.setAttribute('role','status');element.setAttribute('aria-live','polite');
   }
   // 公共名单工具：文本与 Excel 解析、随机抽取及表格导出。
   const roster=(()=>{
@@ -303,5 +292,5 @@
   }
     return Object.freeze({parseText,normalize,calledIds,candidates,randomIndex,readWorkbook,csv,xlsx});
   })();
-  global.MimiCommon=Object.freeze({text,init,toast,download,backup,roster});
+  global.MimiCommon=Object.freeze({text,init,download,backup,roster});
 })(window);

@@ -214,7 +214,10 @@ body[data-mimi-tool] #mimiSettingsDialog[open] { animation: mimi-settings-in .26
 .mimi-settings-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 25px 27px 20px; border-bottom: 2px dashed #b5a96e; background: #fff1ac; }
 .mimi-settings-head h2 { margin: 0; color: #345365; font: 900 calc(24px * var(--ui-scale))/1.2 var(--display-font); }
 .mimi-settings-head p { margin: 6px 0 0; color: #6d7c84; font-size: calc(13px * var(--ui-scale)); }
-body[data-mimi-tool] .mimi-settings-close { width: 42px; min-width: 42px; height: 42px; min-height: 42px; padding: 0; border-radius: 50%; font-size: 27px; line-height: 1; }
+body[data-mimi-tool] .mimi-settings-close { box-sizing: border-box; flex: 0 0 42px; width: 42px; min-width: 42px; max-width: 42px; height: 42px; min-height: 42px; padding: 0; border: 0; border-radius: 4px; background: transparent; box-shadow: none; display: grid; place-items: center; font-family: "Times New Roman", Georgia, serif; font-size: 30px; font-weight: 400; line-height: 1; }
+body[data-mimi-tool] .mimi-settings-close:hover:not(:disabled) { background: #ffe7df; color: #a33e32; box-shadow: none; }
+body[data-mimi-tool] .mimi-settings-close:active:not(:disabled) { box-shadow: none; }
+@media (max-width: 760px) { body[data-mimi-tool] .mimi-settings-close { flex-basis: 44px; width: 44px; min-width: 44px; max-width: 44px; height: 44px; min-height: 44px; } }
 .mimi-settings-body { display: grid; gap: 25px; padding: 23px 27px 30px; overflow: auto; }
 .mimi-settings-section { display: grid; gap: 12px; }
 .mimi-settings-section + .mimi-settings-section { padding-top: 22px; border-top: 2px dashed #ccd5d7; }

@@ -26,11 +26,10 @@
     catch (e) { return Object.assign({}, DEFAULTS); }
   }
 
-  // 挂载统一设置。options: { key, onLabelsChange, toast }
+  // 挂载统一设置。options: { key, onLabelsChange }
   function mount(options) {
     options = options || {};
     var key = options.key || 'mimi-appearance-v1';
-    var toast = options.toast || (global.MimiCommon && global.MimiCommon.toast) || function () {};
     var prefs = load(key);
 
     // The newer tools share a settings sheet; older tools keep their existing dialogs.
@@ -104,7 +103,7 @@
     document.addEventListener('click', function (e) {
       if (e.target.closest('[data-mimi-open-settings]')) { syncFormValues(); document.getElementById('mimiSettingsDialog').showModal(); }
       if (e.target.closest('[data-mimi-close-settings]')) document.getElementById('mimiSettingsDialog').close();
-      if (e.target.closest('[data-mimi-reset-settings]')) { prefs = Object.assign({}, DEFAULTS); try { localStorage.setItem(key, JSON.stringify(prefs)); } catch (err) {} apply(true); toast('已恢复默认设置'); }
+      if (e.target.closest('[data-mimi-reset-settings]')) { prefs = Object.assign({}, DEFAULTS); try { localStorage.setItem(key, JSON.stringify(prefs)); } catch (err) {} apply(true);  }
     });
     document.addEventListener('change', function (e) {
       if (e.target.closest('#mimiSettingsDialog')) pull();

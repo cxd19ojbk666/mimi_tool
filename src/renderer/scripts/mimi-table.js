@@ -3,8 +3,8 @@
   'use strict';
   if(document.body?.dataset.mimiTool!=='table-maker')return;
   MimiCommon.init({action:'做表格',subject:'表格'});
-  const $=id=>document.getElementById(id),D=MimiCommon.roster,toast=MimiCommon.toast;
-  MimiSettings.mount({key:'mimi-table-appearance-v1',toast});
+  const $=id=>document.getElementById(id),D=MimiCommon.roster;
+  MimiSettings.mount({key:'mimi-table-appearance-v1'});
   const MODE_META={
     match:{title:'合并结果'},
     compare:{title:'核对结果'},
@@ -114,8 +114,8 @@
         source.table=source.raw.kind==='worksheet'?MimiTableWorkbook.fromWorksheet(source.raw.sheet,{start,depth}):MimiTableWorkbook.fromRows(source.raw.rows,{start,depth,format:source.raw.format});
         if(source.id===state.baseSourceId)state.baseSourceId='';
         state.joins.filter(join=>join.sourceId===source.id).forEach(join=>{join.keys=state.baseKeys.map(index=>suggestedKey(source.table,index));join.selected=source.table.headers.map((_,i)=>i).filter(i=>!join.keys.includes(i))});
-        renderSources();sourcesChanged();renderSource(source.table,source.name);toast(`${source.id} 的表头已更新`);
-      }catch(error){input.value=String(key==='start'?source.table.headerStart:source.table.headerDepth);toast(error.message)}};
+        renderSources();sourcesChanged();renderSource(source.table,source.name);
+      }catch(error){input.value=String(key==='start'?source.table.headerStart:source.table.headerDepth);}};
       label.append(input);controls.append(label);
     }
   }
@@ -212,7 +212,7 @@
       const rawRows=[table.headers,...table.rows],parsed=MimiTableWorkbook.fromRows(rawRows,{format:'manual'});
       const source=addSource(cleanText($('manualName').value)||'手动输入',parsed,{kind:'rows',rows:rawRows,format:'manual'});
       if(state.joinAutoInitialized&&(state.mode==='match'||state.mode==='compare'))state.joins.push(makeJoin(source.id));
-      $('manualDialog').close();renderSources();sourcesChanged();renderSource(parsed,`${source.id} 已添加`);toast(`已添加 ${source.id}，可在主表或参与表中选择`);
+      $('manualDialog').close();renderSources();sourcesChanged();renderSource(parsed,`${source.id} 已添加`);
     }catch(error){$('manualError').textContent=error.message;$('manualError').hidden=false}
   }
   function decodeText(buffer){
@@ -429,7 +429,7 @@
       }catch(error){failures.push(`${file.name}：${error.message}`)}
     }
     if(state.joinAutoInitialized&&(state.mode==='match'||state.mode==='compare'))addedSources.filter(source=>source.id!==$('sourceA').value).forEach(source=>state.joins.push(makeJoin(source.id)));
-    renderSources();sourcesChanged();toast(`已添加 ${added} 张数据表${failures.length?'；部分导入失败':''}`);
+    renderSources();sourcesChanged();
     if(failures.length)$('centerStatus').textContent=`已添加 ${added} 张。${failures.join('；')}`;
   }
 
@@ -569,11 +569,11 @@
     try{
       const result=state.mode==='match'?runMatch():state.mode==='compare'?runCompare():state.mode==='clean'?runClean():runGrade();state.result=result;state.issuesOnly=false;
       showResult();
-      toast('处理完成，请检查预览');if(matchMedia('(max-width:760px)').matches)workspaceController.setMobilePanel('preview');
-    }catch(error){toast(error.message)}
+      if(matchMedia('(max-width:760px)').matches)workspaceController.setMobilePanel('preview');
+    }catch(error){}
   }
   function resetResult(){preview.reset();state.result=null;state.issuesOnly=false;state.charts.forEach(item=>item.dispose());state.charts=[];$('dataTable').hidden=true;$('dataTable').tHead.replaceChildren();$('dataTable').tBodies[0].replaceChildren();$('tableEmpty').hidden=false;$('exportResult').disabled=true;$('saveResult').disabled=true;$('resultActions').hidden=true;$('viewResult').hidden=true;$('centerTabs').hidden=true;$('chartTab').hidden=true;$('previewTitle').textContent='表格预览';showView('table');$('centerStatus').textContent='请添加数据'}
-  function clearAll(){state.sources=[];state.nextId=1;state.baseSourceId='';state.baseKeys=[];state.baseSelected=null;state.joins=[];state.nextJoinId=1;state.joinAutoInitialized=false;renderSources();syncColumnControls();renderBuilder();resetResult();toast('已清空，原始文件没有被修改')}
+  function clearAll(){state.sources=[];state.nextId=1;state.baseSourceId='';state.baseKeys=[];state.baseSelected=null;state.joins=[];state.nextJoinId=1;state.joinAutoInitialized=false;renderSources();syncColumnControls();renderBuilder();resetResult();}
   function setSynthetic(name,headers,rows){return addSource(name,MimiTableWorkbook.fromRows([headers,...rows],{format:'manual'}))}
   function saveResult(){
     if(!state.result)return;
@@ -581,7 +581,7 @@
     const format=sources.some(item=>['xls','xlsx'].includes(item.table.format))?'xlsx':sources[0]?.table.format||'manual';
     const table=state.result.layout?MimiTableWorkbook.resultAsTable(state.result,state.result.layout,format):MimiTableWorkbook.fromRows([state.result.headers,...state.result.rows],{format:'manual'});
     const source=addSource(`${MODE_META[state.mode].title}`,table);
-    renderSources();$('viewResult').hidden=true;toast(`已添加「${source.name}」，可选择它继续处理`);
+    renderSources();$('viewResult').hidden=true;
   }
   function loadSample(){
     clearAll();
@@ -600,7 +600,7 @@
     }
     renderSources();sourcesChanged();
     if(state.mode==='match'||state.mode==='compare')while(state.joins.length<state.sources.length-1){const unused=state.sources.find(source=>source.id!==$('sourceA').value&&!state.joins.some(join=>join.sourceId===source.id));state.joins.push(makeJoin(unused?.id||''))}
-    renderBuilder();renderSource(currentTable('A'),'示例数据已准备');toast('示例数据已载入，可以直接开始处理');
+    renderBuilder();renderSource(currentTable('A'),'示例数据已准备');
   }
   async function exportResult(){
     if(!state.result)return;
@@ -610,8 +610,8 @@
       const baseFormat=sources[0]?.table.format||'xlsx',hasExcel=sources.some(source=>['xls','xlsx'].includes(source.table.format));
       const format=result.layout&&!hasExcel&&['csv','tsv','txt'].includes(baseFormat)?baseFormat:'xlsx';
       const blob=format==='xlsx'?(result.layout?await MimiTableWorkbook.toXlsx(result,sources,result.layout):D.xlsx([result.headers,...result.rows],MODE_META[state.mode].title)):MimiTableWorkbook.toDelimited(result,format);
-      const name=result.fileName.replace(/\.xlsx$/i,`.${format}`);MimiCommon.download(blob,name);toast(`已导出 ${format.toUpperCase()} 结果`);
-    }catch(error){toast(`导出失败：${error.message}`)}finally{$('exportResult').disabled=false}
+      const name=result.fileName.replace(/\.xlsx$/i,`.${format}`);MimiCommon.download(blob,name);
+    }catch(error){}finally{$('exportResult').disabled=false}
   }
 
   document.querySelectorAll('.task-button').forEach(button=>button.onclick=()=>setMode(button.dataset.mode));
@@ -628,7 +628,7 @@
   $('previewSource').onchange=()=>{const source=sourceById($('previewSource').value);if(source)renderSource(source.table,source.name,{preserveResult:true});else if(state.result)showResult()};
   $('viewResult').onclick=showResult;
   $('filterIssues').onclick=()=>{state.issuesOnly=!state.issuesOnly;showResult()};
-  $('addKey').onclick=()=>{const base=currentTable('A');if(!base){toast('请先选择主表');return}const unused=base.headers.findIndex((_,i)=>!state.baseKeys.includes(i));state.baseKeys.push(unused);state.joins.forEach(join=>join.keys.push(suggestedKey(sourceById(join.sourceId)?.table,unused)));renderBuilder();focusRule($('baseKeyList').lastElementChild?.querySelector('select'));renderSource(base,'匹配条件已更新')};
+  $('addKey').onclick=()=>{const base=currentTable('A');if(!base){return}const unused=base.headers.findIndex((_,i)=>!state.baseKeys.includes(i));state.baseKeys.push(unused);state.joins.forEach(join=>join.keys.push(suggestedKey(sourceById(join.sourceId)?.table,unused)));renderBuilder();focusRule($('baseKeyList').lastElementChild?.querySelector('select'));renderSource(base,'匹配条件已更新')};
   $('addJoin').onclick=()=>{const unused=state.sources.find(source=>source.id!==$('sourceA').value&&!state.joins.some(join=>join.sourceId===source.id));if(!unused)return;state.joins.push(makeJoin(unused.id));state.joinAutoInitialized=true;renderBuilder();const card=$('joinList').lastElementChild;card?.scrollIntoView({behavior:'smooth',block:'nearest'});focusRule(card?.querySelector('select'));const base=currentTable('A');if(base)renderSource(base,'参与表已更新')};
   $('addManual').onclick=addManual;$('saveResult').onclick=saveResult;
   ['fuzzyMatch','compareChanges','dedupeKey','cleanSpaces','cleanBlankRows','cleanBlankCols','cleanDuplicates','cleanPunctuation','studentColumn','scoreColumn','passLine','excellentLine'].forEach(id=>$(id).addEventListener('change',()=>{refreshFlow();const table=currentTable('A');if(table)renderSource(table,'设置已更新')}));
@@ -638,7 +638,7 @@
     $('manualHint').textContent=table?'支持 Excel 粘贴 / CSV。':'每行一人。';
   };
   $('runTask').onclick=run;$('loadSample').onclick=loadSample;$('clearAll').onclick=()=>$('clearDialog').showModal();$('confirmClear').onclick=()=>{$('clearDialog').close();clearAll()};$('exportResult').onclick=exportResult;$('tableTab').onclick=()=>showView('table');$('chartTab').onclick=()=>showView('chart');
-  const workspaceController=MimiWorkspace.mount({read:()=>state.ui,write:saveUi,toast,widths:{left:360},labels:{left:'任务设置栏'},onMobilePanel:panel=>{if(panel==='preview')state.charts.forEach(item=>item.resize())}});
+  const workspaceController=MimiWorkspace.mount({read:()=>state.ui,write:saveUi,widths:{left:360},onMobilePanel:panel=>{if(panel==='preview')state.charts.forEach(item=>item.resize())}});
   document.addEventListener('scroll',hideTaskTooltip,true);
   renderSources();addEventListener('resize',()=>{hideTaskTooltip();state.charts.forEach(item=>item.resize())});setMode('match');
 })();
