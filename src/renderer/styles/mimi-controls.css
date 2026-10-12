@@ -16,7 +16,7 @@ html[data-font="hand"] { --ui-font: "STKaiti", "KaiTi", "Songti SC", serif; --di
 html[data-font="clear"] { --ui-font: "Avenir Next", "PingFang SC", "Noto Sans CJK SC", sans-serif; --display-font: "Futura", "PingFang SC", sans-serif; }
 html[data-scale="small"] { --ui-scale: .9; }
 html[data-scale="large"] { --ui-scale: 1.1; }
-body[data-mimi-tool="roll-call"], body[data-mimi-tool="table-maker"] {
+body[data-mimi-tool="roll-call"], body[data-mimi-tool="table-maker"], body[data-mimi-tool="seating-chart"], body[data-mimi-tool="board-labels"] {
   --mimi-title-size: calc(36px * var(--ui-scale));
   --mimi-heading-size: calc(19px * var(--ui-scale));
   --mimi-label-size: calc(14px * var(--ui-scale));
@@ -24,16 +24,17 @@ body[data-mimi-tool="roll-call"], body[data-mimi-tool="table-maker"] {
   font-family: var(--ui-font);
   font-size: calc(15px * var(--ui-scale));
 }
-body[data-mimi-tool="table-maker"] { --mimi-title-size: calc(30px * var(--ui-scale)); --mimi-heading-size: calc(18px * var(--ui-scale)); }
+body[data-mimi-tool="table-maker"] { --mimi-title-size: calc(36px * var(--ui-scale)); --mimi-heading-size: calc(19px * var(--ui-scale)); }
 body[data-mimi-tool="roll-call"] :is(button, input, textarea, select),
-body[data-mimi-tool="table-maker"] :is(button, input, textarea, select) { font-family: var(--ui-font); }
+body[data-mimi-tool="table-maker"] :is(button, input, textarea, select),
+body[data-mimi-tool="seating-chart"] :is(button, input, textarea, select),
+body[data-mimi-tool="board-labels"] :is(button, input, textarea, select) { font-family: var(--ui-font); }
 body[data-mimi-tool="roll-call"] :is(.brand h1, .panel-head h2),
-body[data-mimi-tool="table-maker"] :is(.brand h1, .panel-head h2) { font-family: var(--display-font); }
-html[data-density="compact"] body[data-mimi-tool="roll-call"] .panel-body,
-html[data-density="compact"] body[data-mimi-tool="table-maker"] .panel-body,
-html[data-density="compact"] body[data-mimi-tool="table-maker"] .left-panel .panel-body { padding: 14px; }
-html[data-density="compact"] body[data-mimi-tool="roll-call"] .section + .section,
-html[data-density="compact"] body[data-mimi-tool="table-maker"] .section + .section { margin-top: 12px; padding-top: 12px; }
+body[data-mimi-tool="table-maker"] :is(.brand h1, .panel-head h2),
+body[data-mimi-tool="seating-chart"] :is(.brand h1, .panel-head h2),
+body[data-mimi-tool="board-labels"] :is(.brand h1, .panel-head h2) { font-family: var(--display-font); }
+html[data-density="compact"] body[data-mimi-tool] .panel-body { padding: 14px; }
+html[data-density="compact"] body[data-mimi-tool] .section + .section { margin-top: 12px; padding-top: 12px; }
 html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-motion="reduced"] *::after {
   animation-duration: .01ms !important;
   animation-iteration-count: 1 !important;
@@ -247,8 +248,10 @@ body[data-mimi-tool] .mimi-settings-close { width: 42px; min-width: 42px; height
   body[data-mimi-tool="board-labels"] .mimi-select-wrap:has(> .zoom) { width: 88px; flex-basis: 88px; }
   body[data-mimi-tool="table-maker"] #previewPageSize { min-height: 38px; }
   body[data-mimi-tool="table-maker"] .preview-search { min-height: 40px; height: 40px; }
-  body[data-mimi-tool="table-maker"] .brand h1 { font-size: calc(23px * var(--ui-scale)); }
+  body[data-mimi-tool="table-maker"] .brand h1 { font-size: calc(30px * var(--ui-scale)); }
   body[data-mimi-tool="roll-call"] .brand h1 { font-size: calc(30px * var(--ui-scale)); }
+  body[data-mimi-tool="seating-chart"] .brand h1 { font-size: calc(30px * var(--ui-scale)); }
+  body[data-mimi-tool="board-labels"] .brand h1 { font-size: calc(30px * var(--ui-scale)); }
   body[data-mimi-tool="board-labels"] .toolbar > .row > .btn,
   body[data-mimi-tool="board-labels"] .toolbar > .row > .mimi-select-wrap > .zoom { height: 44px; min-height: 44px; }
   body[data-mimi-tool="board-labels"] .toolbar > .row > .history-btn { width: 44px; min-width: 44px; max-width: 44px; }

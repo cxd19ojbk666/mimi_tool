@@ -37,10 +37,10 @@
 
 <main class="workspace" id="workspace" data-mobile-panel="setup">
   <section class="panel left-panel left is-mobile-active" id="leftPanel" data-workspace-panel="left" data-mobile-panel-name="setup">
-    <div class="panel-head"><h2>任务设置</h2><div class="panel-head-actions"><button class="btn small danger" id="clearAll" type="button" data-tooltip="清空当前数据和结果" aria-label="清空当前数据和结果" data-mimi-action="clear">清空</button><button class="panel-collapse" id="hideLeft" title="隐藏任务设置" aria-label="隐藏任务设置">−</button></div></div>
+    <div class="panel-head"><h2>任务设置</h2><div class="panel-head-actions"><button class="btn small danger" id="clearAll" type="button" data-tooltip="清空当前数据和结果" aria-label="清空当前数据和结果" data-mimi-action="clear" hidden>清空</button><button class="panel-collapse" id="hideLeft" title="隐藏任务设置" aria-label="隐藏任务设置">−</button></div></div>
     <div class="panel-body">
       <section class="section task-source" id="stepAdd">
-        <div class="source-actions"><button class="btn upload" id="uploadTrigger" type="button" data-tooltip="Excel（.xls、.xlsx）、CSV" aria-description="Excel（.xls、.xlsx）、CSV">导入文件</button><button class="btn manual-trigger" id="openManual" type="button" aria-haspopup="dialog" aria-controls="manualDialog">手动输入</button></div><input id="filesInput" type="file" accept=".xls,.xlsx,.csv,.tsv,.txt" multiple hidden>
+        <div class="source-actions"><button class="btn upload" id="uploadTrigger" type="button" aria-description="Excel（.xls、.xlsx）、CSV">导入文件</button><button class="btn manual-trigger" id="openManual" type="button" aria-haspopup="dialog" aria-controls="manualDialog">手动输入</button></div><input id="filesInput" type="file" accept=".xls,.xlsx,.csv,.tsv,.txt" multiple hidden>
         <div class="source-disclosure" id="sourceDisclosure"><div class="source-list-heading">已加表格<small id="sourceCount">0 张</small></div><div id="sourceList" class="stack" role="list" aria-label="已加表格"></div></div>
       </section>
 
@@ -120,13 +120,14 @@
           <div class="row"><label class="control">及格线<input class="field" id="passLine" type="number" min="0" max="1000" value="60"></label><label class="control">优秀线<input class="field" id="excellentLine" type="number" min="0" max="1000" value="90"></label></div>
         </div>
   </div>
-  <div class="dialog-actions rules-actions"><div class="rules-feedback" role="status" aria-live="polite"><strong id="rulesStatus"></strong><small id="rulesSummary"></small></div><div class="rules-action-buttons"><button class="btn" type="button" data-close-dialog>完成设置</button><button class="btn primary" id="rulesRun" type="button" disabled>开始合并</button></div></div>
+  <div class="dialog-actions rules-actions"><div class="rules-feedback" role="status" aria-live="polite"><strong id="rulesStatus"></strong><small id="rulesSummary"></small></div><div class="rules-action-buttons"><button class="btn" type="button" data-close-dialog>完成设置</button></div></div>
 </dialog>
 <dialog class="table-dialog clear-dialog" id="clearDialog" aria-labelledby="clearDialogTitle">
   <div class="panel-head"><h2 id="clearDialogTitle">确认清空表格？</h2></div>
   <div class="dialog-body"><p>当前添加的数据表和处理结果将被清空。</p><p class="hint">清空后无法撤销，请确认不再需要当前内容。</p></div>
   <div class="dialog-actions"><button class="btn" type="button" data-close-dialog>取消</button><button class="btn danger" id="confirmClear" type="button">确认</button></div>
 </dialog>
+<div class="task-tooltip" id="taskTooltip" popover="manual" role="tooltip"></div>
 <div id="toast" hidden></div>
 <script src="../../../node_modules/echarts/dist/echarts.min.js"></script>
 <script src="../../../node_modules/exceljs/dist/exceljs.min.js"></script>

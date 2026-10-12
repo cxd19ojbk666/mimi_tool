@@ -34,8 +34,8 @@ body{font-size:15px;line-height:1.5}.shell{width:100%;max-width:var(--mimi-page-
 /* 公共操作语义及消息提示；位置避开移动端底部导航。 */
 .btn.danger{color:#a33e32;background:#fff5ef}.btn.danger:hover:not(:disabled){color:#a33e32;background:#ffe7df;border-color:var(--ink)}
 [hidden]{display:none!important}
-#toast.mimi-toast{position:fixed;z-index:100;left:50%;right:auto;bottom:24px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);padding:12px 20px;border:2px solid var(--ink);border-radius:14px;background:#3f6172;color:#fff;box-shadow:4px 5px 0 rgba(48,67,84,.22);font-size:13px;font-weight:900;line-height:1.5;pointer-events:none;overflow-wrap:anywhere}
-@media(max-width:760px){#toast.mimi-toast{bottom:calc(92px + env(safe-area-inset-bottom))}}
+#toast.mimi-toast,#toast.mimi-toast.mimi-toast{position:fixed;z-index:100;left:50%;right:auto;bottom:24px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);padding:12px 20px;border:2px solid var(--ink);border-radius:14px;background:#3f6172;color:#fff;box-shadow:4px 5px 0 rgba(48,67,84,.22);font-size:13px;font-weight:900;line-height:1.5;pointer-events:none;overflow-wrap:anywhere}
+@media(max-width:760px){#toast.mimi-toast,#toast.mimi-toast.mimi-toast{bottom:calc(92px + env(safe-area-inset-bottom))}}
 
 /* 点名结果区始终为主要操作留出空间。 */
 body[data-mimi-tool="roll-call"] a.btn{color:var(--ink)}
