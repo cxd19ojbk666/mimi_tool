@@ -18,7 +18,7 @@
 </script>
 <link rel="icon" href="../../../assets/mimi-toolbox-transparent.ico">
 <link rel="stylesheet" href="../styles/mimi-ui.css?v=14">
-<link rel="stylesheet" href="../styles/mimi-table.css?v=28">
+<link rel="stylesheet" href="../styles/mimi-table.css?v=38">
 <link rel="stylesheet" href="../styles/mimi-controls.css">
 <link rel="stylesheet" href="../styles/mimi-layout.css">
 </head>
@@ -84,41 +84,56 @@
   <div class="dialog-actions"><button class="btn" type="button" data-close-dialog>取消</button><button class="btn primary" id="addManual" type="button">加入数据表</button></div>
 </dialog>
 
-<dialog class="table-dialog rules-dialog" id="rulesDialog" aria-labelledby="rulesDialogTitle" aria-describedby="rulesDialogHint">
-  <div class="dialog-head"><div><h2 id="rulesDialogTitle">设置规则</h2><p id="rulesDialogHint" hidden></p></div><button class="dialog-close" type="button" data-close-dialog aria-label="关闭规则对话框">×</button></div>
+<dialog class="table-dialog rules-dialog" id="rulesDialog" aria-labelledby="rulesDialogTitle">
+  <div class="dialog-head"><div><h2 id="rulesDialogTitle">设置规则</h2></div><button class="dialog-close" type="button" data-close-dialog aria-label="关闭规则对话框">×</button></div>
   <div class="dialog-content rules-content">
-      <div class="rules-base">
-        <div class="rules-section-heading" id="baseHeading"><h3>主表设置</h3></div>
-        <label class="control" id="sourceALabel" hidden>主表<select class="field" id="sourceA" aria-describedby="sourceHint"></select></label>
-        <small id="sourceHint" hidden></small>
-        <div class="stack merge-builder" data-controls="match compare" hidden>
-          <div class="builder-heading field-picker-heading"><strong>匹配依据</strong><div class="field-actions"><button class="field-action" id="addKey" type="button" aria-label="添加匹配条件">添加</button></div></div>
-          <div id="baseKeyList" class="stack"></div>
-          <p class="rule-inline-error" id="baseKeyError" hidden></p>
-          <div class="field-disclosure" id="baseFieldWrap"><div class="field-picker-heading"><h4 class="field-heading" id="baseFieldSummary">保留字段</h4></div><div id="baseFieldList" class="field-picker"></div></div>
-          <div class="advanced-options"><h4 class="field-heading">匹配选项</h4><div class="check-list"><label><input type="checkbox" id="fuzzyMatch" checked>忽略空格、大小写、全角差异</label></div><div class="check-list" id="compareChangesWrap" hidden><label><input type="checkbox" id="compareChanges" checked>检查同名字段的内容变化</label></div></div>
+      <section class="rules-base" aria-labelledby="baseHeading">
+        <div class="stack">
+          <div class="rules-section-heading" id="baseHeading"><h3>主表设置</h3></div>
+          <label class="control" id="sourceALabel" hidden>主表<select class="field" id="sourceA" aria-describedby="sourceHint"></select></label>
+          <small id="sourceHint" hidden></small>
         </div>
-      </div>
+        <div class="rules-base" data-controls="match compare" hidden>
+          <section class="stack merge-builder" aria-labelledby="baseKeyHeading">
+            <div class="builder-heading field-picker-heading"><strong id="baseKeyHeading">匹配依据</strong><div class="field-actions"><button class="field-action field-action-add" id="addKey" type="button" aria-label="添加匹配条件">添加</button></div></div>
+            <div id="baseKeyList" class="stack"></div>
+            <p class="rule-inline-error" id="baseKeyError" hidden></p>
+          </section>
+          <section class="field-disclosure" id="baseFieldWrap" aria-labelledby="baseFieldSummary"><div class="field-picker-heading"><h4 class="field-heading" id="baseFieldSummary">保留字段</h4></div><div id="baseFieldList" class="field-picker"></div></section>
+          <section class="advanced-options" aria-labelledby="matchOptionsHeading"><h4 class="field-heading" id="matchOptionsHeading">匹配选项</h4><div class="check-list"><label><input type="checkbox" id="fuzzyMatch" checked>忽略空格、大小写、全角差异</label><label id="compareChangesWrap" hidden><input type="checkbox" id="compareChanges" checked>检查同名字段的内容变化</label></div></section>
+        </div>
+        <div class="rules-base rules-form" data-controls="clean" hidden>
+          <section class="rules-form-section" aria-labelledby="cleanDedupeHeading">
+            <div class="rules-section-heading"><h3 id="cleanDedupeHeading">去重设置</h3></div>
+            <label class="control">判重列<select class="field" id="dedupeKey"><option value="*">整行相同</option></select></label>
+            <div class="check-list"><label><input type="checkbox" id="cleanDuplicates" checked>去重，留第一条</label></div>
+          </section>
+          <section class="rules-form-section" aria-labelledby="cleanOptionsHeading">
+            <div class="rules-section-heading"><h3 id="cleanOptionsHeading">清理选项</h3></div>
+            <div class="check-list">
+              <label><input type="checkbox" id="cleanSpaces" checked>去首尾、多余空格</label>
+              <label><input type="checkbox" id="cleanBlankRows" checked>删空行</label>
+              <label><input type="checkbox" id="cleanBlankCols" checked>删空列</label>
+              <label><input type="checkbox" id="cleanPunctuation">统一中文标点、全角数字</label>
+            </div>
+          </section>
+        </div>
+        <div class="rules-base rules-form" data-controls="grade" hidden>
+          <section class="rules-form-section" aria-labelledby="gradeFieldsHeading">
+            <div class="rules-section-heading"><h3 id="gradeFieldsHeading">分析字段</h3></div>
+            <div class="row"><label class="control">姓名列<select class="field" id="studentColumn"></select></label><label class="control">成绩列<select class="field" id="scoreColumn"><option value="*">自动识别</option></select></label></div>
+          </section>
+          <section class="rules-form-section" aria-labelledby="gradeThresholdsHeading">
+            <div class="rules-section-heading"><h3 id="gradeThresholdsHeading">分数标准</h3></div>
+            <div class="row"><label class="control">及格线<input class="field" id="passLine" type="number" min="0" max="1000" value="60"></label><label class="control">优秀线<input class="field" id="excellentLine" type="number" min="0" max="1000" value="90"></label></div>
+          </section>
+        </div>
+      </section>
       <section class="rules-joins" id="rulesJoins" hidden aria-labelledby="joinHeading">
         <div class="rules-section-heading"><h3 id="joinHeading">补充表</h3><span class="rules-count" id="joinCount"></span></div>
         <div id="joinList" class="stack join-list"></div>
         <button class="btn builder-add" id="addJoin" type="button">＋ 添加参与表</button>
       </section>
-        <div class="stack" data-controls="clean" hidden>
-          <label class="control">判重列<select class="field" id="dedupeKey"><option value="*">整行相同</option></select></label>
-          <div class="check-list">
-            <label><input type="checkbox" id="cleanSpaces" checked>去首尾、多余空格</label>
-            <label><input type="checkbox" id="cleanBlankRows" checked>删空行</label>
-            <label><input type="checkbox" id="cleanBlankCols" checked>删空列</label>
-            <label><input type="checkbox" id="cleanDuplicates" checked>去重，留第一条</label>
-            <label><input type="checkbox" id="cleanPunctuation">统一中文标点、全角数字</label>
-          </div>
-        </div>
-        <div class="stack" data-controls="grade" hidden>
-          <label class="control">姓名列<select class="field" id="studentColumn"></select></label>
-          <label class="control">成绩列<select class="field" id="scoreColumn"><option value="*">自动识别</option></select></label>
-          <div class="row"><label class="control">及格线<input class="field" id="passLine" type="number" min="0" max="1000" value="60"></label><label class="control">优秀线<input class="field" id="excellentLine" type="number" min="0" max="1000" value="90"></label></div>
-        </div>
   </div>
   <div class="dialog-actions rules-actions"><div class="rules-feedback" role="status" aria-live="polite"><strong id="rulesStatus"></strong><small id="rulesSummary"></small></div><div class="rules-action-buttons"><button class="btn" type="button" data-close-dialog>完成设置</button></div></div>
 </dialog>
@@ -132,5 +147,5 @@
 <script src="../../../node_modules/echarts/dist/echarts.min.js"></script>
 <script src="../../../node_modules/exceljs/dist/exceljs.min.js"></script>
 <script src="../../../node_modules/xlsx/dist/xlsx.full.min.js"></script>
-<script src="../scripts/mimi-common.js?v=3"></script><script src="../scripts/mimi-settings.js"></script><script src="../scripts/mimi-workspace.js"></script><script src="../scripts/mimi-table-merge.js"></script><script src="../scripts/mimi-table-workbook.js"></script><script src="../scripts/mimi-table-preview.js"></script><script src="../scripts/mimi-table.js?v=22"></script>
+<script src="../scripts/mimi-common.js?v=3"></script><script src="../scripts/mimi-settings.js"></script><script src="../scripts/mimi-workspace.js"></script><script src="../scripts/mimi-table-merge.js"></script><script src="../scripts/mimi-table-workbook.js"></script><script src="../scripts/mimi-table-preview.js"></script><script src="../scripts/mimi-table.js?v=27"></script>
 </body></html>

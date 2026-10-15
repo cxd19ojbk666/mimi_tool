@@ -57,9 +57,10 @@
   function renderSources(){
     hideTaskTooltip();
     const select=$('sourceA'),previous=select.value;
-    select.replaceChildren(option('','请选择数据表'),...state.sources.map(source=>option(source.id,source.name)));
+    select.replaceChildren(placeholderOption('','请选择数据表'),...state.sources.map(source=>option(source.id,source.name)));
     select.value=state.sources.some(source=>source.id===previous)?previous:'';
     if(!$('sourceA').value&&state.sources.length)$('sourceA').value=state.sources[0].id;
+    select.classList.toggle('is-placeholder',select.value==='');
     $('sourceCount').textContent=`${state.sources.length} 张`;
     $('clearAll').hidden=!state.sources.length;
     $('sourceList').replaceChildren(...state.sources.map(source=>{
@@ -123,21 +124,22 @@
     const count=state.sources.length,hasBase=!!currentTable('A'),multi=state.mode==='match'||state.mode==='compare';
     const canConfigure=hasBase&&(!multi||count>=2);
     const joinIds=state.joins.map(join=>join.sourceId);
-    $('sourceALabel').hidden=!canConfigure||!multi&&count===1;
+    $('sourceALabel').hidden=!canConfigure;
     $('sourceHint').hidden=!multi||!canConfigure;
     $('sourceHint').textContent=state.mode==='match'?'':'核对各表的缺失和变化。';
     $('modeControls').hidden=!canConfigure;
     $('openRules').hidden=!canConfigure;
     $('loadSample').hidden=hasBase;
-    document.querySelector('.merge-builder').hidden=!multi||!canConfigure;
+    document.querySelector('[data-controls="match compare"]').hidden=!multi||!canConfigure;
     $('rulesJoins').hidden=!multi||!canConfigure;
-    $('baseHeading').hidden=!multi;
+    const baseHeading=$('baseHeading');baseHeading.hidden=!multi;
+    if(multi)baseHeading.closest('section').setAttribute('aria-labelledby','baseHeading');
+    else baseHeading.closest('section').removeAttribute('aria-labelledby');
     $('rulesDialog').classList.toggle('is-multi',multi);
+    $('rulesDialog').dataset.rulesMode=state.mode;
     document.querySelector('[data-controls="clean"]').hidden=state.mode!=='clean'||!hasBase;
     document.querySelector('[data-controls="grade"]').hidden=state.mode!=='grade'||!hasBase;
-    $('rulesDialogTitle').textContent=multi?'设置匹配规则':state.mode==='clean'?'设置清理规则':'设置成绩分析规则';
-    $('rulesDialogHint').hidden=multi;
-    $('rulesDialogHint').textContent=multi?'':state.mode==='clean'?'勾选需要清理的内容。':'选择成绩列和分数标准。';
+    $('rulesDialogTitle').textContent='设置规则';
     $('joinHeading').textContent=state.mode==='compare'?'核对表':'补充表';
     $('joinCount').textContent=`${state.joins.length} 张`;
     $('addKey').hidden=!!currentTable('A')&&state.baseKeys.length>=currentTable('A').headers.length;
@@ -237,6 +239,9 @@
     return {name:file.name,sheets:[{name:'数据',rows,format:ext}]};
   }
   function option(value,text=value){return new Option(text,String(value))}
+  function placeholderOption(value,text){
+    const item=option(value,text);item.disabled=true;item.hidden=true;return item;
+  }
   function fillSelect(select,headers,{firstLabel=null,firstValue=''}={}){
     const previous=select.value,items=[];
     if(firstLabel!==null)items.push(option(firstValue,firstLabel));
@@ -286,7 +291,7 @@
   }
   function makeJoin(sourceId=''){
     const source=sourceById(sourceId),keys=state.baseKeys.map(index=>suggestedKey(source?.table,index));
-    return {uid:state.nextJoinId++,sourceId,keys,selected:source?source.table.headers.map((_,i)=>i).filter(i=>!keys.includes(i)):null,overwrites:[]};
+    return {uid:state.nextJoinId++,sourceId,keys,selected:source?source.table.headers.map((_,i)=>i).filter(i=>!keys.includes(i)):null,overwrites:[],collapsed:false};
   }
   function fieldPicker(container,source,selected,onChange){
     container.replaceChildren();
@@ -315,8 +320,9 @@
   }
   function keySelect(table,value,onChange,label='匹配列',focusKey=''){
     const select=document.createElement('select');select.className='field';select.setAttribute('aria-label',label);select.dataset.ruleFocus=focusKey;
-    select.replaceChildren(option('-1','请选择列'),...(table?.headers||[]).map((header,index)=>option(index,header)));
-    select.value=String(value??-1);select.onchange=()=>onChange(Number(select.value));return select;
+    select.replaceChildren(placeholderOption('-1','请选择列'),...(table?.headers||[]).map((header,index)=>option(index,header)));
+    select.value=String(value??-1);select.classList.toggle('is-placeholder',select.value==='-1');
+    select.onchange=()=>{select.classList.toggle('is-placeholder',select.value==='-1');onChange(Number(select.value))};return select;
   }
   function focusRule(input){
     // 公共控件会异步包裹新下拉框；等包裹完成后再恢复焦点，避免 DOM 移动使焦点丢失。
@@ -342,34 +348,46 @@
       const source=sourceById(join.sourceId),card=document.createElement('section');card.className='join-card';
       const top=document.createElement('div');top.className='join-card-head';
       const title=document.createElement('strong');title.textContent=source.name;
-      const remove=document.createElement('button');remove.type='button';remove.className='field-action';remove.textContent='移除';remove.setAttribute('aria-label',`移除参与表 ${joinIndex+1}`);
-      remove.onclick=()=>{state.joins.splice(joinIndex,1);renderBuilder();$('addJoin').focus();if(base)renderSource(base,'参与表已更新')};top.append(title,remove);card.append(top);
+      const remove=document.createElement('button');remove.type='button';remove.className='join-action join-remove';remove.textContent='移除';remove.setAttribute('aria-label',`移除参与表 ${joinIndex+1}`);
+      remove.onclick=()=>{state.joins.splice(joinIndex,1);renderBuilder();$('addJoin').focus();if(base)renderSource(base,'参与表已更新')};
+      const groups=document.createElement('div');groups.className='rules-base';groups.id=`join-settings-${join.uid}`;
+      const actions=document.createElement('div');actions.className='panel-head-actions join-card-actions';
+      const toggle=document.createElement('button');toggle.type='button';toggle.className='join-action join-toggle';toggle.setAttribute('aria-controls',groups.id);
+      const syncCollapsed=()=>{
+        groups.hidden=!!join.collapsed;
+        toggle.textContent=groups.hidden?'展开':'隐藏';
+        toggle.setAttribute('aria-expanded',String(!groups.hidden));
+        toggle.setAttribute('aria-label',`${toggle.textContent} ${source.name} 的设置`);
+      };
+      toggle.onclick=()=>{join.collapsed=!join.collapsed;syncCollapsed()};
+      syncCollapsed();actions.append(toggle,remove);top.append(title,actions);card.append(top,groups);
+      const matching=document.createElement('div');matching.className='stack';groups.append(matching);
       const keyList=document.createElement('div');keyList.className='stack join-key-list';
-      const keyLegend=document.createElement('div');keyLegend.className='join-key-legend';keyLegend.innerHTML='<span>主表匹配列</span><span>此表对应列</span>';card.append(keyLegend,keyList);
+      const keyLegend=document.createElement('div');keyLegend.className='join-key-legend';keyLegend.innerHTML='<span>主表匹配列</span><span>此表对应列</span>';matching.append(keyLegend,keyList);
       state.baseKeys.forEach((baseIndex,position)=>{
         const row=document.createElement('label');row.className='join-key-row';
         const caption=document.createElement('span');caption.className='join-key-caption';caption.textContent=base?.headers[baseIndex]||`条件 ${position+1}`;caption.title=caption.textContent;
         const arrow=document.createElement('span');arrow.className='match-arrow';arrow.textContent='↔';arrow.setAttribute('aria-hidden','true');
         row.append(caption,arrow,keySelect(source?.table,join.keys[position],value=>{join.keys[position]=value;refreshFlow();renderSource(base,'匹配条件已更新')},`参与表 ${joinIndex+1} 对应主表 ${caption.textContent} 的匹配列`,`join-key-${join.uid}-${position}`));keyList.append(row);
       });
-      const keyError=document.createElement('p');keyError.className='rule-inline-error join-key-error';keyError.id=`join-key-error-${join.uid}`;keyError.hidden=true;card.append(keyError);
+      const keyError=document.createElement('p');keyError.className='rule-inline-error join-key-error';keyError.id=`join-key-error-${join.uid}`;keyError.hidden=true;matching.append(keyError);
       // 手动覆盖：选择“附表列 → 主表列”，决定写回主表的字段与策略
       const owWrap=document.createElement('section');owWrap.className='join-overwrite';
       const owHeading=document.createElement('div');owHeading.className='field-picker-heading';owWrap.append(owHeading);
       const owTitle=document.createElement('h4');owTitle.className='overwrite-heading';owHeading.append(owTitle);
-      const owList=document.createElement('div');owList.className='stack';owWrap.append(owList);
+      const owList=document.createElement('div');owWrap.append(owList);
       const paintOw=()=>{
         owList.replaceChildren();
         owTitle.textContent=`填入主表已有列${join.overwrites?.length?` · ${join.overwrites.length} 项`:'（可选）'}`;
         (join.overwrites||[]).forEach((ow,oi)=>{
           const row=document.createElement('div');row.className='overwrite-row';
           const fromSel=document.createElement('select');fromSel.className='field';fromSel.setAttribute('aria-label','附表字段');
-          const fromPlaceholder=option(-1,'请选择附表列');fromPlaceholder.disabled=true;fromPlaceholder.hidden=true;
+          const fromPlaceholder=placeholderOption(-1,'请选择附表列');
           fromSel.replaceChildren(fromPlaceholder,...(source?.table.headers||[]).map((h,i)=>option(i,h)));fromSel.value=String(ow.from??-1);fromSel.classList.toggle('is-placeholder',fromSel.value==='-1');
           fromSel.onchange=()=>{ow.from=Number(fromSel.value);fromSel.classList.toggle('is-placeholder',fromSel.value==='-1');refreshFlow();if(base)renderSource(base,'覆盖关系已更新')};
           const arrow=document.createElement('span');arrow.textContent='→';arrow.className='overwrite-arrow';
           const toSel=document.createElement('select');toSel.className='field';toSel.setAttribute('aria-label','主表字段');
-          const toPlaceholder=option(-1,'请选择主表列');toPlaceholder.disabled=true;toPlaceholder.hidden=true;
+          const toPlaceholder=placeholderOption(-1,'请选择主表列');
           toSel.replaceChildren(toPlaceholder,...(base?.headers||[]).map((h,i)=>option(i,h)));toSel.value=String(ow.to??-1);toSel.classList.toggle('is-placeholder',toSel.value==='-1');
           toSel.onchange=()=>{ow.to=Number(toSel.value);toSel.classList.toggle('is-placeholder',toSel.value==='-1');refreshFlow();if(base)renderSource(base,'覆盖关系已更新')};
           const modeSel=document.createElement('select');modeSel.className='field';modeSel.setAttribute('aria-label','覆盖方式');
@@ -378,26 +396,29 @@
           const del=document.createElement('button');del.type='button';del.className='field-action';del.textContent='×';
           del.setAttribute('aria-label',`移除参与表 ${joinIndex+1} 的覆盖字段 ${oi+1}`);
           del.onclick=()=>{join.overwrites.splice(oi,1);paintOw();addOw.focus();refreshFlow();if(base)renderSource(base,'覆盖已移除')};
-          const fromLabel=document.createElement('label');fromLabel.className='control';fromLabel.append(document.createTextNode('补充表列'),fromSel);
-          const toLabel=document.createElement('label');toLabel.className='control';toLabel.append(document.createTextNode('写入主表列'),toSel);
-          const modeLabel=document.createElement('label');modeLabel.className='control overwrite-mode';modeLabel.append(document.createTextNode('写入方式'),modeSel);
+          // 首行展示列名，后续行通过下拉框的 aria-label 标识用途，避免重复标题撑大间距。
+          const fromLabel=document.createElement('label');fromLabel.className='control';if(oi===0)fromLabel.append('补充表列');fromLabel.append(fromSel);
+          const toLabel=document.createElement('label');toLabel.className='control';if(oi===0)toLabel.append('写入主表列');toLabel.append(toSel);
+          const modeLabel=document.createElement('label');modeLabel.className='control overwrite-mode';if(oi===0)modeLabel.append('写入方式');modeLabel.append(modeSel);
           const error=document.createElement('small');error.className='rule-inline-error overwrite-error';error.id=`overwrite-error-${join.uid}-${oi}`;error.hidden=true;
           row.append(fromLabel,arrow,toLabel,modeLabel,del,error);owList.append(row);
         });
       };
       paintOw();
       const owActions=document.createElement('div');owActions.className='field-actions';owHeading.append(owActions);
-      const addOw=document.createElement('button');addOw.type='button';addOw.className='field-action';addOw.textContent='添加';addOw.setAttribute('aria-label',`添加参与表 ${joinIndex+1} 的覆盖字段`);
+      const addOw=document.createElement('button');addOw.type='button';addOw.className='field-action field-action-add';addOw.textContent='添加';addOw.setAttribute('aria-label',`添加参与表 ${joinIndex+1} 的覆盖字段`);
       addOw.onclick=()=>{join.overwrites.push({from:-1,to:-1,mode:'fillEmpty'});paintOw();refreshFlow();focusRule(owList.lastElementChild?.querySelector('select'))};
-      owActions.append(addOw);if(state.mode==='match')card.append(owWrap);
-      const disclosure=document.createElement('div');disclosure.className='field-disclosure join-fields';
+      owActions.append(addOw);
+      const disclosure=document.createElement('section');disclosure.className='field-disclosure join-fields';
       const fieldHeading=document.createElement('div');fieldHeading.className='field-picker-heading';disclosure.append(fieldHeading);
       const fieldSummary=document.createElement('h4');fieldSummary.className='field-heading';fieldHeading.append(fieldSummary);
       const updateFieldSummary=()=>{fieldSummary.textContent=`${state.mode==='compare'?'保留核对字段':'保留字段'} · ${join.selected?.length||0}/${source?.table.headers.length||0} 列`};updateFieldSummary();
-      const fields=document.createElement('div');fields.className='field-picker';disclosure.append(fields);card.append(disclosure);
+      const fields=document.createElement('div');fields.className='field-picker';disclosure.append(fields);groups.append(disclosure);
       fieldPicker(fields,source,join.selected||[],selected=>{join.selected=selected;updateFieldSummary();if(base)renderSource(base,'字段选择已更新')});
-      const cardError=document.createElement('p');cardError.className='rule-inline-error join-card-error';cardError.hidden=true;card.append(cardError);
-      joinList.append(card);
+      if(state.mode==='match')groups.append(owWrap);
+      const cardError=document.createElement('p');cardError.className='rule-inline-error join-card-error';cardError.hidden=true;groups.append(cardError);
+      // 复用设置分组之间的虚线，外层分组避免被 join-card 的无边框规则覆盖。
+      const section=document.createElement('div');section.className='mimi-settings-section';section.append(card);joinList.append(section);
     });
     refreshFlow();
     if(focusKey&&$('rulesDialog').open)focusRule(Array.from($('rulesDialog').querySelectorAll('[data-rule-focus]')).find(input=>input.dataset.ruleFocus===focusKey));
@@ -624,7 +645,7 @@
   upload.onmouseenter=upload.onfocus=()=>showTaskTooltip(upload,upload.getAttribute('aria-description'));
   upload.onmouseleave=upload.onblur=hideTaskTooltip;
   upload.onclick=()=>{hideTaskTooltip();$('filesInput').click()};
-  $('sourceA').onchange=sourcesChanged;
+  $('sourceA').onchange=()=>{$('sourceA').classList.toggle('is-placeholder',$('sourceA').value==='');sourcesChanged()};
   $('previewSource').onchange=()=>{const source=sourceById($('previewSource').value);if(source)renderSource(source.table,source.name,{preserveResult:true});else if(state.result)showResult()};
   $('viewResult').onclick=showResult;
   $('filterIssues').onclick=()=>{state.issuesOnly=!state.issuesOnly;showResult()};

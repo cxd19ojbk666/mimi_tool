@@ -210,14 +210,17 @@ body[data-mimi-tool="table-maker"] .overwrite-empty { color: #657885; }
 
 /* 匹配规则：极简布局沿用工具箱的手绘字体、奶油底色和不规则圆角。 */
 body[data-mimi-tool="table-maker"] .rules-dialog { --rules-gutter: 24px; --rules-control-height: 40px; --rules-mapping-gap: 8px; --rules-arrow-width: 20px; border: 2px solid var(--ink); border-radius: 18px 15px 21px 16px; background: #fffdf3; box-shadow: 5px 7px 0 #30435428; font-family: var(--ui-font); }
-body[data-mimi-tool="table-maker"] .rules-dialog.is-multi { width: min(960px, calc(100vw - 40px)); max-height: min(800px, calc(100dvh - 40px)); }
+body[data-mimi-tool="table-maker"] .rules-dialog { --rules-height: calc(100dvh - 40px); width: min(960px, calc(100vw - 40px)); height: min(var(--rules-height), calc(100dvh - 40px)); max-height: calc(100dvh - 40px); }
+body[data-mimi-tool="table-maker"] .rules-dialog[data-rules-mode="compare"] { --rules-height: 720px; }
+body[data-mimi-tool="table-maker"] .rules-dialog[data-rules-mode="clean"] { --rules-height: 640px; width: min(620px, calc(100vw - 40px)); }
+body[data-mimi-tool="table-maker"] .rules-dialog[data-rules-mode="grade"] { --rules-height: 540px; width: min(680px, calc(100vw - 40px)); }
 body[data-mimi-tool="table-maker"] .rules-dialog::backdrop { background: #263b465e; backdrop-filter: blur(2px); }
 body[data-mimi-tool="table-maker"] .rules-dialog :is(button, input, select) { font-family: inherit; }
 body[data-mimi-tool="table-maker"] .rules-dialog .dialog-head { padding: 18px var(--rules-gutter); border-bottom: 0; background: #fff7d6; }
 body[data-mimi-tool="table-maker"] .rules-dialog .dialog-head h2 { font-family: var(--display-font); font-size: 20px; font-weight: 800; }
 body[data-mimi-tool="table-maker"] .rules-dialog .dialog-head p { margin: 6px 0 0; color: #71818a; font-size: 12px; line-height: 1.5; }
 body[data-mimi-tool="table-maker"] .rules-dialog .dialog-close { width: 30px; height: 30px; color: #858e88; font-size: 24px; }
-body[data-mimi-tool="table-maker"] .rules-dialog .rules-content { gap: var(--rules-gutter); padding: var(--rules-gutter); background: #fffdf3; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #cbd3cd transparent; }
+body[data-mimi-tool="table-maker"] .rules-dialog .rules-content { flex: 1 1 auto; gap: var(--rules-gutter); padding: var(--rules-gutter); background: #fffdf3; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #cbd3cd transparent; }
 body[data-mimi-tool="table-maker"] .rules-dialog .rules-content::-webkit-scrollbar { display: block; width: 5px; }
 body[data-mimi-tool="table-maker"] .rules-dialog .rules-content::-webkit-scrollbar-thumb { background: #cbd3cd; border-radius: 5px; }
 body[data-mimi-tool="table-maker"] .rules-dialog.is-multi .rules-content { grid-template-columns: minmax(280px, .8fr) minmax(0, 1.2fr); align-items: start; }
@@ -232,8 +235,9 @@ body[data-mimi-tool="table-maker"] .rules-dialog .merge-builder > .builder-headi
 body[data-mimi-tool="table-maker"] .rules-dialog .rules-content .control { min-width: 0; gap: 8px; }
 body[data-mimi-tool="table-maker"] .rules-dialog .rules-content .field { width: 100%; min-width: 0; min-height: var(--rules-control-height); padding: 8px 12px; border: 1.5px solid #91a8b5; border-radius: var(--mimi-control-radius); background-color: #fffefa; color: #35473e; box-shadow: none; font-size: calc(13px * var(--ui-scale)); font-weight: 700; line-height: 1.5; }
 body[data-mimi-tool="table-maker"] #rulesDialog .rules-content select.field { padding-right: 36px; font-weight: 700; background-image: var(--mimi-select-chevron); background-repeat: no-repeat; background-position: right 12px center; background-size: 12px 12px; }
-body[data-mimi-tool="table-maker"] #rulesDialog .overwrite-row select.field.is-placeholder { color: #89918d; }
-body[data-mimi-tool="table-maker"] #rulesDialog .overwrite-row select.field option:not([disabled]) { color: #35473e; }
+body[data-mimi-tool="table-maker"] #rulesDialog .rules-content select.field.is-placeholder { color: #89918d; }
+body[data-mimi-tool="table-maker"] #rulesDialog .rules-content select.field option:not([disabled]) { color: #35473e; }
+body[data-mimi-tool="table-maker"] #rulesDialog .rules-content select.field option[hidden] { display: none; }
 body[data-mimi-tool="table-maker"] #rulesDialog select.field::picker-icon, body[data-mimi-tool="table-maker"] #rulesDialog .mimi-select-arrow { display: none; }
 body[data-mimi-tool="table-maker"] .rules-dialog .rules-content .field:focus { border-color: #669a84; box-shadow: 0 0 0 2px #669a841a; }
 body[data-mimi-tool="table-maker"] .rules-dialog .merge-builder { gap: 12px; }
@@ -250,10 +254,10 @@ body[data-mimi-tool="table-maker"] .rules-dialog :is(.builder-key-row, .overwrit
 body[data-mimi-tool="table-maker"] .rules-dialog :is(.builder-key-row, .overwrite-row) > .field-action::after { transform: translate(-50%, -50%) rotate(-45deg); }
 body[data-mimi-tool="table-maker"] .rules-dialog :is(.builder-key-row, .overwrite-row) > .field-action:hover { border-color: #e6ccc2; background: #fff0e9; }
 body[data-mimi-tool="table-maker"] .rules-dialog #addKey { padding: 2px 0; }
-body[data-mimi-tool="table-maker"] .rules-dialog.is-multi .dialog-close { position: relative; box-sizing: border-box; display: grid; place-items: center; width: 30px; min-width: 30px; height: 30px; min-height: 30px; padding: 0; border-radius: 0; font-size: 0; line-height: 1; }
-body[data-mimi-tool="table-maker"] .rules-dialog.is-multi .dialog-close::before,
-body[data-mimi-tool="table-maker"] .rules-dialog.is-multi .dialog-close::after { content: ""; position: absolute; top: 50%; left: 50%; width: 20px; height: 2px; background: currentColor; transform: translate(-50%, -50%) rotate(45deg); }
-body[data-mimi-tool="table-maker"] .rules-dialog.is-multi .dialog-close::after { transform: translate(-50%, -50%) rotate(-45deg); }
+body[data-mimi-tool="table-maker"] .rules-dialog .dialog-close { position: relative; box-sizing: border-box; display: grid; place-items: center; width: 30px; min-width: 30px; height: 30px; min-height: 30px; padding: 0; border-radius: 0; font-size: 0; line-height: 1; }
+body[data-mimi-tool="table-maker"] .rules-dialog .dialog-close::before,
+body[data-mimi-tool="table-maker"] .rules-dialog .dialog-close::after { content: ""; position: absolute; top: 50%; left: 50%; width: 20px; height: 2px; background: currentColor; transform: translate(-50%, -50%) rotate(45deg); }
+body[data-mimi-tool="table-maker"] .rules-dialog .dialog-close::after { transform: translate(-50%, -50%) rotate(-45deg); }
 body[data-mimi-tool="table-maker"] .rules-dialog :is(.field-disclosure, .advanced-options, .join-overwrite) { display: block; min-width: 0; margin: 0; padding: 12px 0 0; border: 0; border-top: 0; border-radius: 0; background: transparent; box-shadow: none; }
 body[data-mimi-tool="table-maker"] .rules-dialog :is(.field-disclosure, .advanced-options, .join-overwrite) summary { color: #67756d; font-size: 12px; font-weight: 700; line-height: 1.6; }
 body[data-mimi-tool="table-maker"] .rules-dialog .overwrite-heading { margin: 0; color: #67756d; font-size: 12px; font-weight: 700; line-height: 1.6; }
@@ -261,10 +265,20 @@ body[data-mimi-tool="table-maker"] .rules-dialog .field-heading { margin: 0; col
 body[data-mimi-tool="table-maker"] .rules-dialog .field-picker-heading { display: flex; align-items: center; justify-content: space-between; min-width: 0; gap: 12px; }
 body[data-mimi-tool="table-maker"] .rules-dialog .advanced-options .check-list { margin-top: 10px; padding-top: 0; }
 body[data-mimi-tool="table-maker"] .rules-dialog .advanced-options label { font-size: 12px; font-weight: 400; }
+body[data-mimi-tool="table-maker"] .rules-dialog .rules-form-section { display: grid; min-width: 0; gap: 12px; padding-top: 12px; }
+body[data-mimi-tool="table-maker"] .rules-dialog .rules-form-section:first-child { padding-top: 0; }
+body[data-mimi-tool="table-maker"] .rules-dialog .rules-form .check-list label { font-size: 12px; font-weight: 400; }
 body[data-mimi-tool="table-maker"] .rules-dialog .join-list { gap: 20px; }
 body[data-mimi-tool="table-maker"] .rules-dialog .join-card { min-width: 0; gap: 12px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 body[data-mimi-tool="table-maker"] .rules-dialog .join-card + .join-card { padding-top: 20px; border-top: 0; }
 body[data-mimi-tool="table-maker"] .rules-dialog .join-card-head strong { min-width: 0; overflow-wrap: anywhere; color: #355568; font-size: 13px; font-weight: 800; }
+body[data-mimi-tool="table-maker"] .rules-dialog .join-card-head { flex-wrap: wrap; row-gap: 8px; }
+body[data-mimi-tool="table-maker"] .rules-dialog .join-card-head strong { flex: 1 1 160px; }
+body[data-mimi-tool="table-maker"] .rules-dialog .join-card-actions { flex: none; gap: 8px; margin-left: auto; }
+body[data-mimi-tool="table-maker"] .rules-dialog .join-action { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 56px; min-height: 28px; padding: 4px 6px; border: 0; border-radius: 6px; background: transparent; color: #607b6b; font-size: 12px; font-weight: 500; line-height: 1.5; cursor: pointer; }
+body[data-mimi-tool="table-maker"] .rules-dialog .join-toggle:hover { background: #edf4ec; color: #456b55; }
+body[data-mimi-tool="table-maker"] .rules-dialog .join-remove { color: #8b756c; }
+body[data-mimi-tool="table-maker"] .rules-dialog .join-remove:hover { background: #fff0e9; color: #a34c36; }
 body[data-mimi-tool="table-maker"] .rules-dialog .field-action { cursor: pointer; font-weight: 400; }
 body[data-mimi-tool="table-maker"] .rules-dialog .field-action:hover { color: #a34c36; }
 body[data-mimi-tool="table-maker"] .rules-dialog .quiet-action { color: #607b6b; font-size: 12px; font-weight: 500; text-decoration: none; }
@@ -279,8 +293,10 @@ body[data-mimi-tool="table-maker"] .rules-dialog .field-picker label { min-heigh
 body[data-mimi-tool="table-maker"] .rules-dialog .field-picker label:has(input:checked) { border-color: #a7c4b5; background: #f3f8f4; color: #456b55; }
 body[data-mimi-tool="table-maker"] .rules-dialog :is(.field-filter, .field-filter-empty) { width: 100%; }
 body[data-mimi-tool="table-maker"] .rules-dialog .field-picker-heading .field-actions { flex: none; width: auto; min-height: 24px; margin: 0; gap: 12px; }
-body[data-mimi-tool="table-maker"] .rules-dialog .field-actions .field-action,
-body[data-mimi-tool="table-maker"] .rules-dialog .join-card-head .field-action { padding: 2px 0; }
+body[data-mimi-tool="table-maker"] .rules-dialog .field-actions .field-action { padding: 2px 0; }
+body[data-mimi-tool="table-maker"] .rules-dialog .field-picker-heading .field-action { color: #607b6b; font-size: 11px; font-weight: 500; text-decoration: none; }
+body[data-mimi-tool="table-maker"] .rules-dialog .field-picker-heading .field-action:hover { color: #316751; text-decoration: underline; text-underline-offset: 3px; }
+body[data-mimi-tool="table-maker"] .rules-dialog .field-picker-heading .field-action + .field-action { padding-left: 12px; border-left: 1px solid #d5dfd8; }
 body[data-mimi-tool="table-maker"] .rules-dialog .overwrite-hint { margin: 10px 0; color: #89918d; font-size: 11px; line-height: 1.6; }
 body[data-mimi-tool="table-maker"] .rules-dialog .overwrite-row { min-width: 0; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, .8fr) 32px; gap: 8px; align-items: end; padding: 12px 0; border-bottom: 0; }
 body[data-mimi-tool="table-maker"] .rules-dialog .overwrite-arrow { display: none; }
@@ -306,7 +322,9 @@ body[data-mimi-tool="table-maker"] .rules-dialog .rules-content select[aria-inva
 }
 @media (max-width: 520px) {
   body[data-mimi-tool="table-maker"] .rules-dialog { --rules-gutter: 16px; --rules-control-height: 44px; --rules-mapping-gap: 6px; --rules-arrow-width: 16px; }
-  body[data-mimi-tool="table-maker"] .rules-dialog.is-multi { width: calc(100vw - 20px); max-height: calc(100dvh - 20px); }
+  body[data-mimi-tool="table-maker"] .rules-dialog { width: calc(100vw - 20px); }
+  body[data-mimi-tool="table-maker"] .rules-dialog:is([data-rules-mode="clean"], [data-rules-mode="grade"]) { width: calc(100vw - 20px); }
+  body[data-mimi-tool="table-maker"] .rules-dialog .rules-form .row { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   body[data-mimi-tool="table-maker"] .rules-dialog .rules-content { gap: 20px; }
   body[data-mimi-tool="table-maker"] .rules-dialog :is(.builder-key-row, .overwrite-row) > .field-action { width: 32px; height: 32px; }
   body[data-mimi-tool="table-maker"] .rules-dialog .rules-actions { align-items: stretch; flex-direction: column; padding: 14px var(--rules-gutter); gap: 12px; }
