@@ -6,9 +6,10 @@
   <title>咪咪大王排座位</title>
   <link rel="icon" type="image/x-icon" href="../../../assets/mimi-toolbox-transparent.ico">
   
-  <link rel="stylesheet" href="../styles/mimi-ui.css">
+  <script src="../scripts/mimi-workspace.js"></script>
+<link rel="stylesheet" href="../styles/mimi-ui.css">
   
-  <script src="../../../node_modules/xlsx/dist/xlsx.full.min.js"></script><script src="../scripts/mimi-common.js?v=3"></script><script src="../scripts/mimi-settings.js"></script><script src="../scripts/mimi-workspace.js"></script><script defer src="../scripts/mimi-seating.js"></script>
+  <script src="../../../node_modules/xlsx/dist/xlsx.full.min.js"></script><script src="../scripts/mimi-common.js?v=3"></script><script src="../scripts/mimi-settings.js"></script><script defer src="../scripts/mimi-seating.js"></script>
   <link rel="stylesheet" href="../styles/mimi-seating.css">
   <link rel="stylesheet" href="../styles/mimi-controls.css">
 <link rel="stylesheet" href="../styles/mimi-layout.css">
@@ -18,7 +19,7 @@
     <div class="brand"><div><h1>咪咪大王排座位</h1><p>咪的汪给咪做的排座位工具</p></div></div>
     <div class="top-actions actions"><a class="btn" href="../index.html" aria-label="返回咪咪大王工具箱">首页</a><button class="btn settings-trigger" id="openSettings" data-mimi-open-settings type="button">设置</button><button class="btn" id="saveBackup" data-mimi-action="backup">备份</button><button class="btn" id="restoreBackup" data-mimi-action="restore" type="button">恢复</button><input hidden id="restoreFile" type="file" accept=".json"><button class="btn accent" id="exportPng">导出 PNG</button></div>
   </header>
-  <main class="workspace" id="workspace" data-mobile-panel="setup">
+  <main class="workspace" id="workspace" data-mobile-panel="setup"><script>MimiWorkspace.restore({key:'zuoxu-v1',nested:true});</script>
     <section class="panel left-panel left is-mobile-active" id="leftPanel" data-workspace-panel="left" data-mobile-panel-name="setup">
       <div class="panel-head"><h2>准备排座</h2><div class="panel-head-actions"><button class="btn small danger" id="clearSetup" type="button" aria-label="清空布局、名单、规则、历史座位和排座结果" data-mimi-action="clear">清空</button><button class="panel-collapse" id="hideLeft" aria-label="隐藏准备排座">−</button></div></div>
       <div class="panel-body">

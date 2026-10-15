@@ -4,6 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light">
 <title>咪咪大王点名器</title>
 <link rel="icon" href="../../../assets/mimi-toolbox-transparent.ico">
+<script src="../scripts/mimi-workspace.js"></script>
 <link rel="stylesheet" href="../styles/mimi-ui.css?v=4">
 <style>
 /* 点名页：左侧准备与筛选，中间专心抽取，右侧回看记录。 */
@@ -150,11 +151,11 @@ body[data-mimi-tool="roll-call"] .dialog-actions{display:flex;justify-content:fl
 </style>
 <link rel="stylesheet" href="../styles/mimi-controls.css">
 <link rel="stylesheet" href="../styles/mimi-layout.css">
-<script defer src="../../../node_modules/xlsx/dist/xlsx.full.min.js"></script><script defer src="../scripts/mimi-common.js?v=3"></script><script defer src="../scripts/mimi-settings.js"></script><script defer src="../scripts/mimi-workspace.js"></script><script defer src="../scripts/mimi-roll-call.js"></script>
+<script defer src="../../../node_modules/xlsx/dist/xlsx.full.min.js"></script><script defer src="../scripts/mimi-common.js?v=3"></script><script defer src="../scripts/mimi-settings.js"></script><script defer src="../scripts/mimi-roll-call.js"></script>
 </head>
 <body data-mimi-tool="roll-call"><div class="shell">
 <header><div class="brand"><div><h1>咪咪大王点名器</h1><p>公平随机，让每个名字都被看见</p></div></div><div class="top-actions"><a class="btn" href="../index.html">首页</a><button class="btn" type="button" data-mimi-open-settings>设置</button></div></header>
-<main class="workspace" id="workspace" data-mobile-panel="draw">
+<main class="workspace" id="workspace" data-mobile-panel="draw"><script>MimiWorkspace.restore({key:'mimi-roll-call-v2',nested:true});</script>
 <section class="panel left-panel left" id="leftPanel" data-workspace-panel="left" data-mobile-panel-name="setup">
 <div class="panel-head"><h2>学生名单</h2><div class="panel-head-actions"><button class="btn small danger" id="clearRoster" type="button" aria-label="清空学生名单和点名记录">清空</button><button class="panel-collapse" id="hideLeft" aria-label="隐藏学生名单">−</button></div></div>
 <div class="panel-body">

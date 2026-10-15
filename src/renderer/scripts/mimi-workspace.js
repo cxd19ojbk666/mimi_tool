@@ -2,6 +2,30 @@
 (function(global){
   'use strict';
   const clamp=value=>Math.max(220,Math.min(420,Math.round(value)));
+  function applyLayout(root,ui,defaults){
+    const widths={};
+    for(const side of ['left','right']){
+      const width=clamp(+ui[side+'Width']||defaults[side]);
+      widths[side]=width;
+      root.style.setProperty('--'+side+'-w',width+'px');
+      root.style.setProperty('--'+side+'-width',width+'px');
+      root.classList.toggle('hide-'+side,!!ui[side+'Hidden']);
+    }
+    return widths;
+  }
+  // Called synchronously just inside <main>, before its panels can be painted.
+  function restore(options={}){
+    const root=document.querySelector(options.root||'#workspace');
+    if(!root)return;
+    let ui={};
+    try{
+      const saved=JSON.parse(localStorage.getItem(options.key)||'{}');
+      ui=(options.nested?saved?.ui:saved)||{};
+    }catch{}
+    // Table maker no longer has a right sidebar; ignore its legacy UI fields.
+    if(options.leftOnly)ui={...ui,rightHidden:false,rightWidth:0};
+    applyLayout(root,ui,{left:290,right:280,...options.widths});
+  }
   function mount(options={}){
     const root=document.querySelector(options.root||'#workspace');
     if(!root)throw new Error('MimiWorkspace: workspace not found');
@@ -14,10 +38,7 @@
     function persist(){write(ui)}
     function apply(){
       ui=read()||ui||{};
-      const left=clamp(+ui.leftWidth||defaults.left),right=clamp(+ui.rightWidth||defaults.right);
-      root.style.setProperty('--left-w',left+'px');root.style.setProperty('--right-w',right+'px');
-      root.style.setProperty('--left-width',left+'px');root.style.setProperty('--right-width',right+'px');
-      root.classList.toggle('hide-left',!!ui.leftHidden);root.classList.toggle('hide-right',!!ui.rightHidden);
+      const {left,right}=applyLayout(root,ui,defaults);
       for(const side of ['left','right']){
         el('show'+side[0].toUpperCase()+side.slice(1))?.setAttribute('aria-hidden',String(!ui[side+'Hidden']));
         el(side+'Resizer')?.setAttribute('aria-valuenow',side==='left'?left:right);
@@ -75,5 +96,5 @@
     requestAnimationFrame(()=>root.classList.add('mimi-workspace-mounted'));
     return {apply,setPanel,setMobilePanel,state:()=>ui};
   }
-  global.MimiWorkspace=Object.freeze({mount});
+  global.MimiWorkspace=Object.freeze({mount,restore});
 })(window);
