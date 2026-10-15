@@ -56,7 +56,7 @@ npm run build:win
 
 可按男女生或指定小组点名，也可随机抽取整组。开启“已点过暂不重复”后，两种抽取方式共用本轮记录；已有成员被点到的小组暂不参加整组抽取。支持撤回上次、开启新一轮和导出记录，数据自动保存在本机。
 
-点名器的布局样式在 `mimi-ui.css`，四个工具共用的控件样式在 `mimi-controls.css`；页面使用 `mimi-common.js` 和 `mimi-workspace.js` 的公共品牌、消息提示及侧栏交互。名单解析与抽取算法由 `MimiCommon.roster` 提供，点名交互在 `mimi-workspace.js` 中按页面标记挂载，不使用独立的点名脚本或样式文件。
+点名器的布局样式在 `mimi-ui.css`，四个工具共用的控件样式在 `mimi-controls.css`；页面使用 `mimi-common.js` 和 `mimi-workspace.js` 的公共品牌、提示及侧栏交互。名单解析与抽取算法由 `MimiCommon.roster` 提供，点名交互独立放在 `mimi-roll-call.js`，仅点名器页面加载。
 
 ## 做表格
 
@@ -77,7 +77,11 @@ Excel 表格支持多级表头和合并单元格；如自动识别有误，可�
 - `src/renderer/styles/mimi-ui.css`：设计变量、三栏工作台、基础组件和响应式规则。
 - `src/renderer/styles/mimi-controls.css`：四个工具的输入框、下拉框、按钮、选项卡与设置弹窗的最终样式；每个业务页在专属样式之后加载。
 - `src/renderer/scripts/mimi-common.js`：品牌文案、通用操作名称、消息提示及备份下载。
+- `src/renderer/scripts/mimi-settings.js`：四个工具的界面偏好行为；通过控件映射及状态读写回调兼容已有面板、存储键和座位备份。
 - `src/renderer/scripts/mimi-workspace.js`：侧栏折叠、栏宽调整、移动端导航及状态持久化。
+- `src/renderer/scripts/mimi-roll-call.js`：点名器的名单导入、抽取动画和点名记录。
+
+`MimiCommon.zip(files, type)` 提供 XLSX 名单和 DOCX 板贴共用的离线 ZIP 编码。下拉框的外部点击处理使用单个全局监听器，动态重建规则控件时不会保留已移除的下拉框。
 
 ## HTML 契约
 
@@ -120,7 +124,7 @@ const controller = MimiWorkspace.mount({
 
 ## 通用内容约定
 
-两个页面均加载 `src/renderer/scripts/mimi-common.js`，在页面脚本开始时调用
+各工具页面均加载 `src/renderer/scripts/mimi-common.js`，在页面脚本开始时调用
 `MimiCommon.init({action:'做板贴',subject:'板贴'})`（排座位使用 `排座位`）。
 标题统一为“咪咪大王 + 动作”，副标题统一为“咪的汪给咪做的 + 工具名称 + 工具”。
 

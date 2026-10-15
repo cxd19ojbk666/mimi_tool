@@ -79,11 +79,11 @@
   }
   // 智能推测表头：跳过“大标题/填报行”等单值通栏行，区分文本表头与数字数据行。
   function rowFilled(sheet,info,r){
-    let count=0;const values=[];
-    for(let c=1;c<=info.width;c++){const cell=sheet.getCell(r,c);if(cell.isMerged&&cell.master?.address!==cell.address)continue;const v=plain(cell.value);if(!empty(v)){count++;values.push(v)}}
-    return {count,values};
+    let count=0;
+    for(let c=1;c<=info.width;c++){const cell=sheet.getCell(r,c);if(cell.isMerged&&cell.master?.address!==cell.address)continue;const v=plain(cell.value);if(!empty(v))count++}
+    return count;
   }
-  function isTitleLike(sheet,info,r,count){
+  function isTitleLike(info,r,count){
     if(count!==1)return false;
     // 单个非空值 + 存在跨越多列的横向合并，即视为标题/填报行
     return info.merges.some(item=>item.top<=r&&item.bottom>=r&&(item.right-item.left)>=Math.max(3,Math.floor(info.width/4)));
@@ -103,9 +103,9 @@
     const info=worksheetInfo(sheet),limit=Math.min(15,info.lastRow);
     let start=1;
     for(let r=1;r<=limit;r++){
-      const {count}=rowFilled(sheet,info,r);
+      const count=rowFilled(sheet,info,r);
       if(count===0)continue;
-      if(isTitleLike(sheet,info,r,count))continue; // 跳过“附件2…录入表”“填报时间…”等通栏标题行
+      if(isTitleLike(info,r,count))continue; // 跳过“附件2…录入表”“填报时间…”等通栏标题行
       if(count>=2){start=r;break}
       if(r===limit)start=r;
     }
@@ -117,7 +117,7 @@
       const hasVerticalContinuation=info.merges.some(item=>item.top<next&&item.bottom>=next&&item.top>=start);
       if(hasHorizontalMerge||hasVerticalContinuation){depth++;continue}
       // 无合并时：下一行仍像表头文字则继续，若像数据行则停止
-      if(!looksLikeDataRow(sheet,info,next)){const {count}=rowFilled(sheet,info,next);if(count>=2&&!looksLikeDataRow(sheet,info,row)){depth++;continue}}
+      if(!looksLikeDataRow(sheet,info,next)){const count=rowFilled(sheet,info,next);if(count>=2&&!looksLikeDataRow(sheet,info,row)){depth++;continue}}
       break;
     }
     // 若首层误含数字数据行，回退一层

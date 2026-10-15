@@ -1,6 +1,7 @@
 /* 咪咪工具共享：品牌文案、文件下载与名单数据工具。 */
 (function(global){
   'use strict';
+  let initialized=false;
   const text=Object.freeze({backup:'备份',restore:'恢复',clear:'清空',export:'导出'});
   function download(blob,name){
     const url=URL.createObjectURL(blob),link=document.createElement('a');
@@ -122,10 +123,13 @@
         else if(event.key==='ArrowDown'||event.key==='ArrowUp'||event.key==='Enter'||event.key===' ')setOpen(select,true);
         pollNative(select);
       });
-      document.addEventListener('pointerdown',event=>{
-        if(!select.contains(event.target)&&!select.isEqualNode(event.target))setOpen(select,false);
-      },true);
     };
+    // 只保留一个全局监听器，避免重建规则控件后仍持有已移除的 select。
+    document.addEventListener('pointerdown',event=>{
+      document.querySelectorAll('select[data-mimi-arrow="1"].is-open').forEach(select=>{
+        if(!select.contains(event.target))setOpen(select,false);
+      });
+    },true);
     document.querySelectorAll('select.field,select#previewSource').forEach(enhance);
     new MutationObserver(mutations=>{
       mutations.forEach(mutation=>{
@@ -138,8 +142,7 @@
     }).observe(document.documentElement,{childList:true,subtree:true});
   }
   function init({action,subject}){
-    initTooltips();
-    initSelectArrows();
+    if(!initialized){initTooltips();initSelectArrows();initialized=true}
     document.title=`咪咪大王${action}`;
     document.querySelector('.brand h1').textContent=document.title;
     document.querySelector('.brand p').textContent=`咪的汪给咪做的${subject}工具`;
@@ -149,6 +152,35 @@
       if(button.tagName==='BUTTON')button.type='button';
       if(key==='clear')button.classList.add('danger');
     });
+  }
+  // XLSX 名单与 DOCX 板贴共用无压缩 ZIP 编码，离线运行。
+  const crcTable=Uint32Array.from({length:256},(_,value)=>{
+    for(let bit=0;bit<8;bit++)value=value&1?0xedb88320^(value>>>1):value>>>1;
+    return value>>>0;
+  });
+  function zip(files,type='application/zip'){
+    const encoder=new TextEncoder(),locals=[],centrals=[];
+    let offset=0,directorySize=0;
+    for(const [name,content] of files){
+      const nameBytes=encoder.encode(name),data=typeof content==='string'?encoder.encode(content):content;
+      let crc=0xffffffff;
+      for(const byte of data)crc=crcTable[(crc^byte)&255]^(crc>>>8);
+      crc=(crc^0xffffffff)>>>0;
+      const local=new Uint8Array(30),lv=new DataView(local.buffer);
+      lv.setUint32(0,0x04034b50,true);lv.setUint16(4,20,true);lv.setUint16(6,0x0800,true);
+      lv.setUint32(14,crc,true);lv.setUint32(18,data.length,true);lv.setUint32(22,data.length,true);lv.setUint16(26,nameBytes.length,true);
+      locals.push(local,nameBytes,data);
+      const central=new Uint8Array(46),cv=new DataView(central.buffer);
+      cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint16(8,0x0800,true);
+      cv.setUint32(16,crc,true);cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);cv.setUint16(28,nameBytes.length,true);cv.setUint32(42,offset,true);
+      centrals.push(central,nameBytes);
+      offset+=local.length+nameBytes.length+data.length;
+      directorySize+=central.length+nameBytes.length;
+    }
+    const end=new Uint8Array(22),view=new DataView(end.buffer);
+    view.setUint32(0,0x06054b50,true);view.setUint16(8,files.length,true);view.setUint16(10,files.length,true);
+    view.setUint32(12,directorySize,true);view.setUint32(16,offset,true);
+    return new Blob([...locals,...centrals,end],{type});
   }
   // 公共名单工具：文本与 Excel 解析、随机抽取及表格导出。
   const roster=(()=>{
@@ -266,9 +298,7 @@
       });
     }}));
   }
-  function csv(rows){return '\uFEFF'+rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n')}
   function xlsx(rows,sheetName='工作表'){
-    const encoder=new TextEncoder(),bytes=value=>encoder.encode(value),join=parts=>{const size=parts.reduce((n,p)=>n+p.length,0),out=new Uint8Array(size);let offset=0;for(const part of parts){out.set(part,offset);offset+=part.length}return out};
     const escape=value=>String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
     const column=index=>{let value=index+1,name='';while(value){name=String.fromCharCode(65+(value-1)%26)+name;value=Math.floor((value-1)/26)}return name};
     const safeSheet=(String(sheetName||'工作表').replace(/[\\/*?:\[\]]/g,' ').trim()||'工作表').slice(0,31);
@@ -283,14 +313,9 @@
       ['xl/styles.xml',xml+'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="0"/><fonts count="2"><font><sz val="11"/><name val="Aptos"/></font><font><b/><sz val="11"/><name val="Aptos"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles><dxfs count="0"/><tableStyles count="0" defaultTableStyle="TableStyleMedium2" defaultPivotStyle="PivotStyleLight16"/></styleSheet>'],
       ['xl/worksheets/sheet1.xml',xml+`<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols>${widths}</cols><sheetData>${cells}</sheetData></worksheet>`]
     ];
-    const table=new Uint32Array(256);for(let i=0;i<256;i++){let value=i;for(let bit=0;bit<8;bit++)value=value&1?0xedb88320^(value>>>1):value>>>1;table[i]=value}
-    const crc32=data=>{let value=0xffffffff;for(const byte of data)value=table[(value^byte)&255]^(value>>>8);return (value^0xffffffff)>>>0};
-    const locals=[],centrals=[];let offset=0;
-    for(const [name,content] of files){const nameBytes=bytes(name),data=bytes(content),crc=crc32(data),local=new Uint8Array(30),lv=new DataView(local.buffer);lv.setUint32(0,0x04034b50,true);lv.setUint16(4,20,true);lv.setUint32(14,crc,true);lv.setUint32(18,data.length,true);lv.setUint32(22,data.length,true);lv.setUint16(26,nameBytes.length,true);locals.push(local,nameBytes,data);const central=new Uint8Array(46),cv=new DataView(central.buffer);cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint32(16,crc,true);cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);cv.setUint16(28,nameBytes.length,true);cv.setUint32(42,offset,true);centrals.push(central,nameBytes);offset+=local.length+nameBytes.length+data.length}
-    const directory=join(centrals),end=new Uint8Array(22),view=new DataView(end.buffer);view.setUint32(0,0x06054b50,true);view.setUint16(8,files.length,true);view.setUint16(10,files.length,true);view.setUint32(12,directory.length,true);view.setUint32(16,offset,true);
-    return new Blob([...locals,directory,end],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    return zip(files,'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   }
-    return Object.freeze({parseText,normalize,calledIds,candidates,randomIndex,readWorkbook,csv,xlsx});
+    return Object.freeze({parseText,normalize,calledIds,candidates,randomIndex,readWorkbook,xlsx});
   })();
-  global.MimiCommon=Object.freeze({text,init,download,backup,roster});
+  global.MimiCommon=Object.freeze({text,init,download,backup,zip,roster});
 })(window);

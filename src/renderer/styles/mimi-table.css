@@ -19,8 +19,6 @@ body[data-mimi-tool="table-maker"] .source-preview { padding: 2px 0; font-size: 
 /* 顶层弹出提示避免被名称按钮及滚动列表的 overflow 裁剪。 */
 body[data-mimi-tool="table-maker"] .task-tooltip { position: fixed; inset: auto; margin: 0; width: max-content; max-width: min(320px, calc(100vw - 24px)); padding: 7px 11px; border: 1px solid #355568; border-radius: 8px; background: #355568; box-shadow: 0 4px 10px #243b4b30; color: #fff; font-size: 12px; font-weight: 700; line-height: 1.4; white-space: normal; overflow-wrap: anywhere; pointer-events: none; }
 body[data-mimi-tool="table-maker"] .source-badge { flex: none; padding: 1px 5px; border: 1px solid #78a993; border-radius: 5px 3px 5px 4px; background: #fffbdc; color: #316751; font-size: 10px; }
-body[data-mimi-tool="table-maker"] .manual-entry { padding: 3px 0; }
-body[data-mimi-tool="table-maker"] .manual-entry summary { font-size: 12px; }
 body[data-mimi-tool="table-maker"] textarea { font: inherit; }
 body[data-mimi-tool="table-maker"] #sourceHint { color: #657885; font-size: 12px; margin-top: -4px; }
 body[data-mimi-tool="table-maker"] .field-disclosure,
@@ -32,8 +30,6 @@ body[data-mimi-tool="table-maker"] .join-card > .field { font-size: 12px; }
 body[data-mimi-tool="table-maker"] .task-footer { text-align: center; }
 body[data-mimi-tool="table-maker"] .task-footer .quiet-action { margin-top: 8px; font-size: 12px; }
 body[data-mimi-tool="table-maker"] .task-footer small { font-size: 12px; }
-body[data-mimi-tool="table-maker"] .task-footer .run-preview { max-width: 100%; margin: 0; color: #397667; text-align: left; line-height: 1.5; overflow-wrap: anywhere; }
-body[data-mimi-tool="table-maker"] .task-footer .run-preview[hidden],
 body[data-mimi-tool="table-maker"] #resultQuality[hidden],
 body[data-mimi-tool="table-maker"] #filterIssues[hidden] { display: none; }
 body[data-mimi-tool="table-maker"] .preview-toolbar { display: flex; align-items: center; gap: 10px; flex: none; padding: 10px 16px; border-bottom: 2px dashed #cad5d8; background: #fffdf3; }
@@ -119,7 +115,6 @@ body[data-mimi-tool="table-maker"] .source-disclosure { margin: 0; }
 body[data-mimi-tool="table-maker"] #sourceList { display: grid; gap: 0; margin: 6px 0 0; }
 body[data-mimi-tool="table-maker"] #sourceList:not(:empty) { border: 1.5px solid #a3b3bc; border-radius: 12px; overflow: hidden; }
 body[data-mimi-tool="table-maker"] #sourceList:empty { display: none; }
-body[data-mimi-tool="table-maker"] .manual-entry { margin: 0; }
 body[data-mimi-tool="table-maker"] .manual-source { display: grid; gap: 10px; padding-top: 8px; }
 body[data-mimi-tool="table-maker"] .stack { display: grid; gap: 10px; }
 body[data-mimi-tool="table-maker"] .merge-builder { gap: 12px; }
@@ -129,9 +124,7 @@ body[data-mimi-tool="table-maker"] .check-list { display: grid; gap: 8px; }
 body[data-mimi-tool="table-maker"] .task-footer { display: grid; gap: 8px; justify-items: center; padding: 14px 16px; }
 body[data-mimi-tool="table-maker"] .task-footer small { margin: 0; line-height: 1.5; }
 body[data-mimi-tool="table-maker"] .left-panel .control { display: grid; gap: 6px; margin: 0; }
-body[data-mimi-tool="table-maker"] .left-panel .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0; }
-body[data-mimi-tool="table-maker"] .manual-entry summary, body[data-mimi-tool="table-maker"] details summary { cursor: pointer; border-radius: 8px; }
-body[data-mimi-tool="table-maker"] .manual-entry summary:hover, body[data-mimi-tool="table-maker"] details summary:hover { color: var(--ink); }
+body[data-mimi-tool="table-maker"] .left-panel .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0; } body[data-mimi-tool="table-maker"] details summary { cursor: pointer; border-radius: 8px; } body[data-mimi-tool="table-maker"] details summary:hover { color: var(--ink); }
 body[data-mimi-tool="table-maker"] .field:not(select):not(.preview-source-control), body[data-mimi-tool="table-maker"] select.field { min-height: 36px; }
 body[data-mimi-tool="table-maker"] select.field { min-height: 42px; }
 body[data-mimi-tool="table-maker"] .field:focus-visible, body[data-mimi-tool="table-maker"] .btn:focus-visible, body[data-mimi-tool="table-maker"] summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
@@ -187,7 +180,6 @@ body[data-mimi-tool="table-maker"] :is(.left-panel .panel-body, #sourceList, .di
 }
 
 /* 多层表头美化：标题横幅 + 粘性合并表头 + 状态染色，高度还原 Excel。 */
-body[data-mimi-tool="table-maker"] { --mimi-header-row-h: 36px; }
 body[data-mimi-tool="table-maker"] .table-stage { position: relative; overflow: auto; background: #fffdf6; }
 body[data-mimi-tool="table-maker"] .table-title-banner { position: sticky; left: 0; margin: 10px 12px 0; padding: 10px 14px; border: 1.5px solid #355568; border-radius: 12px; background: linear-gradient(180deg,#fff8d6,#fffdf3); color: #304354; font-size: 15px; font-weight: 900; text-align: center; }
 body[data-mimi-tool="table-maker"] .data-table { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 12.5px; }
@@ -199,14 +191,12 @@ body[data-mimi-tool="table-maker"] .data-table tbody tr:nth-child(even) td { bac
 body[data-mimi-tool="table-maker"] .data-table td.is-ok { background: #e6f6ec !important; color: #2c6e4f; font-weight: 700; }
 body[data-mimi-tool="table-maker"] .data-table td.is-warn { background: #fff3d6 !important; color: #8a5d00; font-weight: 700; }
 body[data-mimi-tool="table-maker"] .data-table td.is-bad { background: #ffe7df !important; color: #933e31; font-weight: 700; }
-body[data-mimi-tool="table-maker"] .join-fill-row { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: center; font-size: 12px; font-weight: 800; color: #365d52; }
 
 body[data-mimi-tool="table-maker"] .join-overwrite { display: grid; gap: 8px; padding: 9px 10px; border: 1.5px dashed #a3b3bc; border-radius: 10px; background: #fffef9; }
 body[data-mimi-tool="table-maker"] .join-overwrite .builder-heading { display: flex; align-items: baseline; gap: 8px; }
 body[data-mimi-tool="table-maker"] .join-overwrite small { color: #657885; font-size: 11px; font-weight: 700; }
 body[data-mimi-tool="table-maker"] .overwrite-row { display: grid; grid-template-columns: 1fr auto 1fr auto auto; gap: 6px; align-items: center; }
 body[data-mimi-tool="table-maker"] .overwrite-arrow { color: #397667; font-weight: 900; }
-body[data-mimi-tool="table-maker"] .overwrite-empty { color: #657885; }
 
 /* 匹配规则：极简布局沿用工具箱的手绘字体、奶油底色和不规则圆角。 */
 body[data-mimi-tool="table-maker"] .rules-dialog { --rules-gutter: 24px; --rules-control-height: 40px; --rules-mapping-gap: 8px; --rules-arrow-width: 20px; border: 2px solid var(--ink); border-radius: 18px 15px 21px 16px; background: #fffdf3; box-shadow: 5px 7px 0 #30435428; font-family: var(--ui-font); }
@@ -297,7 +287,6 @@ body[data-mimi-tool="table-maker"] .rules-dialog .field-actions .field-action { 
 body[data-mimi-tool="table-maker"] .rules-dialog .field-picker-heading .field-action { color: #607b6b; font-size: 11px; font-weight: 500; text-decoration: none; }
 body[data-mimi-tool="table-maker"] .rules-dialog .field-picker-heading .field-action:hover { color: #316751; text-decoration: underline; text-underline-offset: 3px; }
 body[data-mimi-tool="table-maker"] .rules-dialog .field-picker-heading .field-action + .field-action { padding-left: 12px; border-left: 1px solid #d5dfd8; }
-body[data-mimi-tool="table-maker"] .rules-dialog .overwrite-hint { margin: 10px 0; color: #89918d; font-size: 11px; line-height: 1.6; }
 body[data-mimi-tool="table-maker"] .rules-dialog .overwrite-row { min-width: 0; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, .8fr) 32px; gap: 8px; align-items: end; padding: 12px 0; border-bottom: 0; }
 body[data-mimi-tool="table-maker"] .rules-dialog .overwrite-arrow { display: none; }
 body[data-mimi-tool="table-maker"] .rules-dialog .overwrite-mode { grid-column: 3; }

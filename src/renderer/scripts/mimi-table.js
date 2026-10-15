@@ -68,7 +68,7 @@
       const preview=document.createElement('button');preview.type='button';preview.className='source-preview';preview.textContent=source.name;
       preview.onmouseenter=preview.onfocus=()=>showTaskTooltip(preview,source.name,{truncatedOnly:true});
       preview.onmouseleave=preview.onblur=hideTaskTooltip;
-      preview.onclick=()=>{hideTaskTooltip();renderSource(source.table,source.name,{preserveResult:true});workspaceController.setMobilePanel('preview')};
+      preview.onclick=()=>{hideTaskTooltip();renderSource(source.table,{preserveResult:true});workspaceController.setMobilePanel('preview')};
       const remove=document.createElement('button');remove.type='button';remove.className='source-remove';remove.textContent='×';remove.setAttribute('aria-label',`移除 ${source.id} ${source.name}`);
       remove.onclick=()=>{state.sources=state.sources.filter(item=>item!==source);renderSources();sourcesChanged()};
       const badge=document.createElement('span');badge.className='source-badge';row.append(preview,badge,remove);
@@ -78,7 +78,7 @@
     syncPreviewSources();updateSourceHighlights();refreshFlow();
   }
   function sourcesChanged(){
-    syncColumnControls();renderBuilder();updateSourceHighlights();refreshFlow();const table=currentTable('A');if(table)renderSource(table,'数据预览');else resetResult();
+    syncColumnControls();renderBuilder();updateSourceHighlights();refreshFlow();const table=currentTable('A');if(table)renderSource(table);else resetResult();
   }
   function updateSourceHighlights(){document.querySelectorAll('.source-card').forEach(card=>{
     const isBase=card.dataset.sourceId===$('sourceA').value;card.classList.toggle('is-base',isBase);
@@ -115,7 +115,7 @@
         source.table=source.raw.kind==='worksheet'?MimiTableWorkbook.fromWorksheet(source.raw.sheet,{start,depth}):MimiTableWorkbook.fromRows(source.raw.rows,{start,depth,format:source.raw.format});
         if(source.id===state.baseSourceId)state.baseSourceId='';
         state.joins.filter(join=>join.sourceId===source.id).forEach(join=>{join.keys=state.baseKeys.map(index=>suggestedKey(source.table,index));join.selected=source.table.headers.map((_,i)=>i).filter(i=>!join.keys.includes(i))});
-        renderSources();sourcesChanged();renderSource(source.table,source.name);
+        renderSources();sourcesChanged();renderSource(source.table);
       }catch(error){input.value=String(key==='start'?source.table.headerStart:source.table.headerDepth);}};
       label.append(input);controls.append(label);
     }
@@ -214,7 +214,7 @@
       const rawRows=[table.headers,...table.rows],parsed=MimiTableWorkbook.fromRows(rawRows,{format:'manual'});
       const source=addSource(cleanText($('manualName').value)||'手动输入',parsed,{kind:'rows',rows:rawRows,format:'manual'});
       if(state.joinAutoInitialized&&(state.mode==='match'||state.mode==='compare'))state.joins.push(makeJoin(source.id));
-      $('manualDialog').close();renderSources();sourcesChanged();renderSource(parsed,`${source.id} 已添加`);
+      $('manualDialog').close();renderSources();sourcesChanged();renderSource(parsed);
     }catch(error){$('manualError').textContent=error.message;$('manualError').hidden=false}
   }
   function decodeText(buffer){
@@ -335,21 +335,21 @@
     state.baseKeys.forEach((index,position)=>{
       const row=document.createElement('div');row.className='builder-key-row';
       const text=document.createElement('span');text.textContent=`条件 ${position+1}`;
-      row.append(text,keySelect(base,index,value=>{state.baseKeys[position]=value;state.joins.forEach(join=>{join.keys[position]=suggestedKey(sourceById(join.sourceId)?.table,value)});renderBuilder();renderSource(base,'匹配条件已更新')},`主表条件 ${position+1} 的匹配列`,`base-key-${position}`));
-      if(state.baseKeys.length>1){const remove=document.createElement('button');remove.type='button';remove.className='field-action';remove.textContent='×';remove.setAttribute('aria-label',`移除匹配条件 ${position+1}`);remove.onclick=()=>{state.baseKeys.splice(position,1);state.joins.forEach(join=>join.keys.splice(position,1));renderBuilder();$('addKey').focus();renderSource(base,'匹配条件已更新')};row.append(remove)}
+      row.append(text,keySelect(base,index,value=>{state.baseKeys[position]=value;state.joins.forEach(join=>{join.keys[position]=suggestedKey(sourceById(join.sourceId)?.table,value)});renderBuilder();renderSource(base)},`主表条件 ${position+1} 的匹配列`,`base-key-${position}`));
+      if(state.baseKeys.length>1){const remove=document.createElement('button');remove.type='button';remove.className='field-action';remove.textContent='×';remove.setAttribute('aria-label',`移除匹配条件 ${position+1}`);remove.onclick=()=>{state.baseKeys.splice(position,1);state.joins.forEach(join=>join.keys.splice(position,1));renderBuilder();$('addKey').focus();renderSource(base)};row.append(remove)}
       baseList.append(row);
     });
     const baseSource=sourceById(state.baseSourceId);
     const baseSummary=()=>{$('baseFieldSummary').textContent=`保留字段 · ${state.baseSelected?.length||0}/${baseSource?.table.headers.length||0} 列`};
     baseSummary();
-    fieldPicker($('baseFieldList'),baseSource,state.baseSelected||[],selected=>{state.baseSelected=selected;baseSummary();renderSource(base,'字段选择已更新')});
+    fieldPicker($('baseFieldList'),baseSource,state.baseSelected||[],selected=>{state.baseSelected=selected;baseSummary();renderSource(base)});
     const joinList=$('joinList');joinList.replaceChildren();
     state.joins.forEach((join,joinIndex)=>{
       const source=sourceById(join.sourceId),card=document.createElement('section');card.className='join-card';
       const top=document.createElement('div');top.className='join-card-head';
       const title=document.createElement('strong');title.textContent=source.name;
       const remove=document.createElement('button');remove.type='button';remove.className='join-action join-remove';remove.textContent='移除';remove.setAttribute('aria-label',`移除参与表 ${joinIndex+1}`);
-      remove.onclick=()=>{state.joins.splice(joinIndex,1);renderBuilder();$('addJoin').focus();if(base)renderSource(base,'参与表已更新')};
+      remove.onclick=()=>{state.joins.splice(joinIndex,1);renderBuilder();$('addJoin').focus();if(base)renderSource(base)};
       const groups=document.createElement('div');groups.className='rules-base';groups.id=`join-settings-${join.uid}`;
       const actions=document.createElement('div');actions.className='panel-head-actions join-card-actions';
       const toggle=document.createElement('button');toggle.type='button';toggle.className='join-action join-toggle';toggle.setAttribute('aria-controls',groups.id);
@@ -368,7 +368,7 @@
         const row=document.createElement('label');row.className='join-key-row';
         const caption=document.createElement('span');caption.className='join-key-caption';caption.textContent=base?.headers[baseIndex]||`条件 ${position+1}`;caption.title=caption.textContent;
         const arrow=document.createElement('span');arrow.className='match-arrow';arrow.textContent='↔';arrow.setAttribute('aria-hidden','true');
-        row.append(caption,arrow,keySelect(source?.table,join.keys[position],value=>{join.keys[position]=value;refreshFlow();renderSource(base,'匹配条件已更新')},`参与表 ${joinIndex+1} 对应主表 ${caption.textContent} 的匹配列`,`join-key-${join.uid}-${position}`));keyList.append(row);
+        row.append(caption,arrow,keySelect(source?.table,join.keys[position],value=>{join.keys[position]=value;refreshFlow();renderSource(base)},`参与表 ${joinIndex+1} 对应主表 ${caption.textContent} 的匹配列`,`join-key-${join.uid}-${position}`));keyList.append(row);
       });
       const keyError=document.createElement('p');keyError.className='rule-inline-error join-key-error';keyError.id=`join-key-error-${join.uid}`;keyError.hidden=true;matching.append(keyError);
       // 手动覆盖：选择“附表列 → 主表列”，决定写回主表的字段与策略
@@ -384,18 +384,18 @@
           const fromSel=document.createElement('select');fromSel.className='field';fromSel.setAttribute('aria-label','附表字段');
           const fromPlaceholder=placeholderOption(-1,'请选择附表列');
           fromSel.replaceChildren(fromPlaceholder,...(source?.table.headers||[]).map((h,i)=>option(i,h)));fromSel.value=String(ow.from??-1);fromSel.classList.toggle('is-placeholder',fromSel.value==='-1');
-          fromSel.onchange=()=>{ow.from=Number(fromSel.value);fromSel.classList.toggle('is-placeholder',fromSel.value==='-1');refreshFlow();if(base)renderSource(base,'覆盖关系已更新')};
+          fromSel.onchange=()=>{ow.from=Number(fromSel.value);fromSel.classList.toggle('is-placeholder',fromSel.value==='-1');refreshFlow();if(base)renderSource(base)};
           const arrow=document.createElement('span');arrow.textContent='→';arrow.className='overwrite-arrow';
           const toSel=document.createElement('select');toSel.className='field';toSel.setAttribute('aria-label','主表字段');
           const toPlaceholder=placeholderOption(-1,'请选择主表列');
           toSel.replaceChildren(toPlaceholder,...(base?.headers||[]).map((h,i)=>option(i,h)));toSel.value=String(ow.to??-1);toSel.classList.toggle('is-placeholder',toSel.value==='-1');
-          toSel.onchange=()=>{ow.to=Number(toSel.value);toSel.classList.toggle('is-placeholder',toSel.value==='-1');refreshFlow();if(base)renderSource(base,'覆盖关系已更新')};
+          toSel.onchange=()=>{ow.to=Number(toSel.value);toSel.classList.toggle('is-placeholder',toSel.value==='-1');refreshFlow();if(base)renderSource(base)};
           const modeSel=document.createElement('select');modeSel.className='field';modeSel.setAttribute('aria-label','覆盖方式');
           modeSel.replaceChildren(option('fillEmpty','仅填空'),option('overwrite','全部覆盖'));modeSel.value=ow.mode||'fillEmpty';modeSel.title='仅填空：主表为空才写入；全部覆盖：直接覆盖主表值';
-          modeSel.onchange=()=>{ow.mode=modeSel.value;if(base)renderSource(base,'覆盖方式已更新')};
+          modeSel.onchange=()=>{ow.mode=modeSel.value;if(base)renderSource(base)};
           const del=document.createElement('button');del.type='button';del.className='field-action';del.textContent='×';
           del.setAttribute('aria-label',`移除参与表 ${joinIndex+1} 的覆盖字段 ${oi+1}`);
-          del.onclick=()=>{join.overwrites.splice(oi,1);paintOw();addOw.focus();refreshFlow();if(base)renderSource(base,'覆盖已移除')};
+          del.onclick=()=>{join.overwrites.splice(oi,1);paintOw();addOw.focus();refreshFlow();if(base)renderSource(base)};
           // 首行展示列名，后续行通过下拉框的 aria-label 标识用途，避免重复标题撑大间距。
           const fromLabel=document.createElement('label');fromLabel.className='control';if(oi===0)fromLabel.append('补充表列');fromLabel.append(fromSel);
           const toLabel=document.createElement('label');toLabel.className='control';if(oi===0)toLabel.append('写入主表列');toLabel.append(toSel);
@@ -414,7 +414,7 @@
       const fieldSummary=document.createElement('h4');fieldSummary.className='field-heading';fieldHeading.append(fieldSummary);
       const updateFieldSummary=()=>{fieldSummary.textContent=`${state.mode==='compare'?'保留核对字段':'保留字段'} · ${join.selected?.length||0}/${source?.table.headers.length||0} 列`};updateFieldSummary();
       const fields=document.createElement('div');fields.className='field-picker';disclosure.append(fields);groups.append(disclosure);
-      fieldPicker(fields,source,join.selected||[],selected=>{join.selected=selected;updateFieldSummary();if(base)renderSource(base,'字段选择已更新')});
+      fieldPicker(fields,source,join.selected||[],selected=>{join.selected=selected;updateFieldSummary();if(base)renderSource(base)});
       if(state.mode==='match')groups.append(owWrap);
       const cardError=document.createElement('p');cardError.className='rule-inline-error join-card-error';cardError.hidden=true;groups.append(cardError);
       // 复用设置分组之间的虚线，外层分组避免被 join-card 的无边框规则覆盖。
@@ -423,7 +423,7 @@
     refreshFlow();
     if(focusKey&&$('rulesDialog').open)focusRule(Array.from($('rulesDialog').querySelectorAll('[data-rule-focus]')).find(input=>input.dataset.ruleFocus===focusKey));
   }
-  function renderSource(table,label,{preserveResult=false}={}){
+  function renderSource(table,{preserveResult=false}={}){
     if(!preserveResult){state.result=null;state.charts.forEach(item=>item.dispose());state.charts=[]}
     $('exportResult').disabled=true;$('saveResult').disabled=true;$('resultActions').hidden=true;
     $('viewResult').hidden=!state.result;
@@ -460,7 +460,7 @@
     $('sourceALabel').firstChild.textContent=mode==='clean'||mode==='grade'?'处理对象':'主表';
     $('previewTitle').textContent='表格预览';
     $('chartTab').hidden=true;showView('table');renderBuilder();updateSourceHighlights();
-    if(currentTable('A'))renderSource(currentTable('A'),'数据预览');
+    if(currentTable('A'))renderSource(currentTable('A'));
     if(matchMedia('(max-width:760px)').matches)workspaceController.setMobilePanel('setup',{scroll:false});
   }
   function showView(view){
@@ -529,7 +529,7 @@
     const ranked=students.filter(item=>item.average!==null).sort((x,y)=>y.average-x.average);let last=null,rank=0;ranked.forEach((item,index)=>{if(item.average!==last)rank=index+1;item.rank=rank;last=item.average});
     const headers=[...a.headers,...(columns.length>1?['总分']:[]),'平均分','名次'];
     const rows=students.map(item=>[...item.row,...(columns.length>1?[item.average===null?'':round(item.total,2)]:[]),item.average===null?'':round(item.average,2),item.rank||'']);
-    const summaries=columns.map((column,index)=>{const values=students.map(item=>item.values[index]).filter(value=>value!==null);return {name:a.headers[column],average:values.length?values.reduce((sum,value)=>sum+value,0)/values.length:0,max:values.length?Math.max(...values):0,min:values.length?Math.min(...values):0,pass:values.filter(value=>value>=pass).length,excellent:values.filter(value=>value>=excellent).length,count:values.length}});
+    const summaries=columns.map((column,index)=>{const values=students.map(item=>item.values[index]).filter(value=>value!==null);return {name:a.headers[column],average:values.length?values.reduce((sum,value)=>sum+value,0)/values.length:0}});
     const source=sourceById($('sourceA').value),result={headers,rows,columns:[...a.headers.map((_,index)=>({sourceId:source.id,index})),...(columns.length>1?[{kind:'total'}]:[]),{kind:'average'},{kind:'rank'}],provenance:students.map((_,index)=>({[source.id]:index})),sourceIds:[source.id],fileName:'成绩分析结果.xlsx',chartData:{students:ranked,summaries,pass,excellent}};
     result.layout=MimiTableWorkbook.buildLayout(result,[source]);return result;
   }
@@ -601,7 +601,7 @@
     const sources=state.result.sourceIds?.map(sourceById).filter(Boolean)||[];
     const format=sources.some(item=>['xls','xlsx'].includes(item.table.format))?'xlsx':sources[0]?.table.format||'manual';
     const table=state.result.layout?MimiTableWorkbook.resultAsTable(state.result,state.result.layout,format):MimiTableWorkbook.fromRows([state.result.headers,...state.result.rows],{format:'manual'});
-    const source=addSource(`${MODE_META[state.mode].title}`,table);
+    addSource(MODE_META[state.mode].title,table);
     renderSources();$('viewResult').hidden=true;
   }
   function loadSample(){
@@ -621,7 +621,7 @@
     }
     renderSources();sourcesChanged();
     if(state.mode==='match'||state.mode==='compare')while(state.joins.length<state.sources.length-1){const unused=state.sources.find(source=>source.id!==$('sourceA').value&&!state.joins.some(join=>join.sourceId===source.id));state.joins.push(makeJoin(unused?.id||''))}
-    renderBuilder();renderSource(currentTable('A'),'示例数据已准备');
+    renderBuilder();renderSource(currentTable('A'));
   }
   async function exportResult(){
     if(!state.result)return;
@@ -646,13 +646,13 @@
   upload.onmouseleave=upload.onblur=hideTaskTooltip;
   upload.onclick=()=>{hideTaskTooltip();$('filesInput').click()};
   $('sourceA').onchange=()=>{$('sourceA').classList.toggle('is-placeholder',$('sourceA').value==='');sourcesChanged()};
-  $('previewSource').onchange=()=>{const source=sourceById($('previewSource').value);if(source)renderSource(source.table,source.name,{preserveResult:true});else if(state.result)showResult()};
+  $('previewSource').onchange=()=>{const source=sourceById($('previewSource').value);if(source)renderSource(source.table,{preserveResult:true});else if(state.result)showResult()};
   $('viewResult').onclick=showResult;
   $('filterIssues').onclick=()=>{state.issuesOnly=!state.issuesOnly;showResult()};
-  $('addKey').onclick=()=>{const base=currentTable('A');if(!base){return}const unused=base.headers.findIndex((_,i)=>!state.baseKeys.includes(i));state.baseKeys.push(unused);state.joins.forEach(join=>join.keys.push(suggestedKey(sourceById(join.sourceId)?.table,unused)));renderBuilder();focusRule($('baseKeyList').lastElementChild?.querySelector('select'));renderSource(base,'匹配条件已更新')};
-  $('addJoin').onclick=()=>{const unused=state.sources.find(source=>source.id!==$('sourceA').value&&!state.joins.some(join=>join.sourceId===source.id));if(!unused)return;state.joins.push(makeJoin(unused.id));state.joinAutoInitialized=true;renderBuilder();const card=$('joinList').lastElementChild;card?.scrollIntoView({behavior:'smooth',block:'nearest'});focusRule(card?.querySelector('select'));const base=currentTable('A');if(base)renderSource(base,'参与表已更新')};
+  $('addKey').onclick=()=>{const base=currentTable('A');if(!base){return}const unused=base.headers.findIndex((_,i)=>!state.baseKeys.includes(i));state.baseKeys.push(unused);state.joins.forEach(join=>join.keys.push(suggestedKey(sourceById(join.sourceId)?.table,unused)));renderBuilder();focusRule($('baseKeyList').lastElementChild?.querySelector('select'));renderSource(base)};
+  $('addJoin').onclick=()=>{const unused=state.sources.find(source=>source.id!==$('sourceA').value&&!state.joins.some(join=>join.sourceId===source.id));if(!unused)return;state.joins.push(makeJoin(unused.id));state.joinAutoInitialized=true;renderBuilder();const card=$('joinList').lastElementChild;card?.scrollIntoView({behavior:'smooth',block:'nearest'});focusRule(card?.querySelector('select'));const base=currentTable('A');if(base)renderSource(base)};
   $('addManual').onclick=addManual;$('saveResult').onclick=saveResult;
-  ['fuzzyMatch','compareChanges','dedupeKey','cleanSpaces','cleanBlankRows','cleanBlankCols','cleanDuplicates','cleanPunctuation','studentColumn','scoreColumn','passLine','excellentLine'].forEach(id=>$(id).addEventListener('change',()=>{refreshFlow();const table=currentTable('A');if(table)renderSource(table,'设置已更新')}));
+  ['fuzzyMatch','compareChanges','dedupeKey','cleanSpaces','cleanBlankRows','cleanBlankCols','cleanDuplicates','cleanPunctuation','studentColumn','scoreColumn','passLine','excellentLine'].forEach(id=>$(id).addEventListener('change',()=>{refreshFlow();const table=currentTable('A');if(table)renderSource(table)}));
   $('manualFormat').onchange=()=>{
     const table=$('manualFormat').value==='table';$('manualHeaderWrap').hidden=!table;
     $('manualText').placeholder=table?'姓名,性别,班级\n张小雨,女,一班\n王一鸣,男,一班':'张小雨\n王一鸣\n李可心';

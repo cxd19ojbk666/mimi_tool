@@ -24,7 +24,6 @@ body[data-mimi-tool="roll-call"], body[data-mimi-tool="table-maker"], body[data-
   font-family: var(--ui-font);
   font-size: calc(15px * var(--ui-scale));
 }
-body[data-mimi-tool="table-maker"] { --mimi-title-size: calc(36px * var(--ui-scale)); --mimi-heading-size: calc(19px * var(--ui-scale)); }
 body[data-mimi-tool="roll-call"] :is(button, input, textarea, select),
 body[data-mimi-tool="table-maker"] :is(button, input, textarea, select),
 body[data-mimi-tool="seating-chart"] :is(button, input, textarea, select),
@@ -165,7 +164,7 @@ body[data-mimi-tool="seating-chart"] .refresh-icon-btn { padding: 0; }
 body[data-mimi-tool="board-labels"] .toolbar > .row > .btn,
 body[data-mimi-tool="board-labels"] .toolbar > .row > .mimi-select-wrap > .zoom { height: 42px; min-height: 42px; }
 body[data-mimi-tool="board-labels"] .toolbar > .row > .history-btn { width: 42px; min-width: 42px; max-width: 42px; }
-body[data-mimi-tool] :is(.roster-template-btn, .text-btn, .quiet-action, .help-link) {
+body[data-mimi-tool] :is(.roster-template-btn, .text-btn, .quiet-action) {
   border: 0;
   background: transparent;
   color: #397667;
@@ -175,8 +174,8 @@ body[data-mimi-tool] :is(.roster-template-btn, .text-btn, .quiet-action, .help-l
   text-underline-offset: 3px;
   cursor: pointer;
 }
-body[data-mimi-tool] :is(.roster-template-btn, .text-btn, .quiet-action, .help-link):hover { color: #a33e32; }
-body[data-mimi-tool] :is(.roster-template-btn, .text-btn, .quiet-action, .help-link):focus-visible { outline: 2px solid var(--mimi-control-blue); outline-offset: 2px; }
+body[data-mimi-tool] :is(.roster-template-btn, .text-btn, .quiet-action):hover { color: #a33e32; }
+body[data-mimi-tool] :is(.roster-template-btn, .text-btn, .quiet-action):focus-visible { outline: 2px solid var(--mimi-control-blue); outline-offset: 2px; }
 
 /* Selection, switches and tabs share states while keeping each tool's layout. */
 body[data-mimi-tool] :is(input[type="checkbox"], input[type="radio"], input[type="range"]) { accent-color: var(--mimi-control-green); }

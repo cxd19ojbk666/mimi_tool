@@ -1,41 +1,36 @@
-/* 咪咪工具共享：界面偏好设置（字体 / 字号 / 紧凑 / 动效 / 危险确认）的唯一行为源。
- * 可在页面放置约定结构的设置对话框；未放置时会自动创建共享设置侧栏。
- * 约定：对话框 id="mimiSettingsDialog"，内部单选 name="mimiFont" / name="mimiScale"，
- * 开关 id="mimiCompact" / "mimiReduceMotion" / "mimiConfirmDanger" / "mimiShowLabels"(可选)，
- * 打开按钮 [data-mimi-open-settings]，关闭按钮 [data-mimi-close-settings]，重置按钮 [data-mimi-reset-settings]。
- * 详细中文注释：保持与排座位、做板贴原有逻辑一致，仅抽取为公共模块。 */
+/* 四个工具共用的界面偏好控制器。默认创建设置面板，也可绑定已有对话框。
+ * read/write 适配业务状态；controls 适配旧控件名称，保留原存储键和备份格式。
+ */
 (function (global) {
   'use strict';
 
   // 默认偏好：与现有两处设置面板的默认值保持一致。
-  var DEFAULTS = { font: 'round', scale: 'normal', compact: false, reduceMotion: false, confirmDanger: true, showLabels: true };
+  var DEFAULTS = { font: 'round', scale: 'normal', compact: false, reduceMotion: false, confirmDanger: true };
 
-  // 读取本地保存的偏好，损坏时回退到默认值。
-  function load(key) {
-    try {
-      var saved = JSON.parse(localStorage.getItem(key) || '{}') || {};
-      return {
-        font: ['round', 'hand', 'clear'].includes(saved.font) ? saved.font : DEFAULTS.font,
-        scale: ['small', 'normal', 'large'].includes(saved.scale) ? saved.scale : DEFAULTS.scale,
-        compact: !!saved.compact,
-        reduceMotion: !!saved.reduceMotion,
-        confirmDanger: saved.confirmDanger === undefined ? DEFAULTS.confirmDanger : !!saved.confirmDanger,
-        showLabels: saved.showLabels === undefined ? DEFAULTS.showLabels : !!saved.showLabels
-      };
-    }
-    catch (e) { return Object.assign({}, DEFAULTS); }
+  function normalize(saved, defaults) {
+    saved = saved || {};
+    const prefs = Object.assign({}, defaults, saved);
+    prefs.font = ['round', 'hand', 'clear'].includes(saved.font) ? saved.font : defaults.font;
+    prefs.scale = ['small', 'normal', 'large'].includes(saved.scale) ? saved.scale : defaults.scale;
+    Object.keys(defaults).forEach(key => {
+      if (typeof defaults[key] === 'boolean') prefs[key] = saved[key] === undefined ? defaults[key] : !!saved[key];
+    });
+    return prefs;
   }
 
-  // 挂载统一设置。options: { key, onLabelsChange }
-  function mount(options) {
-    options = options || {};
-    var key = options.key || 'mimi-appearance-v1';
-    var prefs = load(key);
-
-    // The newer tools share a settings sheet; older tools keep their existing dialogs.
-    if (!document.getElementById('mimiSettingsDialog')) {
-      var dialog = document.createElement('dialog');
-      dialog.id = 'mimiSettingsDialog';
+  function mount(options = {}) {
+    const defaults = Object.assign({}, DEFAULTS, options.defaults);
+    const key = options.key || 'mimi-appearance-v1';
+    let prefs;
+    try { prefs = normalize(JSON.parse(localStorage.getItem(key) || '{}'), defaults); }
+    catch { prefs = Object.assign({}, defaults); }
+    const controls = Object.assign({ font: 'mimiFont', scale: 'mimiScale', compact: 'mimiCompact', reduceMotion: 'mimiReduceMotion', confirmDanger: 'mimiConfirmDanger' }, options.controls);
+    const dialogId = options.dialogId || 'mimiSettingsDialog';
+    let dialog = document.getElementById(dialogId);
+    if (!dialog) {
+      if (options.dialogId) throw Error('MimiSettings: settings dialog not found');
+      dialog = document.createElement('dialog');
+      dialog.id = dialogId;
       dialog.setAttribute('aria-labelledby', 'mimiSettingsTitle');
       dialog.innerHTML = `<div class="mimi-settings-shell">
         <div class="mimi-settings-head"><div><h2 id="mimiSettingsTitle">我的设置</h2><p>调整操作界面的显示方式，修改后即时生效。</p></div><button class="btn mimi-settings-close" type="button" data-mimi-close-settings aria-label="关闭设置">×</button></div>
@@ -58,59 +53,68 @@
         <div class="mimi-settings-foot"><small>设置已保存在此设备</small><button class="btn" type="button" data-mimi-reset-settings>恢复默认</button></div>
       </div>`;
       document.body.append(dialog);
-      dialog.addEventListener('click', function (event) { if (event.target === dialog) dialog.close(); });
+    }
+    dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+
+    function get() {
+      const current = options.read ? options.read() : prefs;
+      return Object.assign(current, normalize(current, defaults));
+    }
+    function save(next) {
+      prefs = next;
+      if (options.write) options.write(next);
+      else { try { localStorage.setItem(key, JSON.stringify(next)); } catch {} }
     }
 
     // 把偏好写入 <html data-*>，全站 CSS 只认这组属性。
-    function apply(syncForm) {
+    function apply(syncForm, prefs = get()) {
       var root = document.documentElement;
       root.dataset.font = prefs.font;
       root.dataset.scale = prefs.scale;
       root.dataset.density = prefs.compact ? 'compact' : 'comfortable';
       root.dataset.motion = prefs.reduceMotion ? 'reduced' : 'full';
-      if (syncForm !== false) syncFormValues();
-      if (typeof options.onLabelsChange === 'function') options.onLabelsChange(!prefs.showLabels);
+      if (syncForm !== false) syncFormValues(prefs);
+      options.onApply?.(prefs);
     }
 
-    // 把当前偏好回填到对话框控件。
-    function syncFormValues() {
-      var font = document.querySelector('input[name="mimiFont"][value="' + prefs.font + '"]');
-      var scale = document.querySelector('input[name="mimiScale"][value="' + prefs.scale + '"]');
-      if (font) font.checked = true;
-      if (scale) scale.checked = true;
-      ['Compact', 'ReduceMotion', 'ConfirmDanger', 'ShowLabels'].forEach(function (name) {
-        var el = document.getElementById('mimi' + name);
-        if (el) el.checked = !!prefs[name.charAt(0).toLowerCase() + name.slice(1)];
+    function syncFormValues(prefs = get()) {
+      ['font', 'scale'].forEach(key => {
+        const input = dialog.querySelector(`input[name="${controls[key]}"][value="${prefs[key]}"]`);
+        if (input) input.checked = true;
+      });
+      Object.entries(controls).forEach(([key, id]) => {
+        if (key === 'font' || key === 'scale') return;
+        const input = document.getElementById(id);
+        if (input) input.checked = !!prefs[key];
       });
     }
-
-    // 从对话框读回偏好并持久化。
     function pull() {
-      var font = document.querySelector('input[name="mimiFont"]:checked');
-      var scale = document.querySelector('input[name="mimiScale"]:checked');
-      prefs.font = (font && font.value) || 'round';
-      prefs.scale = (scale && scale.value) || 'normal';
-      ['compact', 'reduceMotion', 'confirmDanger', 'showLabels'].forEach(function (k) {
-        var id = 'mimi' + k.charAt(0).toUpperCase() + k.slice(1);
-        var el = document.getElementById(id);
-        if (el) prefs[k] = el.checked;
+      const prefs = get();
+      ['font', 'scale'].forEach(key => {
+        prefs[key] = dialog.querySelector(`input[name="${controls[key]}"]:checked`)?.value || defaults[key];
       });
-      try { localStorage.setItem(key, JSON.stringify(prefs)); } catch (e) {}
+      Object.entries(controls).forEach(([key, id]) => {
+        if (key === 'font' || key === 'scale') return;
+        const input = document.getElementById(id);
+        if (input) prefs[key] = input.checked;
+      });
       apply(false);
+      save(prefs);
     }
-
-    // 打开 / 关闭 / 重置：全部走事件委托，页面无需写 JS。
-    document.addEventListener('click', function (e) {
-      if (e.target.closest('[data-mimi-open-settings]')) { syncFormValues(); document.getElementById('mimiSettingsDialog').showModal(); }
-      if (e.target.closest('[data-mimi-close-settings]')) document.getElementById('mimiSettingsDialog').close();
-      if (e.target.closest('[data-mimi-reset-settings]')) { prefs = Object.assign({}, DEFAULTS); try { localStorage.setItem(key, JSON.stringify(prefs)); } catch (err) {} apply(true);  }
+    function reset() {
+      const next = Object.assign({}, defaults);
+      apply(true, next);
+      save(next);
+    }
+    document.addEventListener('click', event => {
+      if (event.target.closest(options.open || '[data-mimi-open-settings]')) { syncFormValues(); dialog.showModal(); }
+      if (event.target.closest(options.close || '[data-mimi-close-settings]')) dialog.close();
+      if (event.target.closest(options.reset || '[data-mimi-reset-settings]')) reset();
     });
-    document.addEventListener('change', function (e) {
-      if (e.target.closest('#mimiSettingsDialog')) pull();
-    });
+    dialog.addEventListener('change', pull);
 
     apply(true);
-    return { get: function () { return prefs; }, apply: apply, pull: pull };
+    return { get, apply, pull, sync: syncFormValues, reset };
   }
 
   global.MimiSettings = Object.freeze({ mount: mount, DEFAULTS: DEFAULTS });
