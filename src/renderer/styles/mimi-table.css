@@ -1,4 +1,187 @@
 /* 做表格：只调整布局密度和信息层级，视觉沿用工具箱的手绘样式。 */
+/* 从 mimi-ui.css 迁入：做表格皮肤（等价搬迁，顺序保持在原 mimi-table.css 规则之前，层叠结果不变）。 */
+/* 做表格：沿用工具箱的横线本、双栏工作台与手绘控件。 */
+body[data-mimi-tool="table-maker"]{--ink:#304354;--muted:#708092;--paper:#fff9df;--gold:#ffc94f;--blue:#68bde8;--green:#32a889;--coral:#ff785d;--shadow:5px 6px 0 rgba(48,67,84,.14);position:relative;margin:0;color:var(--ink);background-color:#fff8dc;background-image:linear-gradient(rgba(97,181,222,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(97,181,222,.08) 1px,transparent 1px);background-size:100% 28px,28px 100%;font-family:"YouYuan","Yuanti SC","STKaiti","KaiTi",sans-serif}
+body[data-mimi-tool="table-maker"]:before{content:"";position:fixed;z-index:-1;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 0 54px,rgba(246,114,106,.2) 54px 56px,transparent 56px)}
+body[data-mimi-tool="table-maker"] *{box-sizing:border-box}
+body[data-mimi-tool="table-maker"],body[data-mimi-tool="table-maker"] *{scrollbar-width:none;scrollbar-gutter:auto}
+body[data-mimi-tool="table-maker"]::-webkit-scrollbar,body[data-mimi-tool="table-maker"] *::-webkit-scrollbar{display:none;width:0;height:0}
+body[data-mimi-tool="table-maker"] button,body[data-mimi-tool="table-maker"] input,body[data-mimi-tool="table-maker"] select{font:inherit;color:inherit}
+body[data-mimi-tool="table-maker"] button,body[data-mimi-tool="table-maker"] a,body[data-mimi-tool="table-maker"] input,body[data-mimi-tool="table-maker"] select{touch-action:manipulation}
+body[data-mimi-tool="table-maker"] button{cursor:pointer}body[data-mimi-tool="table-maker"] button:disabled{cursor:not-allowed;opacity:.45}
+body[data-mimi-tool="table-maker"] a{text-decoration:none;color:var(--ink)}
+body[data-mimi-tool="table-maker"] button:focus-visible,body[data-mimi-tool="table-maker"] a:focus-visible{outline:3px solid var(--blue);outline-offset:4px}
+body[data-mimi-tool="table-maker"] .shell{margin:auto}
+body[data-mimi-tool="table-maker"] header{display:flex;align-items:center;justify-content:space-between;position:relative}
+body[data-mimi-tool="table-maker"] header:after{content:"";position:absolute;right:8px;top:-8px;width:96px;height:11px;border:2px solid var(--ink);border-radius:9px 5px 10px 6px;background:repeating-linear-gradient(90deg,var(--gold) 0 18px,#ff9c79 18px 36px,#8ed7ca 36px 54px);transform:rotate(2deg);box-shadow:2px 3px 0 rgba(48,67,84,.14);pointer-events:none}
+body[data-mimi-tool="table-maker"] .brand{position:relative;padding-left:58px}
+body[data-mimi-tool="table-maker"] .brand:before{content:"";position:absolute;left:1px;top:18px;width:44px;height:14px;border:2px solid var(--ink);border-radius:8px 3px 3px 8px;background:linear-gradient(90deg,#f3c64f 0 70%,#f6ad9e 70% 86%,#344e60 86%);box-shadow:3px 4px 0 #30435429;transform:rotate(-32deg)}
+body[data-mimi-tool="table-maker"] .brand h1{margin:0;color:#2e5368;font-family:"YouYuan","Yuanti SC","STKaiti",sans-serif;font-weight:900;letter-spacing:.08em;text-shadow:2px 2px 0 #fff,4px 4px 0 #b9dfef}
+body[data-mimi-tool="table-maker"] .brand p{margin-bottom:0;color:var(--muted);font-weight:800;letter-spacing:.03em}
+body[data-mimi-tool="table-maker"] .top-actions{display:flex;flex-wrap:wrap}
+body[data-mimi-tool="table-maker"] .top-actions>.btn{display:inline-flex;height:43px;align-items:center;justify-content:center}
+body[data-mimi-tool="table-maker"] .btn{border:2px solid var(--ink);border-radius:13px;background:#fffdf6;box-shadow:3px 4px 0 #3043542e;font-weight:800;line-height:1.5;transition:transform .15s,box-shadow .15s}
+body[data-mimi-tool="table-maker"] .btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:4px 6px 0 #3043542e}
+body[data-mimi-tool="table-maker"] .btn:active:not(:disabled){transform:translate(2px,2px);box-shadow:1px 1px 0 #3043542e}
+body[data-mimi-tool="table-maker"] .btn.primary{background:var(--green);color:#fff}body[data-mimi-tool="table-maker"] .btn.accent{background:var(--coral);color:#fff}
+body[data-mimi-tool="table-maker"] .workspace{display:grid;align-items:stretch}
+body[data-mimi-tool="table-maker"] .panel{display:flex;min-width:0;overflow:hidden;flex-direction:column;border:2px solid var(--ink);border-radius:20px 15px 22px 17px;background:rgba(255,253,243,.97);box-shadow:var(--shadow)}
+body[data-mimi-tool="table-maker"] .panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none;border-bottom:2px dashed #b1c0ca;background:#fff4bc}
+body[data-mimi-tool="table-maker"] .center .panel-head{background:#dff3fb}
+body[data-mimi-tool="table-maker"] .panel-head h2{margin:0;color:#344e60;font-weight:900;letter-spacing:.04em}
+body[data-mimi-tool="table-maker"] .panel-head h2:before{content:"";display:inline-block;width:8px;height:17px;margin-right:9px;border:1.5px solid var(--ink);border-radius:6px;background:var(--coral);vertical-align:-2px;transform:rotate(-5deg)}
+body[data-mimi-tool="table-maker"] .center .panel-head h2:before{background:var(--blue)}
+body[data-mimi-tool="table-maker"] .panel-body{min-height:0;overflow:auto}
+body[data-mimi-tool="table-maker"] .section+.section{border-top:2px dashed #cad5d8}
+body[data-mimi-tool="table-maker"] .stack{display:grid}body[data-mimi-tool="table-maker"] .row{display:flex}body[data-mimi-tool="table-maker"] .row>*{flex:1;min-width:0}
+body[data-mimi-tool="table-maker"] .label{display:flex;justify-content:space-between;font-weight:800}
+body[data-mimi-tool="table-maker"] .control{display:grid;gap:6px;font-weight:800}
+body[data-mimi-tool="table-maker"] .field{width:100%;min-width:0;border:2px solid #91a8b5;border-radius:13px 10px 14px 11px;background:#fffefa;outline:none}
+body[data-mimi-tool="table-maker"] .field:focus{border-color:var(--blue);box-shadow:0 0 0 4px #68bde82e}
+body[data-mimi-tool="table-maker"] .hint{color:#657885}
+body[data-mimi-tool="table-maker"] .side-reveal{font-weight:900}
+body[data-mimi-tool="table-maker"] .task-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;width:100%;min-height:48px;margin:0 0 22px;padding:5px;overflow:hidden;border:2px solid #9cb4c1;border-radius:15px;background:#dfeef3;box-shadow:0 5px 0 #fffdf3;isolation:isolate}
+body[data-mimi-tool="table-maker"] .task-button{min-width:0;min-height:39px;padding:9px 6px;border:0;border-radius:10px;background:transparent;color:#6d7b84;text-align:center;font-size:13px;font-weight:800;line-height:1.5;transition:.15s}
+body[data-mimi-tool="table-maker"] .task-button.active{background:var(--gold);color:var(--ink);box-shadow:2px 3px 0 rgba(48,67,84,.15);font-weight:700;transform:rotate(-1deg)}
+body[data-mimi-tool="table-maker"] .task-source{display:grid;gap:var(--mimi-control-gap)}
+body[data-mimi-tool="table-maker"] .upload{display:grid;min-height:43px;margin-top:8px;padding:9px 12px;place-items:center;border:2px dashed var(--blue);border-radius:13px;background:#eefaff;color:var(--green);cursor:pointer;font-size:13px;font-weight:800;text-align:center;box-shadow:none}
+body[data-mimi-tool="table-maker"] .upload:hover{background:#dff5ff}
+body[data-mimi-tool="table-maker"] .check-list{display:grid;gap:8px}
+body[data-mimi-tool="table-maker"] .check-list label{display:flex;align-items:flex-start;gap:8px;font-size:13px;font-weight:800}
+body[data-mimi-tool="table-maker"] .check-list input{flex:none;width:18px;height:18px;accent-color:var(--green)}
+body[data-mimi-tool="table-maker"] .run-button{width:100%;min-height:44px;margin-top:8px;font-size:14px;letter-spacing:0}
+body[data-mimi-tool="table-maker"] .center{min-height:0}
+body[data-mimi-tool="table-maker"] .center-tabs{display:flex;gap:2px;min-height:0;margin:0;padding:3px;border:0;border-radius:7px;background:#f1f3ef}
+body[data-mimi-tool="table-maker"] .center-tab{min-height:0;padding:7px 12px;border:0;border-radius:5px;background:transparent;color:#6d7b84;font-size:12px;font-weight:800;line-height:1.5}
+body[data-mimi-tool="table-maker"] .center-tab.active{background:#fffdf6;color:var(--green);box-shadow:0 1px 3px #253b3512;transform:none}
+body[data-mimi-tool="table-maker"] .table-stage{position:relative;flex:1;min-height:360px;overflow:auto;background:#fffdf7}
+body[data-mimi-tool="table-maker"] .data-table{width:max-content;min-width:100%;border-collapse:separate;border-spacing:0;font-family:"PingFang SC","Microsoft YaHei",sans-serif;font-size:12px}
+body[data-mimi-tool="table-maker"] .data-table th,body[data-mimi-tool="table-maker"] .data-table td{max-width:260px;padding:9px 11px;border-right:1px solid #d7e0df;border-bottom:1px solid #d7e0df;overflow:hidden;text-align:left;text-overflow:ellipsis;white-space:nowrap}
+body[data-mimi-tool="table-maker"] .data-table th{position:sticky;z-index:2;top:0;background:#dff3fb;color:#355568;font-weight:900}
+body[data-mimi-tool="table-maker"] .data-table tbody tr:nth-child(even){background:#fbf8eb}
+body[data-mimi-tool="table-maker"] .data-table tbody tr:hover{background:#fff0b9}
+body[data-mimi-tool="table-maker"] .table-empty{display:grid;min-height:360px;place-items:center;padding:30px;color:#708092;text-align:center;font-weight:800}
+body[data-mimi-tool="table-maker"] .table-empty span{display:block;margin:auto auto 10px;width:72px;height:55px;border:3px solid #5e7887;border-radius:9px;background:linear-gradient(#fff 0 30%,#dff3fb 30% 33%,#fff 33% 64%,#dff3fb 64% 67%,#fff 67%);box-shadow:6px 7px 0 #b9dfef;transform:rotate(-2deg)}
+body[data-mimi-tool="table-maker"] .chart-stage{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0;padding:14px;overflow:auto;background:#fffdf7}
+body[data-mimi-tool="table-maker"] .chart-card{min-height:280px;border:2px solid #a7b8bf;border-radius:16px 12px 18px 13px;background:#fff;box-shadow:3px 4px 0 rgba(48,67,84,.09)}
+body[data-mimi-tool="table-maker"] .chart-card.wide{grid-column:1/-1}
+body[data-mimi-tool="table-maker"] .center-status{flex:none;padding:11px 15px;border-top:2px dashed #cad5d8;background:#e9f5f5;color:#587180;font-size:12px;font-weight:800}
+@media(min-width:1101px){body[data-mimi-tool="table-maker"]{overflow:hidden}body[data-mimi-tool="table-maker"] .shell{display:flex;height:100vh;flex-direction:column}body[data-mimi-tool="table-maker"] .workspace{flex:1;min-height:0;grid-template-columns:var(--left-width) minmax(400px,1fr)!important}body[data-mimi-tool="table-maker"] .workspace.hide-left{grid-template-columns:0 minmax(560px,1fr)!important}body[data-mimi-tool="table-maker"] .panel{height:100%}body[data-mimi-tool="table-maker"] .top-actions{margin-right:112px}}
+@media(min-width:761px) and (max-width:1100px){body[data-mimi-tool="table-maker"] .workspace{grid-template-columns:300px minmax(0,1fr)}body[data-mimi-tool="table-maker"] header{flex-wrap:wrap}body[data-mimi-tool="table-maker"] .top-actions{margin-right:94px}}
+@media(max-width:760px){
+ body[data-mimi-tool="table-maker"] header{align-items:stretch;flex-direction:column}
+ body[data-mimi-tool="table-maker"] header:after{display:none}
+ body[data-mimi-tool="table-maker"] .brand{padding-left:43px}
+ body[data-mimi-tool="table-maker"] .brand h1{letter-spacing:.04em}
+ body[data-mimi-tool="table-maker"] .brand p{margin:7px 0 0}
+ body[data-mimi-tool="table-maker"] .top-actions{display:grid;width:100%;margin:0;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+ body[data-mimi-tool="table-maker"] .mobile-nav{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body[data-mimi-tool="table-maker"] .top-actions>.btn{display:grid;width:100%;min-width:0;height:auto;min-height:44px;padding:7px 3px;place-items:center;font-size:12px;text-align:center}
+ body[data-mimi-tool="table-maker"] .panel{border-radius:17px 13px 18px 14px}
+ body[data-mimi-tool="table-maker"] .task-button{height:42px;min-height:42px;padding:8px 4px}
+ body[data-mimi-tool="table-maker"] .upload{min-height:44px}
+ body[data-mimi-tool="table-maker"] .field{min-height:46px;padding:10px 11px;font-size:16px}
+ body[data-mimi-tool="table-maker"] .chart-stage{grid-template-columns:1fr}
+ body[data-mimi-tool="table-maker"] .chart-card.wide{grid-column:auto}
+ body[data-mimi-tool="table-maker"] .table-stage{min-height:calc(100dvh - 280px)}
+ body[data-mimi-tool="table-maker"] .panel-body{overflow:visible}
+}
+@media(min-width:1101px) and (max-height:780px){
+ body[data-mimi-tool="roll-call"] .result #resultName{font-size:48px}
+ body[data-mimi-tool="roll-call"] .result #resultCaption{display:none}
+}
+
+/* 多数据源工作区 */
+body[data-mimi-tool="table-maker"] .source-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid #e3e9ed;border-radius:10px;background:#fff}
+body[data-mimi-tool="table-maker"] .source-preview{flex:1;min-width:0;text-align:left;overflow-wrap:anywhere;border:0;background:transparent;color:#304354;cursor:pointer;font:inherit;font-size:12px}
+body[data-mimi-tool="table-maker"] .source-item .btn{padding:4px 8px;font-size:11px;flex-shrink:0}
+body[data-mimi-tool="table-maker"] .manual-source{padding-top:12px}
+body[data-mimi-tool="table-maker"] textarea{resize:vertical;min-height:120px}
+body[data-mimi-tool="table-maker"] #sourceList{overflow:visible}
+body[data-mimi-tool="table-maker"] .task-source small{color:#657885;line-height:1.6}
+body[data-mimi-tool="table-maker"] summary{cursor:pointer;color:#304354}
+
+/* 多表配置：像工作纸一样逐步选择匹配条件与保留字段。 */
+body[data-mimi-tool="table-maker"] .merge-builder{gap:12px}
+body[data-mimi-tool="table-maker"] .builder-heading{display:grid;gap:2px;margin-top:8px}
+body[data-mimi-tool="table-maker"] .builder-heading strong{color:#2e5368;font-size:14px}
+body[data-mimi-tool="table-maker"] .builder-heading small{color:#657885;font-size:11px;line-height:1.5}
+body[data-mimi-tool="table-maker"] .builder-key-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:7px}
+body[data-mimi-tool="table-maker"] .builder-key-row>span{white-space:nowrap;color:#577080;font-size:12px;font-weight:900}
+body[data-mimi-tool="table-maker"] .builder-key-row .field,body[data-mimi-tool="table-maker"] .join-key-row .field{padding:7px 9px;font-size:12px}
+body[data-mimi-tool="table-maker"] .builder-add{width:100%;padding:7px 10px;border-style:dashed;background:#f2fbfe;color:#286780;box-shadow:none;font-size:12px}
+body[data-mimi-tool="table-maker"] .join-list{gap:10px}
+body[data-mimi-tool="table-maker"] .join-card{display:grid;gap:9px;padding:11px;border:1.5px solid #9fb9c5;border-radius:12px;background:linear-gradient(135deg,#fffef9,#eff9fa);box-shadow:2px 3px 0 #30435417}
+body[data-mimi-tool="table-maker"] .join-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+body[data-mimi-tool="table-maker"] .join-card-head strong{color:#285e73;font-size:13px}
+body[data-mimi-tool="table-maker"] .join-key-row{display:grid;grid-template-columns:minmax(76px,.8fr) minmax(0,1fr);align-items:center;gap:7px;font-size:12px;font-weight:800}
+body[data-mimi-tool="table-maker"] .join-key-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#607786}
+body[data-mimi-tool="table-maker"] .field-picker{display:flex;flex-wrap:wrap;gap:6px;min-height:30px}
+body[data-mimi-tool="table-maker"] .field-picker label{display:inline-flex;max-width:100%;align-items:center;gap:5px;padding:5px 7px;border:1px solid #b6cdd5;border-radius:8px;background:#fffef8;color:#3b5969;font-size:11px;font-weight:800;overflow-wrap:anywhere;cursor:pointer}
+body[data-mimi-tool="table-maker"] .field-picker label:has(input:checked){border-color:#5fb09b;background:#e3f4ed;color:#276b58}
+body[data-mimi-tool="table-maker"] .field-picker input{width:14px;height:14px;margin:0;flex:none;accent-color:var(--green)}
+body[data-mimi-tool="table-maker"] .field-actions{display:flex;width:100%;gap:6px}
+body[data-mimi-tool="table-maker"] .field-action{padding:3px 5px;border:0;background:transparent;color:#2f7c91;font-size:11px;font-weight:900;text-decoration:underline;text-underline-offset:3px}
+body[data-mimi-tool="table-maker"] .field-action:hover{color:#a33e32}
+body[data-mimi-tool="table-maker"] .source-header-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:6px 0}
+body[data-mimi-tool="table-maker"] .source-header-controls label{display:grid;gap:3px;font-size:11px;font-weight:800}
+body[data-mimi-tool="table-maker"] .source-header-controls .field{min-height:32px;padding:4px 7px;font-size:12px}
+body[data-mimi-tool="table-maker"] .data-table thead tr:not(:last-child) th{background:#cceaf6}
+@media(min-width:1101px){body[data-mimi-tool="table-maker"]{--mimi-side-left:360px}}
+@media(min-width:761px) and (max-width:1100px){body[data-mimi-tool="table-maker"] .workspace{grid-template-columns:330px minmax(0,1fr)}}
+
+/* 做表格仅调整信息层级；字体、按钮、面板与配色沿用工具箱公共样式。 */
+body[data-mimi-tool="table-maker"] .left-panel .panel-body{flex:1;min-height:0}
+body[data-mimi-tool="table-maker"] .task-grid{grid-auto-rows:42px;min-height:0;margin-bottom:16px;padding:4px;box-shadow:none}
+body[data-mimi-tool="table-maker"] .task-button{height:42px;min-height:0;padding:6px 4px}
+body[data-mimi-tool="table-maker"] .quiet-action{border:0;background:transparent;color:#397667;cursor:pointer;font-size:var(--mimi-small-size);font-weight:900;text-decoration:underline;text-underline-offset:3px}
+body[data-mimi-tool="table-maker"] .quiet-action:hover{color:#ef6d56}
+body[data-mimi-tool="table-maker"] summary:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+body[data-mimi-tool="table-maker"] .panel-head .quiet-action{font-size:12px}
+body[data-mimi-tool="table-maker"] .source-actions{display:flex;align-items:center;gap:9px}
+body[data-mimi-tool="table-maker"] .source-actions .upload{flex:1;margin:0}
+body[data-mimi-tool="table-maker"] .task-source{gap:var(--mimi-control-gap)}
+body[data-mimi-tool="table-maker"] #sourceList{gap:0}
+body[data-mimi-tool="table-maker"] .source-card{min-width:0;padding:8px 10px;background:#fffef8}
+body[data-mimi-tool="table-maker"] .source-card + .source-card{border-top:1px solid #c9d8dc}
+body[data-mimi-tool="table-maker"] .source-card .source-item{padding:0;border:0;background:transparent}
+body[data-mimi-tool="table-maker"] .source-preview{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--mimi-small-size);font-weight:900}
+body[data-mimi-tool="table-maker"] .source-remove{display:grid;width:24px;height:24px;flex:none;place-items:center;padding:0;border:0;border-radius:4px;background:transparent;color:var(--muted);font-family:"Times New Roman",Georgia,serif;font-size:24px;font-weight:400;line-height:1}
+body[data-mimi-tool="table-maker"] .source-remove:hover{background:#ffe7df;color:#a33e32}
+body[data-mimi-tool="table-maker"] .source-header-controls{padding:8px 0 2px}
+body[data-mimi-tool="table-maker"] #sourceHint{margin:0;font-size:var(--mimi-hint-size)}
+body[data-mimi-tool="table-maker"] #modeControls{gap:var(--mimi-control-gap)}
+body[data-mimi-tool="table-maker"] .merge-builder{gap:var(--mimi-control-gap)}
+body[data-mimi-tool="table-maker"] .builder-heading{margin-top:4px}
+body[data-mimi-tool="table-maker"] .builder-heading strong{font-size:var(--mimi-label-size)}
+body[data-mimi-tool="table-maker"] .builder-key-row>span{min-width:54px}
+body[data-mimi-tool="table-maker"] #addKey{justify-self:start;padding:4px 0}
+body[data-mimi-tool="table-maker"] .field-disclosure,body[data-mimi-tool="table-maker"] .advanced-options{padding:9px 11px;border:1.5px solid #9fb4c1;border-radius:13px 10px 14px 11px;background:#fffef8}
+body[data-mimi-tool="table-maker"] .field-disclosure summary,body[data-mimi-tool="table-maker"] .advanced-options summary{color:#397667;font-size:var(--mimi-small-size);font-weight:900}
+body[data-mimi-tool="table-maker"] .field-disclosure .field-picker{padding-top:10px}
+body[data-mimi-tool="table-maker"] .advanced-options .check-list{padding-top:10px}
+body[data-mimi-tool="table-maker"] .join-fields{background:#eefaff}
+body[data-mimi-tool="table-maker"] .task-footer{flex:none;padding:12px var(--mimi-panel-body-x);border-top:2px dashed #b1c0ca;background:rgba(255,253,243,.97)}
+body[data-mimi-tool="table-maker"] .task-footer .run-button{margin:0}
+body[data-mimi-tool="table-maker"] .task-footer small{display:block;margin-top:6px;color:var(--muted);text-align:center;font-size:var(--mimi-hint-size)}
+body[data-mimi-tool="table-maker"] .result-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:2px dashed #b9c8cd;background:#eef9ff}
+body[data-mimi-tool="table-maker"] .result-action-label strong{display:block;color:#344f60;font-size:var(--mimi-small-size)}
+body[data-mimi-tool="table-maker"] #resultDetails summary{color:#397667;font-size:var(--mimi-hint-size);text-decoration:underline;text-underline-offset:3px}
+body[data-mimi-tool="table-maker"] #resultSummary{max-width:560px;margin:8px 0 0;color:var(--muted);font-size:var(--mimi-hint-size);line-height:1.6}
+body[data-mimi-tool="table-maker"] .result-action-buttons{display:flex;gap:8px}
+body[data-mimi-tool="table-maker"] .table-empty strong{display:block;color:#344f60;font-size:var(--mimi-heading-size)}
+body[data-mimi-tool="table-maker"] .table-empty small{display:block;margin:7px 0 15px;font-size:var(--mimi-hint-size)}
+@media(min-width:761px){body[data-mimi-tool="table-maker"] .table-stage{min-height:180px}body[data-mimi-tool="table-maker"] .table-empty{min-height:240px}}
+@media(max-width:760px){
+ body[data-mimi-tool="table-maker"] .top-actions{display:flex;margin-right:0}
+ body[data-mimi-tool="table-maker"] .top-actions>.btn{width:auto;padding:7px 11px}
+ body[data-mimi-tool="table-maker"] .task-footer{position:sticky;bottom:calc(77px + env(safe-area-inset-bottom));z-index:5}
+ body[data-mimi-tool="table-maker"] .result-action-buttons{width:100%}
+ body[data-mimi-tool="table-maker"] .result-action-buttons .btn{flex:1}
+}
+
+
+
 body[data-mimi-tool="table-maker"] {
   --mimi-title-size: 30px;
   --mimi-heading-size: 18px;

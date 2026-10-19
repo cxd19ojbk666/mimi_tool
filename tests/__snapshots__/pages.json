@@ -1,0 +1,90 @@
+{
+  "src/renderer/index.html": {
+    "css": [],
+    "js": [],
+    "hash": "a85788e2ebeb1d84",
+    "workspace": false,
+    "mobileNav": 0
+  },
+  "src/renderer/pages/board-labels.html": {
+    "css": [
+      "../styles/mimi-ui.css",
+      "../styles/mimi-board.css",
+      "../styles/mimi-controls.css",
+      "../styles/mimi-layout.css"
+    ],
+    "js": [
+      "../scripts/mimi-workspace.js",
+      "../scripts/mimi-common.js",
+      "../scripts/mimi-settings.js",
+      "../scripts/mimi-board.js"
+    ],
+    "hash": "d9d1bff3a64e5ef5",
+    "workspace": true,
+    "mobileNav": 7
+  },
+  "src/renderer/pages/roll-call.html": {
+    "css": [
+      "../styles/mimi-ui.css?v=4",
+      "../styles/mimi-controls.css",
+      "../styles/mimi-layout.css"
+    ],
+    "js": [
+      "../scripts/mimi-workspace.js",
+      "../../../node_modules/xlsx/dist/xlsx.full.min.js",
+      "../scripts/mimi-common.js?v=3",
+      "../scripts/mimi-settings.js",
+      "../scripts/mimi-roll-call.js"
+    ],
+    "hash": "d9bc8a747d883674",
+    "workspace": true,
+    "mobileNav": 7
+  },
+  "src/renderer/pages/seating-chart.html": {
+    "css": [
+      "../styles/mimi-ui.css",
+      "../styles/mimi-seating.css",
+      "../styles/mimi-controls.css",
+      "../styles/mimi-layout.css"
+    ],
+    "js": [
+      "../scripts/mimi-workspace.js",
+      "../../../node_modules/xlsx/dist/xlsx.full.min.js",
+      "../scripts/mimi-common.js?v=3",
+      "../scripts/mimi-settings.js",
+      "../scripts/mimi-seating.js"
+    ],
+    "hash": "56e418198cf93e6a",
+    "workspace": true,
+    "mobileNav": 7
+  },
+  "src/renderer/pages/table-maker.html": {
+    "css": [
+      "../styles/mimi-ui.css?v=14",
+      "../styles/mimi-table.css?v=40",
+      "../styles/mimi-controls.css",
+      "../styles/mimi-layout.css"
+    ],
+    "js": [
+      "../scripts/mimi-workspace.js",
+      "../../../node_modules/exceljs/dist/exceljs.min.js",
+      "../../../node_modules/xlsx/dist/xlsx.full.min.js",
+      "../scripts/mimi-common.js?v=3",
+      "../scripts/mimi-settings.js",
+      "../scripts/mimi-table-merge.js",
+      "../scripts/mimi-table-workbook.js",
+      "../scripts/mimi-table-preview.js",
+      "../scripts/mimi-table.js?v=27"
+    ],
+    "hash": "2bde747609a0fa94",
+    "workspace": true,
+    "mobileNav": 5
+  },
+  "checks": [
+    {
+      "label": "echarts 同步引入",
+      "file": "src/renderer/pages/table-maker.html",
+      "syncFound": false
+    }
+  ]
+}

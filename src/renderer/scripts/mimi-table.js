@@ -564,8 +564,25 @@
     }
     return null;
   }
+  // 图表库懒加载：首屏不同步引入 echarts（约 1.1MB），首次进入成绩图表时才注入。
+  // 详细中文注释：保持原 renderCharts 逻辑不变，只是前置等待库就绪。
+  let echartsReady = null;
+  function loadEcharts() {
+    if (globalThis.echarts) return Promise.resolve(globalThis.echarts);
+    if (!echartsReady) {
+      echartsReady = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = '../../../node_modules/echarts/dist/echarts.min.js';
+        script.onload = () => resolve(globalThis.echarts);
+        script.onerror = () => reject(new Error('图表组件未加载'));
+        document.head.append(script);
+      });
+    }
+    return echartsReady;
+  }
   function chart(el,option){const instance=echarts.getInstanceByDom(el)||echarts.init(el,null,{renderer:'canvas'});instance.setOption(option,true);return instance}
-  function renderCharts(data){
+  async function renderCharts(data){
+    await loadEcharts();
     const palette=['#ff785d','#ffc94f','#68bde8','#32a889','#8c7bd5'],textStyle={fontFamily:'YouYuan, Yuanti SC, Microsoft YaHei, sans-serif',color:'#304354'};
     const averages=data.students.map(item=>item.average),distribution=[averages.filter(value=>value<data.pass).length,averages.filter(value=>value>=data.pass&&value<data.excellent).length,averages.filter(value=>value>=data.excellent).length];
     const common={animationDuration:550,color:palette,textStyle,grid:{left:48,right:22,top:54,bottom:42},tooltip:{trigger:'axis',confine:true},title:{left:16,top:12,textStyle:{...textStyle,fontSize:15,fontWeight:900}}};
