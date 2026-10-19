@@ -46,3 +46,5 @@ tmp/
 temp/
 *.seatplan.json
 *.tmp
+
+# Local student health data
